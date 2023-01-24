@@ -1,0 +1,52 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/despargy/go1_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/a1_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/aliengo_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/anymal_b_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/anymal_c_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/astro_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/bruno_config/include/**",
+        "/home/despargy/go1_ws/src/champ/champ/include/**",
+        "/home/despargy/go1_ws/src/champ/champ_base/include/**",
+        "/home/despargy/go1_ws/src/champ/champ_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/dkitty_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/dream_walker_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/go1_config/include/**",
+        "/home/despargy/go1_ws/src/go1_motion/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/littledog_config/include/**",
+        "/home/despargy/go1_ws/src/maestro/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/mini_cheetah_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/mini_pupper_config/include/**",
+        "/home/despargy/go1_ws/src/robots/descriptions/spot_mini_mini/mini_ros/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/open_quadruped_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/opendog_config/include/**",
+        "/home/despargy/go1_ws/src/rosserial/rosserial_server/include/**",
+        "/home/despargy/go1_ws/src/rosserial/rosserial_test/include/**",
+        "/home/despargy/go1_ws/src/slam_go1_real/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/spot_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/spotmicro_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/stanford_pupper_config/include/**",
+        "/home/despargy/go1_ws/src/robots/configs/stochlite_config/include/**",
+        "/home/despargy/go1_ws/src/unitree_ros/unitree_controller/include/**",
+        "/home/despargy/go1_ws/src/unitree_ros/unitree_legged_control/include/**",
+        "/home/despargy/go1_ws/src/unitree_ros_to_real/unitree_legged_real/include/**",
+        "/home/despargy/go1_ws/src/yocs_velocity_smoother/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
