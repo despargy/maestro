@@ -10,8 +10,11 @@
 #include "unitree_legged_msgs/LowCmd.h"
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
-// #include <maestro/LowCmdROS.h>
-// #include <maestro/LowStateROS.h>
+#include <sensor_msgs/Imu.h>
+#include <maestro/LowCmdRos.h>
+#include <maestro/LowStateRos.h>
+#include <gazebo_msgs/LinkState.h>
+#include <geometry_msgs/WrenchStamped.h>
 
 #ifndef _COMMUNICATIONHANDLER_H_
 #define _COMMUNICATIONHANDLER_H_
@@ -26,9 +29,8 @@ namespace RCD
         std::vector<std::string> joint_names{};
 
     public:
-        const char* sim_lowcmd_topic="/maestro_gazebo/LowCmd";
-        const char* sim_lowstate_topic="/maestro_gazebo/LowState";
-        const char* sim_jointstate_topic="/joint_states";
+        const char* sim_lowcmd_topic="/gazebo/lowCmd/command";
+        const char* sim_lowstate_topic="/gazebo/lowState/state";
 
         std::string ns = "/";  // as in group of 'basic.launch'
 
@@ -38,29 +40,34 @@ namespace RCD
         ros::NodeHandle *nh_main_;
         ros::NodeHandle *nh_cmh_;
 
+        // REAL
         // ros::Subscriber sub_realRobotState_;
-        ros::Subscriber sub_gazeboRobotState_;
-        ros::Subscriber sub_gazeboJointState_;
-        ros::Subscriber sub_gazeboLowCmd_;
 
+        // GAZEBO 
+        ros::Subscriber sub_gazeboLowState_;
         ros::Publisher pub_gazeboLowCmd_;
-        ros::Publisher pub_gazeboLowState_;
-        ros::Publisher pub_gazeboJointState_;
 
+        // ros::Subscriber sub_gazeboJointState_;
+        // ros::Subscriber sub_gazeboLowCmdRos_;
+        // // ros::Publisher pub_gazeboJointState_;
+        // ros::Publisher pub_gazeboLinkState_;
 
         CommunicationHandler();
         CommunicationHandler(Robot* robot, ros::NodeHandle* nh_main);
         ~CommunicationHandler();
 
-        // TODO MAY I NEED MORE THAT ONE UPDATE SYNC OR ASYNC?
-        void setRealConnection(); // to set set connection with REAL Robot 
-        void updateRobotState(const unitree_legged_msgs::LowState & msg); // updates the robot's state from ROS UNITREE
-        void sendToActualRobot(); // send cmd to the actual robot
         void initCommunicationHandler(); // things to inialize after constructor
-        void gazeboLowStateCallback(const unitree_legged_msgs::LowState & msg);
-        void gazeboSendLowCmd(unitree_legged_msgs::LowCmd next_low_cmd); //TODO need & ?
-        void gazeboJStoLowState_Cb(const sensor_msgs::JointState & msg);
-        void gazeboLowCmdtoJS_Cb(const unitree_legged_msgs::LowCmd & msg);
+        void initCommunicationHandlerGazebo();
+        void updateRobotState(const unitree_legged_msgs::LowState& msg); // updates the robot's state from ROS UNITREE
+        void gazeboLowStateCallback(const unitree_legged_msgs::LowState& msg);
+        void gazeboSendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd); 
+
+        // void gazeboJStoLowStateRos_Cb(const sensor_msgs::JointState & msg);
+        // void gazeboLowCmdRostoJS_Cb(const maestro::LowCmdRos & msg);
+        
+        // LATER ON
+        // void setRealConnection(); // to set set connection with REAL Robot 
+        // void sendToActualRobot(); // send cmd to the actual robot
 
 
     };

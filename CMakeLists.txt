@@ -19,31 +19,40 @@ find_package(catkin REQUIRED COMPONENTS
   kdl_parser
   joint_state_controller
   robot_state_publisher
+  genmsg
+  gazebo_msgs
 )
 
 # System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 
+# add_custom_target(${PROJECT_NAME}
+# DEPENDS unitree_legged_msgs unitree_legged_msgs_generate_messages_cpp unitree_legged_msgs_gencpp)
+# include_directories(${unitree_legged_msgs_INCLUDE_DIRS})
+
 add_message_files(
+  DIRECTORY msg #${CMAKE_CURRENT_SOURCE_DIR}/
   FILES
-  LowStateROS.msg
-  LowCmdROS.msg
+  LowStateRos.msg
+  LowCmdRos.msg
   Foot.msg
 )
 
 generate_messages(
-  DEPENDENCIES
+  DEPENDENCIES 
   std_msgs
   geometry_msgs
   sensor_msgs
+  unitree_legged_msgs
 )
 
 catkin_package(
  INCLUDE_DIRS include 
  LIBRARIES maestro
- CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs geometry_msgs unitree_legged_msgs kdl_parser robot_state_publisher joint_state_controller
- DEPENDS system_lib
+ CATKIN_DEPENDS roscpp rospy message_runtime sensor_msgs std_msgs gazebo_msgs geometry_msgs unitree_legged_msgs kdl_parser robot_state_publisher joint_state_controller
+ DEPENDS system_lib  
 )
+
 
 
 
@@ -54,13 +63,14 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+  include   ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR}
   /home/despargy/go1_ws/src/unitree_legged_sdk/include
-)
+  ${unitree_legged_msgs_INCLUDE_DIRS}
+  )
+link_directories($(catkin_LIB_DIRS) lib)
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
+# # Declare a C++ library
+# add_library(${PROJECT_NAME}_library
 #   src/${PROJECT_NAME}/MainHandler.cpp
 # )
 
@@ -70,8 +80,10 @@ SET( rcd_cpp_src
   src/Controller.cpp
 )
 
-
-
 add_executable(main_handler src/MainHandler.cpp ${rcd_cpp_src}) 
-add_dependencies(main_handler ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(main_handler   ${catkin_LIBRARIES} )
+add_dependencies(main_handler ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages unitree_legged_msgs_gencpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(main_handler   ${catkin_LIBRARIES})
+
+add_executable(maestro_gazebo_interpreter src/GazeboInterpreter.cpp ${rcd_cpp_src}) 
+add_dependencies(maestro_gazebo_interpreter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages unitree_legged_msgs_gencpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(maestro_gazebo_interpreter   ${catkin_LIBRARIES})

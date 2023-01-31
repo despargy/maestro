@@ -37,7 +37,6 @@ namespace RCD
             std::cout<<"getChain FALSE "<<std::endl;
         }
 
-        initMotorParams();   
         // std::cout<<chain<<std::endl;
         boost::scoped_ptr<KDL::ChainJntToJacSolver> jnt_to_jac_solver_;
         KDL::Frame current_pose;
@@ -109,32 +108,31 @@ namespace RCD
         for(int i=0; i<robot_->num_joints; i++){
             next_LowCmd_.motorCmd[i].q = robot_->low_state_.motorState[i].q;
         }
-        cmh_->gazeboSendLowCmd(next_LowCmd_);
     }
 
     void Controller::standUp()
     {   
         double pos[robot_->num_joints] = {0.0, 0.67, -1.3, -0.0, 0.67, -1.3, 
                         0.0, 0.67, -1.3, -0.0, 0.67, -1.3};
-        moveDesiredQs(pos, 2*1000);
+        moveDesiredQs(pos, 100*1000);
     }
-    void Controller::moveDesiredQs(double* desiredQs, double duration)
+    void Controller::moveDesiredQs(double* targetPos, double duration)
     {
-        double lastPos[this->robot_->num_joints], percent;
-
-        // for(int j=0; j<this->robot_->num_joints; j++) lastPos[j] = robot_->low_state_.motorState[j].q;
-        for( int i=0; i < duration ; i++)
-        {
+            double pos[12] ,lastPos[12], percent;
+        for(int j=0; j<12; j++) lastPos[j] = robot_->low_state_.motorState[j].q;
+        for(int i=1; i<=duration; i++){
+            if(!ros::ok()) break;
             percent = (double)i/duration;
-            for(int j=0; j < this->robot_->num_joints; j++)
-            {
-                next_LowCmd_.motorCmd[j].q = robot_->low_state_.motorState[j].q * (1-percent) + desiredQs[j]*percent;
-            } 
-            // TODO NOTIFY SEND THE MOTOR COMMAND
+            for(int j=0; j<12; j++){
+                next_LowCmd_.motorCmd[j].q = lastPos[j]*(1-percent) + targetPos[j]*percent; 
+            }
             /* send nextMotorCmd through lowCmd*/ 
-            cmh_->gazeboSendLowCmd(this->next_LowCmd_);
+            cmh_->gazeboSendLowCmd(this->next_LowCmd_);        }
 
-        }
-        
+    }
+    void Controller::loop()
+    {
+        cmh_->gazeboSendLowCmd(this->next_LowCmd_);        
+
     }
 }

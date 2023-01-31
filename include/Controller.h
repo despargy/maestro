@@ -14,7 +14,8 @@
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
 
-
+#define PosStopF (2.146E+9f)
+#define VelStopF (16000.f)
 namespace RCD
 {
     class Controller
@@ -37,7 +38,8 @@ namespace RCD
         int loadTree();
         void standUp();
         void initMotorParams();
-        void moveDesiredQs(double* desiredQs, double duration);
+        void moveDesiredQs(double* targetPos, double duration);
+        void loop();
 
         void setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd);
         unitree_legged_msgs::LowCmd getLowCmd();

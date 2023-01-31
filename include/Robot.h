@@ -32,6 +32,8 @@ namespace RCD
         const int num_joints = 12; 
         const int num_motors = 20;
 
+        std::string robot_name_ ;
+
         Robot(/* args */);
         ~Robot();
 

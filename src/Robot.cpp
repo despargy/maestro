@@ -1,4 +1,6 @@
 #include <Robot.h>
+#define PosStopF (2.146E+9f)
+#define VelStopF (16000.f)
 
 namespace RCD
 {
