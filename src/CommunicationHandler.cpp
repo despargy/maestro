@@ -46,14 +46,13 @@ namespace RCD
     void CommunicationHandler::gazeboLowStateCallback(const unitree_legged_msgs::LowState& msg)
     {
         // Cb Low State
-        ROS_INFO("gazeboLowStateCallback()");
+        // ROS_INFO("gazeboLowStateCallback()");
         this->updateRobotState(msg); // TODO set barrier ?
     }
     void CommunicationHandler::updateRobotState(const unitree_legged_msgs::LowState& msg)
     {
         // Set Robot  Low State
         this->robot_->setLowState(msg);
-        // ROS_INFO("updateRobotState is called");
     }
     void CommunicationHandler::gazeboSendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd)
     {
@@ -61,40 +60,6 @@ namespace RCD
         ros::spinOnce();
         ROS_INFO("Publish at /gazebo/lowCmd/command ");
     }
-
-    // void CommunicationHandler::gazeboJStoLowStateRos_Cb(const sensor_msgs::JointState & msg)
-    // {
-    //     ROS_INFO("gazeboJStoLowStateRos_Cb()");
-    //     maestro::LowStateRos ls;
-    //     ls.header.stamp = ros::Time::now();
-    //     for (int m = 0; m < 12;m++)
-    //     {
-    //         ls.lowstate.motorState[m].q = msg.position[m];
-
-    //     }
-    //     this->pub_gazeboLowStateRos_.publish(ls);
-    // }
-    // void CommunicationHandler::gazeboLowCmdRostoJS_Cb(const maestro::LowCmdRos & msg)
-    // {
-    //     ROS_INFO("gazeboLowCmdtoJS_Cb ()" );
-    //     // sensor_msgs::JointState js;
-    //     // js.header.stamp = ros::Time::now();
-    //     // js.position.resize(robot_->num_joints);
-    //     // for(int i =0 ; i < robot_->num_joints ; i++)
-    //     // {
-    //     //     js.position[i] = msg.lowcmd.motorCmd[i].q;
-    //     // }
-    //     // pub_gazeboJointState_.publish(js);
-
-    //     gazebo_msgs::LinkState ls;
-    //     for(int i =0 ; i < robot_->num_joints ; i++)
-    //     {
-    //         ls.pose.position.x = msg.lowcmd.motorCmd[i].q;
-    //     }
-    //     ls.reference_frame = "base";
-    //     pub_gazeboLinkState_.publish(ls);
-
-    // }
 
     // LATER ON set connection with real roobt
     // void CommunicationHandler::setRealConnection()

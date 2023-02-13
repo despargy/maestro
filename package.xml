@@ -85,11 +85,12 @@
   <exec_depend>message_runtime</exec_depend>
 
   <depend>unitree_legged_msgs</depend>
-
+  <!-- <depend>package="pr2_controller_interface"</depend>
+  <depend>package="pluginlib"</depend> -->
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-
+    <!-- <pr2_controller_interface plugin="${prefix}/controller_plugins.xml" /> -->
   </export>
 </package>

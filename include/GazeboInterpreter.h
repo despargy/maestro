@@ -23,9 +23,12 @@ class GazeboInterpreter
 {
 public:
 
-    ros::NodeHandle *nh;
+    ros::NodeHandle *n_adv;
+    ros::NodeHandle *n_sub;
+
     std::string robot_name;
     unitree_legged_msgs::LowState lowState; 
+    unitree_legged_msgs::MotorCmd motor_cmd[12];
     bool start_up;
 
     // pass LowState
@@ -40,7 +43,8 @@ public:
 
     GazeboInterpreter();
     ~GazeboInterpreter();
-    void initGazebo();
+    void initGazeboPub();
+    void initGazeboSub();
 
                     /* Callbacks Gazebo*/
     // use: pass LowState

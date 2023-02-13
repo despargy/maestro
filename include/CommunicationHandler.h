@@ -47,11 +47,6 @@ namespace RCD
         ros::Subscriber sub_gazeboLowState_;
         ros::Publisher pub_gazeboLowCmd_;
 
-        // ros::Subscriber sub_gazeboJointState_;
-        // ros::Subscriber sub_gazeboLowCmdRos_;
-        // // ros::Publisher pub_gazeboJointState_;
-        // ros::Publisher pub_gazeboLinkState_;
-
         CommunicationHandler();
         CommunicationHandler(Robot* robot, ros::NodeHandle* nh_main);
         ~CommunicationHandler();
@@ -62,9 +57,6 @@ namespace RCD
         void gazeboLowStateCallback(const unitree_legged_msgs::LowState& msg);
         void gazeboSendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd); 
 
-        // void gazeboJStoLowStateRos_Cb(const sensor_msgs::JointState & msg);
-        // void gazeboLowCmdRostoJS_Cb(const maestro::LowCmdRos & msg);
-        
         // LATER ON
         // void setRealConnection(); // to set set connection with REAL Robot 
         // void sendToActualRobot(); // send cmd to the actual robot

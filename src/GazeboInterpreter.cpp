@@ -3,55 +3,60 @@
 GazeboInterpreter::GazeboInterpreter()
 {
     ROS_INFO("Constrauctor GazeboInterpreter");
+    this->n_sub = new ros::NodeHandle ;
+    this->n_adv = new ros::NodeHandle ;
+    // this->n_sub.setCallbackQueue(&my_callback_queue);
 }
 GazeboInterpreter::~GazeboInterpreter()
 {
     ROS_INFO("De-Constrauctor GazeboInterpreter");
 }
-void GazeboInterpreter::initGazebo()
+void GazeboInterpreter::initGazeboSub()
 {
-        start_up = true;
+    start_up = true;
+    imu_sub = n_sub->subscribe("/trunk_imu", 1, &GazeboInterpreter::imuCallback, this);
+    footForce_sub[0] = n_sub->subscribe("/visual/FR_foot_contact/the_force", 1, &GazeboInterpreter::FRfootCallback, this);
+    footForce_sub[1] = n_sub->subscribe("/visual/FL_foot_contact/the_force", 1, &GazeboInterpreter::FLfootCallback, this);
+    footForce_sub[2] = n_sub->subscribe("/visual/RR_foot_contact/the_force", 1, &GazeboInterpreter::RRfootCallback, this);
+    footForce_sub[3] = n_sub->subscribe("/visual/RL_foot_contact/the_force", 1, &GazeboInterpreter::RLfootCallback, this);
+    servo_sub[0] = n_sub->subscribe("/" + robot_name + "_gazebo/FR_hip_controller/state", 1, &GazeboInterpreter::FRhipCallback, this);
+    servo_sub[1] = n_sub->subscribe("/" + robot_name + "_gazebo/FR_thigh_controller/state", 1, &GazeboInterpreter::FRthighCallback, this);
+    servo_sub[2] = n_sub->subscribe("/" + robot_name + "_gazebo/FR_calf_controller/state", 1, &GazeboInterpreter::FRcalfCallback, this);
+    servo_sub[3] = n_sub->subscribe("/" + robot_name + "_gazebo/FL_hip_controller/state", 1, &GazeboInterpreter::FLhipCallback, this);
+    servo_sub[4] = n_sub->subscribe("/" + robot_name + "_gazebo/FL_thigh_controller/state", 1, &GazeboInterpreter::FLthighCallback, this);
+    servo_sub[5] = n_sub->subscribe("/" + robot_name + "_gazebo/FL_calf_controller/state", 1, &GazeboInterpreter::FLcalfCallback, this);
+    servo_sub[6] = n_sub->subscribe("/" + robot_name + "_gazebo/RR_hip_controller/state", 1, &GazeboInterpreter::RRhipCallback, this);
+    servo_sub[7] = n_sub->subscribe("/" + robot_name + "_gazebo/RR_thigh_controller/state", 1, &GazeboInterpreter::RRthighCallback, this);
+    servo_sub[8] = n_sub->subscribe("/" + robot_name + "_gazebo/RR_calf_controller/state", 1, &GazeboInterpreter::RRcalfCallback, this);
+    servo_sub[9] = n_sub->subscribe("/" + robot_name + "_gazebo/RL_hip_controller/state", 1, &GazeboInterpreter::RLhipCallback, this);
+    servo_sub[10] =n_sub->subscribe("/" + robot_name + "_gazebo/RL_thigh_controller/state", 1, &GazeboInterpreter::RLthighCallback, this);
+    servo_sub[11] =n_sub->subscribe("/" + robot_name + "_gazebo/RL_calf_controller/state", 1, &GazeboInterpreter::RLcalfCallback, this);
 
-        imu_sub = nh->subscribe("/trunk_imu", 1, &GazeboInterpreter::imuCallback, this);
-        footForce_sub[0] = nh->subscribe("/visual/FR_foot_contact/the_force", 1, &GazeboInterpreter::FRfootCallback, this);
-        footForce_sub[1] = nh->subscribe("/visual/FL_foot_contact/the_force", 1, &GazeboInterpreter::FLfootCallback, this);
-        footForce_sub[2] = nh->subscribe("/visual/RR_foot_contact/the_force", 1, &GazeboInterpreter::RRfootCallback, this);
-        footForce_sub[3] = nh->subscribe("/visual/RL_foot_contact/the_force", 1, &GazeboInterpreter::RLfootCallback, this);
-        servo_sub[0] = nh->subscribe("/" + robot_name + "_gazebo/FR_hip_controller/state", 1, &GazeboInterpreter::FRhipCallback, this);
-        servo_sub[1] = nh->subscribe("/" + robot_name + "_gazebo/FR_thigh_controller/state", 1, &GazeboInterpreter::FRthighCallback, this);
-        servo_sub[2] = nh->subscribe("/" + robot_name + "_gazebo/FR_calf_controller/state", 1, &GazeboInterpreter::FRcalfCallback, this);
-        servo_sub[3] = nh->subscribe("/" + robot_name + "_gazebo/FL_hip_controller/state", 1, &GazeboInterpreter::FLhipCallback, this);
-        servo_sub[4] = nh->subscribe("/" + robot_name + "_gazebo/FL_thigh_controller/state", 1, &GazeboInterpreter::FLthighCallback, this);
-        servo_sub[5] = nh->subscribe("/" + robot_name + "_gazebo/FL_calf_controller/state", 1, &GazeboInterpreter::FLcalfCallback, this);
-        servo_sub[6] = nh->subscribe("/" + robot_name + "_gazebo/RR_hip_controller/state", 1, &GazeboInterpreter::RRhipCallback, this);
-        servo_sub[7] = nh->subscribe("/" + robot_name + "_gazebo/RR_thigh_controller/state", 1, &GazeboInterpreter::RRthighCallback, this);
-        servo_sub[8] = nh->subscribe("/" + robot_name + "_gazebo/RR_calf_controller/state", 1, &GazeboInterpreter::RRcalfCallback, this);
-        servo_sub[9] = nh->subscribe("/" + robot_name + "_gazebo/RL_hip_controller/state", 1, &GazeboInterpreter::RLhipCallback, this);
-        servo_sub[10] = nh->subscribe("/" + robot_name + "_gazebo/RL_thigh_controller/state", 1, &GazeboInterpreter::RLthighCallback, this);
-        servo_sub[11] = nh->subscribe("/" + robot_name + "_gazebo/RL_calf_controller/state", 1, &GazeboInterpreter::RLcalfCallback, this);
-    
-        pub_gazeboLowState_ = nh->advertise<unitree_legged_msgs::LowState>(sim_lowstate_topic,1);
-
-        sub_gazeboLowCmd_ = nh->subscribe(sim_lowcmd_topic,1, &GazeboInterpreter::LowCmdsCallback, this);
-        servo_pub[0] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FR_hip_controller/command", 1);
-        servo_pub[1] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FR_thigh_controller/command", 1);
-        servo_pub[2] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FR_calf_controller/command", 1);
-        servo_pub[3] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FL_hip_controller/command", 1);
-        servo_pub[4] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FL_thigh_controller/command", 1);
-        servo_pub[5] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FL_calf_controller/command", 1);
-        servo_pub[6] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RR_hip_controller/command", 1);
-        servo_pub[7] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RR_thigh_controller/command", 1);
-        servo_pub[8] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RR_calf_controller/command", 1);
-        servo_pub[9] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RL_hip_controller/command", 1);
-        servo_pub[10] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RL_thigh_controller/command", 1);
-        servo_pub[11] = nh->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RL_calf_controller/command", 1);
-
-
+    sub_gazeboLowCmd_ = n_sub->subscribe(sim_lowcmd_topic,1, &GazeboInterpreter::LowCmdsCallback, this);
 
 }  
+void GazeboInterpreter::initGazeboPub()
+{
+    pub_gazeboLowState_ = n_adv->advertise<unitree_legged_msgs::LowState>(sim_lowstate_topic,1);
+    
+    servo_pub[0] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FR_hip_controller/command", 1);
+    servo_pub[1] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FR_thigh_controller/command", 1);
+    servo_pub[2] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FR_calf_controller/command", 1);
+    servo_pub[3] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FL_hip_controller/command", 1);
+    servo_pub[4] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FL_thigh_controller/command", 1);
+    servo_pub[5] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/FL_calf_controller/command", 1);
+    servo_pub[6] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RR_hip_controller/command", 1);
+    servo_pub[7] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RR_thigh_controller/command", 1);
+    servo_pub[8] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RR_calf_controller/command", 1);
+    servo_pub[9] = n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RL_hip_controller/command", 1);
+    servo_pub[10] =n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RL_thigh_controller/command", 1);
+    servo_pub[11] =n_adv->advertise<unitree_legged_msgs::MotorCmd>("/" + robot_name + "_gazebo/RL_calf_controller/command", 1);
 
+
+}
 void GazeboInterpreter::imuCallback(const sensor_msgs::Imu & msg)
 { 
+        // ROS_INFO("imuCallback");
     lowState.imu.quaternion[0] = msg.orientation.w;
     lowState.imu.quaternion[1] = msg.orientation.x;
     lowState.imu.quaternion[2] = msg.orientation.y;
@@ -176,6 +181,7 @@ void GazeboInterpreter::RRfootCallback(const geometry_msgs::WrenchStamped& msg)
 }
 void GazeboInterpreter::RLfootCallback(const geometry_msgs::WrenchStamped& msg)
 {
+    // ROS_INFO("RLfootCallback");
     lowState.eeForce[3].x = msg.wrench.force.x;
     lowState.eeForce[3].y = msg.wrench.force.y;
     lowState.eeForce[3].z = msg.wrench.force.z;
@@ -183,38 +189,48 @@ void GazeboInterpreter::RLfootCallback(const geometry_msgs::WrenchStamped& msg)
 }
 void GazeboInterpreter::LowCmdsCallback(const unitree_legged_msgs::LowCmd& msg)
 {
+    ROS_INFO("LowCmdsCallback");
     for(int m=0; m<12; m++){
         servo_pub[m].publish(msg.motorCmd[m]);
+        // motor_cmd[m] = msg.motorCmd[m] ;
+        ROS_INFO("msg.motorCmd[m] =, %f", msg.motorCmd[m].q);
     }
-    ros::spinOnce();
-    // usleep(1000);
 }
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "maestro_gazebo_interpreter");
-    // ros::Rate loop_rate(500);
 
     GazeboInterpreter gi;
     gi.robot_name = "go1";
 
-    ros::AsyncSpinner spinner(0); // one threads
+    ros::AsyncSpinner spinner(1); // 4 threads
     spinner.start();
 
-    usleep(1/3); // must wait 300ms, to get first state
+    usleep(300000); // must wait 300ms, to get first state
 
-    gi.nh = new ros::NodeHandle ;
-    gi.initGazebo();
+    // ros::Duration(6).sleep(); // sleep for 6 seconds
 
-    // motion_init();
+    gi.initGazeboSub();
+    gi.initGazeboPub();
 
+    ros::Rate loop_rate(500);
     while (ros::ok())
     {
+        ROS_INFO("spinOnce and startup = ");
+        std::cout<< gi.start_up << std::endl;
         // Keep publishing low state of Gazebo go1
         gi.pub_gazeboLowState_.publish(gi.lowState);
-        // ros::spinOnce();
-        // loop_rate.sleep();
+        // ROS_INFO("pub_gazeboLowState_");
+        // for(int m=0; m<12; m++){
+        //     gi.servo_pub[m].publish(gi.motor_cmd[m]);
+        // }
+        // ROS_INFO("pub_servoCMd_");
 
+        ros::spinOnce();
+        loop_rate.sleep();
     }
+
+    ros::waitForShutdown();
     return 0;
 
 }

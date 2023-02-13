@@ -22,43 +22,55 @@ namespace RCD
     {
         std::cout<<"Controller De-Constructor"<<std::endl;
     }
+
     int Controller::initController()
     {
-        int status = loadTree(); // state 0 means OK
-
-        KDL::Chain chain;
-        bool exit_value = robot_tree_.getChain("FR_calf_joint","FR_hip_joint",chain);
-        if (exit_value)
-        {
-            std::cout<<"getChain TRUE"<<std::endl;
-        }
-        else
-        {
-            std::cout<<"getChain FALSE "<<std::endl;
-        }
-
-        // std::cout<<chain<<std::endl;
-        boost::scoped_ptr<KDL::ChainJntToJacSolver> jnt_to_jac_solver_;
-        KDL::Frame current_pose;
-
-        // RobotStatePublisher(robot_tree);
-        // ros::NodeHandle n;
-        // std::string joint_name;
-
-        // if (!n.getParam("joint", joint_name)){
-        //     ROS_ERROR("No joint given in namespace: '%s')", n.getNamespace().c_str());
-        //     return false;
+        // read URDF from parameter server and parse it into a KDL::Tree
+        KDL::Tree robot_kin;
+        if (!kdl_parser::treeFromParam("/robot_description", robot_kin))
+        throw std::runtime_error("Could not find robot URDF in parameter '/robot_description'.");
+        ROS_INFO("Tree ok");
+        std::cout<<robot_kin.getNrOfSegments()<<std::endl;
+        // KDL::TreeJntToJacSolver tree_jnt_to_jac_solver(robot_kin);
+        // for (int i = 0 ; i < 12; i++)
+        // {
+        //     jnt_pos_(i)= this->robot_->getLowState().motorState[i].q;
         // }
-        // ROS_INFO("name_space: ,'%s'", n.getNamespace().c_str());
-        // ROS_INFO("joint_name: ,'%s'", joint_name.c_str());
-        // joint_urdf = urdf_model.getJoint(joint_name);
-        // if (!joint_urdf){
-        //     ROS_ERROR("Could not find joint '%s' in urdf", joint_name.c_str());
-        //     status = false;
-        // }
-        return status; // TODO CHECK status * exit_value too
+        // tree_jnt_to_jac_solver.JntToJac(jnt_pos_, jacobian_, "RL_foot")  ;
+        KDL::Chain kdl_chain;
+        std::string base_frame("base");
+        std::string tip_frame("RL_foot");
+        if (!robot_kin.getChain(base_frame, tip_frame, kdl_chain)) 
+        {
+            ROS_ERROR("Could not initialize chain object");
+        }
+        int n_joint = kdl_chain.getNrOfJoints();
+
+        KDL::ChainJntToJacSolver kdl_solver(kdl_chain);
+        KDL::Jacobian jacobian_kdl(n_joint);
+        KDL::JntArray q_in(n_joint);
+        if (kdl_solver.JntToJac(q_in,jacobian_kdl) >=0 )
+        {
+            std::cout<<"Expected to be >=0"<<std::endl;
+        }
+        double pos[robot_->num_joints] = {0.0, 0.0, -0.0};
+        for(int i = 0; i < n_joint;  i++)
+            q_in(i) = pos[i];
+        if (kdl_solver.JntToJac(q_in,jacobian_kdl) >=0 )
+        {
+            std::cout<<"Expected to be >=0"<<std::endl;
+        }
+        for(int i =0 ; i < n_joint; i++)
+        {
+            for(int j =0 ; j < n_joint; j++)
+            {
+                std::cout<<jacobian_kdl(i,j)<<std::endl;
+            }
+        }
+
+        return 0;
     }
-    
+
     int Controller::loadTree()
     {
         if (!this->urdf_model_.initFile(this->urdf_file_)){
@@ -73,6 +85,7 @@ namespace RCD
 
         return 0;
     }
+
     void Controller::setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd)
     {
         this->next_LowCmd_ = next_LowCmd;
@@ -86,6 +99,7 @@ namespace RCD
     // TODO TUNING
     void Controller::initMotorParams()
     {
+
         for(int i=0; i<4; i++)
         {
             // UNDER LOWCMD 
@@ -108,31 +122,51 @@ namespace RCD
         for(int i=0; i<robot_->num_joints; i++){
             next_LowCmd_.motorCmd[i].q = robot_->low_state_.motorState[i].q;
         }
+
     }
 
     void Controller::standUp()
     {   
         double pos[robot_->num_joints] = {0.0, 0.67, -1.3, -0.0, 0.67, -1.3, 
-                        0.0, 0.67, -1.3, -0.0, 0.67, -1.3};
-        moveDesiredQs(pos, 100*1000);
+                                            0.0, 0.67, -1.3, -0.0, 0.67, -1.3};
+        moveDesiredQs(pos, 2*1000);
     }
     void Controller::moveDesiredQs(double* targetPos, double duration)
     {
-            double pos[12] ,lastPos[12], percent;
+        double pos[12] ,lastPos[12], percent;
         for(int j=0; j<12; j++) lastPos[j] = robot_->low_state_.motorState[j].q;
-        for(int i=1; i<=duration; i++){
+        for(int i=1; i<=duration; i++)
+        {
             if(!ros::ok()) break;
             percent = (double)i/duration;
             for(int j=0; j<12; j++){
                 next_LowCmd_.motorCmd[j].q = lastPos[j]*(1-percent) + targetPos[j]*percent; 
+                ROS_INFO("q =  %f", next_LowCmd_.motorCmd[j].q);
             }
+        
             /* send nextMotorCmd through lowCmd*/ 
-            cmh_->gazeboSendLowCmd(this->next_LowCmd_);        }
+            cmh_->gazeboSendLowCmd(this->next_LowCmd_);
+            // ros::spinOnce();
+            // ros::Duration(5).sleep(); // sleep for 0.5 seconds
+            // sleep(3);
+      
+        }
 
     }
+    // void Controller::next(double* targetPos)
+    // {
+    //     for(int j=0; j<12; j++)
+    //     {
+    //         this->next_LowCmd_.motorCmd[j].q =  this->robot_->low_state_.motorState[j].q + (targetPos[j] - this->robot_->low_state_.motorState[j].q)/100;
+    //     }
+
+    // }
     void Controller::loop()
     {
-        cmh_->gazeboSendLowCmd(this->next_LowCmd_);        
-
+        // robot_->getLowState();
+        // next(STAND_POS);
+        // cmh_->gazeboSendLowCmd(this->next_LowCmd_);        
+        ROS_INFO("IN LOOP");
     }
+
 }
