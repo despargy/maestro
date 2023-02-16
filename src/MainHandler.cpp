@@ -6,7 +6,8 @@
 #include <Robot.h>
 #include <CommunicationHandler.h>
 #include <Controller.h>
-#include <ros/ros.h>
+#include <chrono>
+#include <ctime> 
 
 using namespace ros;
 int main(int argc, char **argv)
@@ -22,44 +23,39 @@ int main(int argc, char **argv)
     RCD::CommunicationHandler* cmh = new RCD::CommunicationHandler(robot, &nh);
     RCD::Controller* ctrl = new RCD::Controller(robot, cmh);
 
+    // Info for user
     if (!nh.getParam(robot->robot_name_ + "/robot_name", robot->robot_name_)){
-        ROS_ERROR("No is_simulation given in namespace: '%s')", nh.getNamespace().c_str());
+        ROS_ERROR("No robot name given in namespace: '%s')", nh.getNamespace().c_str());
+    }
+    else
+    {
+        ROS_INFO("START CONROL for: '%s'", robot->robot_name_.c_str());
     }
 
     // Async Ros
     ros::AsyncSpinner spinner(4); // 0 means as many threads my machine gives EXTRA gibve callback queue
     spinner.start();
 
-    // Initialize cmh
+    // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
-    //  subscribe to "Simulated Robot", contains pub LowCmd / sub LowState 
-    cmh->initCommunicationHandlerGazebo();
 
+    //Time counter START
+    // ctrl->time_start = std::chrono::system_clock::now();
+    // sleep(3); // sleep for 3 seconds
+    // ctrl->time_end = std::chrono::system_clock::now();
+    // ctrl->time_elapsed =  ctrl->time_end - ctrl->time_start;
+    // std::cout << "elapsed time: " << ctrl->time_elapsed.count() << "s\n";
+    sleep(3); // sleep for 3 seconds
+    // ros::Duration(3).sleep(); // sleep for 5 seconds
     // Initialize Controller
-    if( ctrl->initController()) ROS_ERROR("Fail to Inialize Controller");
-    else ROS_INFO("Successfully Inialize Controller");
+    ctrl->initControl();
 
-    ros::Duration(3).sleep(); // sleep for 5 seconds
-
-    // Motor Params for Gazebo Control
-    ctrl->initMotorParams();
-    
     // Send first cmds
     ctrl->standUp();
-    // ROS_INFO("eND OF STAND UP");
+    
+    // ctrl->loop();
 
-    while(ros::ok())
-    {
-
-        // ROS_INFO("spinOnce");
-        // ctrl->loop();
-        // ctrl->initMotorParams();
-
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-
-    // ros::waitForShutdown();
+    ros::waitForShutdown();
 
     // De-Constructors
     delete cmh;

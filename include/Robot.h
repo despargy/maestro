@@ -7,6 +7,10 @@
 #include <unitree_legged_msgs/MotorState.h>
 #include <unitree_legged_msgs/MotorCmd.h>
 #include <unitree_legged_msgs/LowState.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
+#include <Eigen/Dense>
+#include <ros/ros.h>
 
 // #include <model.h>
 
@@ -18,21 +22,19 @@ namespace RCD
     
     class Robot
     {
-    private:
-         
+    // private:
         // unitree_legged_msgs::IMU imu_base_; // imu
         // unitree_legged_msgs::MotorState *motor_state_; // list of 20 motors
         // maestro::Foot foot_force_;
-
     public:
-    
+        std::string robot_name_ ;
+        std::vector<std::string> joint_names{}; // init by communication handler
+        int num_joints;  // init by communication handler
+        int num_motors = 20;
         // unitree_legged_msgs::MotorCmd *motor_cmd_; // list of 20 motors
         unitree_legged_msgs::LowState low_state_; 
-
-        const int num_joints = 12; 
-        const int num_motors = 20;
-
-        std::string robot_name_ ;
+        Eigen::Vector3d com_pos, com_vel_linear, com_vel_ang;
+        Eigen::Quaterniond com_q;
 
         Robot(/* args */);
         ~Robot();
@@ -42,6 +44,7 @@ namespace RCD
         // void setMotorState(unitree_legged_msgs::MotorState* motor_state);
         // void setMotorCmd(unitree_legged_msgs::MotorCmd* motor_cmd);
         void setLowState(unitree_legged_msgs::LowState low_state);
+        void setCoMfromMState(geometry_msgs::Pose com_state, geometry_msgs::Twist com_state_dot);
 
         // maestro::Foot getFoot();
         // unitree_legged_msgs::IMU getImuBase();

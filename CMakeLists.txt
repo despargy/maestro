@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(maestro)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -lorocos-kdl)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   robot_state_publisher
   genmsg
   gazebo_msgs
+  eigen_conversions
 )
 
 # System dependencies are found with CMake's conventions
@@ -31,7 +32,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 # include_directories(${unitree_legged_msgs_INCLUDE_DIRS})
 
 add_message_files(
-  DIRECTORY msg #${CMAKE_CURRENT_SOURCE_DIR}/
+  DIRECTORY msg
   FILES
   LowStateRos.msg
   LowCmdRos.msg
@@ -52,9 +53,6 @@ catkin_package(
  CATKIN_DEPENDS roscpp rospy message_runtime sensor_msgs std_msgs gazebo_msgs geometry_msgs unitree_legged_msgs kdl_parser robot_state_publisher joint_state_controller
  DEPENDS system_lib  
 )
-
-
-
 
 ###########
 ## Build ##
@@ -78,6 +76,7 @@ SET( rcd_cpp_src
   src/Robot.cpp
   src/CommunicationHandler.cpp
   src/Controller.cpp
+  src/Leg.cpp
 )
 
 add_executable(main_handler src/MainHandler.cpp ${rcd_cpp_src}) 

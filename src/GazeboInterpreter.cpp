@@ -208,18 +208,18 @@ int main(int argc, char **argv)
 
     usleep(300000); // must wait 300ms, to get first state
 
-    // ros::Duration(6).sleep(); // sleep for 6 seconds
-
     gi.initGazeboSub();
     gi.initGazeboPub();
 
     ros::Rate loop_rate(500);
     while (ros::ok())
     {
-        ROS_INFO("spinOnce and startup = ");
-        std::cout<< gi.start_up << std::endl;
+        // ROS_INFO("spinOnce and startup = ");
+        // std::cout<< gi.start_up << std::endl;
+
         // Keep publishing low state of Gazebo go1
         gi.pub_gazeboLowState_.publish(gi.lowState);
+        
         // ROS_INFO("pub_gazeboLowState_");
         // for(int m=0; m<12; m++){
         //     gi.servo_pub[m].publish(gi.motor_cmd[m]);

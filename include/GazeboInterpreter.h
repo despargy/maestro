@@ -34,12 +34,13 @@ public:
     // pass LowState
     ros::Subscriber servo_sub[12], footForce_sub[4], imu_sub;
     ros::Publisher pub_gazeboLowState_;
-    // get LowCmd
+    // get n' set LowCmd
     ros::Publisher servo_pub[12];
     ros::Subscriber sub_gazeboLowCmd_;
 
     const char* sim_lowstate_topic="/gazebo/lowState/state";
     const char* sim_lowcmd_topic="/gazebo/lowCmd/command";
+    const char* sim_comcmd_topic="/sim/gazebo/lowCmd/command";
 
     GazeboInterpreter();
     ~GazeboInterpreter();

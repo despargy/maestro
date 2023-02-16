@@ -181,3 +181,58 @@ CONTROLLER
         // }
     //     return 0; // TODO CHECK status * exit_value too
     // }
+
+
+    //     void Controller::testChainJac()
+    // {
+
+    //     KDL::Chain kdl_chain;
+    //     std::string base_frame("base");
+    //     std::string tip_frame("RL_foot");
+    //     if (!robot_kin.getChain(base_frame, tip_frame, kdl_chain)) 
+    //     {
+    //         ROS_ERROR("Could not initialize chain object");
+    //     }
+   
+    //     int n_joint = kdl_chain.getNrOfJoints();
+
+    //     KDL::ChainJntToJacSolver kdl_solver(kdl_chain);
+    //     KDL::Jacobian jacobian_kdl(n_joint);
+    //     KDL::JntArray q_in(n_joint);
+    //     if (kdl_solver.JntToJac(q_in,jacobian_kdl) >=0 )
+    //     {
+    //         std::cout<<"Expected to be >=0"<<std::endl;
+    //     }
+    //     double pos[n_joint] = {0.0, 0.0, -0.0};
+    //     for(int i = 0; i < n_joint;  i++)
+    //         q_in(i) = pos[i];
+    //     if (kdl_solver.JntToJac(q_in,jacobian_kdl) >=0 )
+    //     {
+    //         std::cout<<"Expected to be >=0"<<std::endl;
+    //     }
+    // }
+
+
+// https://cpp.hotexamples.com/examples/kdl/Frame/-/cpp-frame-class-examples.html
+    void UrdfModelMarker::graspPointCB( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback ){
+  //linkMarkerMap[feedback->marker_name].gp.pose = feedback->pose;
+  //publishMarkerPose(feedback);
+  //publishMarkerMenu(feedback, jsk_interactive_marker::MarkerMenu::MOVE);
+
+  KDL::Vector graspVec(feedback->mouse_point.x, feedback->mouse_point.y, feedback->mouse_point.z);
+  KDL::Frame parentFrame;
+  tf::poseMsgToKDL (linkMarkerMap[feedback->marker_name].pose, parentFrame);
+
+  graspVec = parentFrame.Inverse(graspVec);
+
+  geometry_msgs::Pose p;
+  p.position.x = graspVec.x();
+  p.position.y = graspVec.y();
+  p.position.z = graspVec.z();
+  p.orientation = linkMarkerMap[feedback->marker_name].gp.pose.orientation;
+  linkMarkerMap[feedback->marker_name].gp.pose = p;
+  
+  linkMarkerMap[feedback->marker_name].gp.displayGraspPoint = true;
+  addChildLinkNames(model->getRoot(), true, false);
+  //addChildLinkNames(model->getRoot(), true, false, true, 0);
+}
