@@ -27,14 +27,6 @@ namespace RCD
         Leg *leg_mng;
         int n_leg;
         double maestro_time;
-
-        // KDL::JntArray jnt_pos_, jnt_effort_;//V2
-        // KDL::Jacobian jacobian_;//V2
-        // KDL::Frame reference_pose_;//V2
-
-        // boost::scoped_ptr<KDL::ChainFkSolverPos> jnt_to_pose_solver_;//V2
-        // boost::scoped_ptr<KDL::ChainJntToJacSolver> jnt_to_jac_solver_; //V2
-
     public:
         // Chrono
         std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
@@ -56,13 +48,15 @@ namespace RCD
         void standUp();
         void moveDesiredQs(double* targetPos, double duration);
         void initLegsControl();
-        void solveAllJacobians(KDL::JntArray q_in);
-        void getJointQs();
+        void getLegQF();
         void initControl();
         void loop();
         void update();
-
-        void setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd);
+        void solveJacP();
+        void computeSudoGq();
+        void setNewCmd();
+        // void setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd);
+        Eigen::Matrix3d scewSymmetric(Eigen::Vector3d t);
         unitree_legged_msgs::LowCmd getLowCmd();
 
     };

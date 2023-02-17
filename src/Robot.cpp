@@ -8,9 +8,26 @@ namespace RCD
         ROS_INFO("Robot Constructor");
         // this->motor_state_= new unitree_legged_msgs::MotorState[this->num_motors];
         // this->motor_cmd_ = new unitree_legged_msgs::MotorCmd[this->num_motors];
-        com_pos = Eigen::Vector3d::Zero();
-        com_vel_linear = Eigen::Vector3d::Zero();
-        com_vel_ang= Eigen::Vector3d::Zero();
+        this->p_c = Eigen::Vector3d::Zero();
+        this->com_vel_linear = Eigen::Vector3d::Zero();
+        this->com_vel_ang= Eigen::Vector3d::Zero();
+        this->R_c.resize(3,3);
+        this->F_a.resize(12);
+        this->F_c.resize(12);
+        this->Gq.resize(6,12);
+        this->Gq_sudo.resize(12,6);
+        //init Gq
+        this->Gq.block(0,0,3,3) =  Eigen::Matrix3d::Identity();
+        this->Gq.block(0,3,3,3) =  Eigen::Matrix3d::Identity();
+        this->Gq.block(0,6,3,3) =  Eigen::Matrix3d::Identity();
+        this->Gq.block(0,9,3,3) =  Eigen::Matrix3d::Identity();
+
+        // init W once
+        Eigen::VectorXd wv;
+        wv.resize(12);
+        wv << 20,20,1,1,1,1,1,1,1,1,1,1; //TODO
+        this->W_inv = (wv.asDiagonal()).inverse();
+        this->mass = 13.1;
     }
 
     Robot::~Robot()
@@ -41,15 +58,23 @@ namespace RCD
     }
     void Robot::setCoMfromMState(geometry_msgs::Pose com_state, geometry_msgs::Twist com_state_dot)
     {
-        this->com_pos(0) = com_state.position.x;
-        this->com_pos(1) = com_state.position.y;
-        this->com_pos(2) = com_state.position.z;
+        this->p_c(0) = com_state.position.x;
+        this->p_c(1) = com_state.position.y;
+        this->p_c(2) = com_state.position.z;
 
-        this->com_q.x() = com_state.orientation.x;
-        this->com_q.y() = com_state.orientation.y;
-        this->com_q.z() = com_state.orientation.z;
-        this->com_q.w() = com_state.orientation.w;
-        this->com_q.normalize();
+        // this->com_q.x() = com_state.orientation.x;
+        // this->com_q.y() = com_state.orientation.y;
+        // this->com_q.z() = com_state.orientation.z;
+        // this->com_q.w() = com_state.orientation.w;
+        // this->com_q.normalize();
+        // this->R_c = this->com_q.toRotationMatrix();
+        // std::cout << "R_c=" << std::endl << this->R_c << std::endl;
+
+        Eigen::Quaterniond cur_c(com_state.orientation.w, com_state.orientation.x, com_state.orientation.y, com_state.orientation.z);
+        cur_c.normalize();
+        this->R_c = cur_c.toRotationMatrix();
+        // std::cout << "R_c=" << std::endl << this->R_c << std::endl;
+
 
         this->com_vel_linear(0) = com_state_dot.linear.x;
         this->com_vel_linear(1) = com_state_dot.linear.y;

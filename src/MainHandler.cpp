@@ -41,19 +41,19 @@ int main(int argc, char **argv)
 
     //Time counter START
     // ctrl->time_start = std::chrono::system_clock::now();
-    // sleep(3); // sleep for 3 seconds
+    sleep(3); // sleep for 3 seconds
     // ctrl->time_end = std::chrono::system_clock::now();
     // ctrl->time_elapsed =  ctrl->time_end - ctrl->time_start;
     // std::cout << "elapsed time: " << ctrl->time_elapsed.count() << "s\n";
-    sleep(3); // sleep for 3 seconds
     // ros::Duration(3).sleep(); // sleep for 5 seconds
     // Initialize Controller
     ctrl->initControl();
 
     // Send first cmds
     ctrl->standUp();
-    
-    // ctrl->loop();
+    sleep(3); // sleep for 3 seconds
+
+    ctrl->loop();
 
     ros::waitForShutdown();
 

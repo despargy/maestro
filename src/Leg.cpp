@@ -27,23 +27,22 @@ namespace RCD
         q.resize(n_superV_joints);  
         //Eigen init
         J.resize(6, n_superV_joints);
+        f.resize(3);
+        f_cmd.resize(3);
+        tau.resize(3);
+        
         // p = KDL::Frame(KDL::Rotation::RPY(0,0,0),
         //                                 KDL::Vector(0.0, 0.67, -1.3));
     }
-    void Leg::reSolver()
+    void Leg::kdlSolver()
     {
         if ( !(kdl_solver->JntToJac(q, jacobian_kdl) >=0 ))
             ROS_ERROR("One leg unexpected Jacobian solution leg, '%d'", id);
-        kdl_solver_pos->JntToCart(q,p);
+        kdl_solver_pos->JntToCart(q,p_frame);
         J = jacobian_kdl.data; // jac KDL to Eigen  
-        tf::transformKDLToEigen(p, x_aff); // p to eigen Affine
-        // std::cout<<"tip pos \n"<<p<<std::endl;
-        // std::cout<<"x_aff \n"<<x_aff<<std::endl;
-
-        // tf::transformKDLToEigen(jacobian_kdl, J); //TODO
-        // J(0) = jacobian_kdl.getColumn(0);
-        // Eigen::Affine3d ret;
-        // tf::transformKDLToEigen(jacobian_kdl, ret);
+        tf::transformKDLToEigen(p_frame, p); // p to eigen Affine
+        // std::cout<<"tip pos \n"<<p_frame<<std::endl;
+        // std::cout<<"p \n"<<p<<std::endl;
     }
 
 
