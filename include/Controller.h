@@ -26,7 +26,7 @@ namespace RCD
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         Leg *leg_mng;
         int n_leg;
-        double maestro_time;
+        double kp,ko;
     public:
         // Chrono
         std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
@@ -44,7 +44,7 @@ namespace RCD
         Controller( Robot* robot, CommunicationHandler* cmh);
         ~Controller();
         void loadTree();
-        void initMotorParams();
+        void initMotorParamsHard();
         void standUp();
         void moveDesiredQs(double* targetPos, double duration);
         void initLegsControl();
@@ -55,6 +55,7 @@ namespace RCD
         void solveJacP();
         void computeSudoGq();
         void setNewCmd();
+        void setMotorModeGains();
         // void setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd);
         Eigen::Matrix3d scewSymmetric(Eigen::Vector3d t);
         unitree_legged_msgs::LowCmd getLowCmd();

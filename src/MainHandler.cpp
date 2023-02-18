@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 
     // Send first cmds
     ctrl->standUp();
-    sleep(3); // sleep for 3 seconds
+    sleep(5); // sleep for 3 seconds
 
     ctrl->loop();
 

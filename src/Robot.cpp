@@ -16,6 +16,7 @@ namespace RCD
         this->F_c.resize(12);
         this->Gq.resize(6,12);
         this->Gq_sudo.resize(12,6);
+        this->gc.resize(6);
         //init Gq
         this->Gq.block(0,0,3,3) =  Eigen::Matrix3d::Identity();
         this->Gq.block(0,3,3,3) =  Eigen::Matrix3d::Identity();
@@ -28,6 +29,9 @@ namespace RCD
         wv << 20,20,1,1,1,1,1,1,1,1,1,1; //TODO
         this->W_inv = (wv.asDiagonal()).inverse();
         this->mass = 13.1;
+        this->g_gravity = 10.0;
+        this->gc << 0,0,this->mass*this->g_gravity,0,0,0;
+
     }
 
     Robot::~Robot()

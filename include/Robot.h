@@ -30,13 +30,13 @@ namespace RCD
         std::string robot_name_ ;
         std::vector<std::string> joint_names{}; // init by communication handler
         int num_joints;  // init by communication handler
-        int num_motors = 20;
-        double mass;
+        // int num_motors = 20;
+        double mass, g_gravity;
         // unitree_legged_msgs::MotorCmd *motor_cmd_; // list of 20 motors
         unitree_legged_msgs::LowState low_state_; 
         Eigen::Vector3d p_c, com_vel_linear, com_vel_ang;
         // Eigen::Quaterniond com_q;
-        Eigen::VectorXd F_a, F_c;
+        Eigen::VectorXd F_a, F_c, gc;
         Eigen::MatrixXd R_c, Gq, Gq_sudo;
         Eigen::DiagonalMatrix<double,12> W_inv;
         Robot(/* args */);
