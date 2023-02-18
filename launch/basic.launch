@@ -4,20 +4,27 @@
     <arg name="real_experiment" default="false"/>
     <arg name="has_simulation" default="true"/>
 
-    <!-- ==================== GAZEBO WORLD ==================== -->
-    <arg name="wname" default="earth"/>
-    <arg name="paused" default="true"/>
-    <arg name="use_sim_time" default="true"/>
-    <arg name="gui" default="true"/>
-    <arg name="headless" default="false"/>
-    <arg name="debug" default="false"/>
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find unitree_gazebo)/worlds/$(arg wname).world"/>
-        <arg name="debug" value="$(arg debug)"/>
-        <arg name="gui" value="$(arg gui)"/>
-        <arg name="paused" value="$(arg paused)"/>
-        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
-        <arg name="headless" value="$(arg headless)"/>
+    <group ns="/" unless="$(arg real_experiment)">
+        <!-- ==================== GAZEBO WORLD ==================== -->
+        <arg name="wname" default="earth"/>
+        <arg name="paused" default="true"/>
+        <arg name="use_sim_time" default="true"/>
+        <arg name="gui" default="true"/>
+        <arg name="headless" default="false"/>
+        <arg name="debug" default="false"/>
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <!-- <arg name="world_name" value="$(find unitree_gazebo)/worlds/$(arg wname).world"/> -->
+            <arg name="world_name" value="$(find maestro)/worlds/$(arg wname).world"/>
+            <arg name="debug" value="$(arg debug)"/>
+            <arg name="gui" value="$(arg gui)"/>
+            <arg name="paused" value="$(arg paused)"/>
+            <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+            <arg name="headless" value="$(arg headless)"/>
+        </include>
+    </group>
+
+    <include file="$(find unitree_legged_real)/launch/real.launch">
+        <arg name="ctrl_level" value="lowlevel"/> 
     </include>
 
     <group ns="/" >
@@ -36,8 +43,8 @@
 
         <!-- ==================== GAZEBO ==================== -->
         <node pkg="gazebo_ros" type="spawn_model" name="urdf_spawner" respawn="false" output="screen"
-            args="-urdf -z 0.6 -model go1_gazebo -param robot_description -unpause"/>
-             <!-- if="$(arg need_simulation)" -->
+            args="-urdf -x 0.0 -y 1.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
+            unless="$(arg real_experiment)" />
     
         <!-- ==================== YAML ==================== -->
         <!-- Load controller name from YAML file to parameter server -->
@@ -57,18 +64,19 @@
           FL_hip_controller FL_thigh_controller FL_calf_controller
           FR_hip_controller FR_thigh_controller FR_calf_controller
           RL_hip_controller RL_thigh_controller RL_calf_controller
-          RR_hip_controller RR_thigh_controller RR_calf_controller "/>
+          RR_hip_controller RR_thigh_controller RR_calf_controller "
+          unless="$(arg real_experiment)"  />
           
-        <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" 
+            unless="$(arg real_experiment)" >
             <remap from="/joint_states" to="/go1_gazebo/joint_states"/>
         </node>
 
         <!-- ==================== RVIZ ==================== -->
         <node pkg="rviz" type="rviz" name="rviz" respawn="false" output="screen"
-            args="-d $(find maestro)/rviz/go1_maestro.rviz"/> 
-            <!-- if="$(arg need_simulation)" -->
-
-        
+            args="-d $(find maestro)/rviz/go1_maestro.rviz"
+            unless="$(arg real_experiment)"  /> 
+            
         <node pkg="maestro"  name="maestro_gazebo_interpreter" type="maestro_gazebo_interpreter"  
             output="screen" unless="$(arg real_experiment)"/> 
 

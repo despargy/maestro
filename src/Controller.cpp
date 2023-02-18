@@ -22,8 +22,10 @@ namespace RCD
         // pas num of joints
         robot_->num_joints = robot_kin.getNrOfJoints();  
         // Controller Gains
-        this->kp = -500.0;
-        this->ko = -1.0;
+        this->kp = 500.0;
+        this->ko = 1.0;
+        this->kv = 40;
+        this->b_coef = 0.1;
     }
     Controller::~Controller()
     {
@@ -76,20 +78,21 @@ namespace RCD
         }
     }
     void Controller::solveJacP()
-    {
+    {   
         // robot state updates automatically
         for(int l = 0; l < this->n_leg ; l++)
             // calc Jacobian and Pos
+            // need for eq. 4
             leg_mng[l].kdlSolver();
 
     }
     void Controller::computeSudoGq()
     {
-        // compute Gq
+        // compute Gq eq. 2
         // top Identities remain the same
         for(int l = 0; l < this->n_leg ; l++)
             this->robot_->Gq.block(3,l*3,3,3) =  this->scewSymmetric(this->robot_->R_c*this->leg_mng[l].p.translation()); //eq. 2 //SCEW   
-
+        // compute Gp_sude eq. 7
         this->robot_->Gq_sudo = this->robot_->W_inv * this->robot_->Gq.transpose()*(this->robot_->Gq*this->robot_->W_inv*this->robot_->Gq.transpose()).inverse() ;
         // Eigen::VectorXd fv;
         // fv.resize(6);
@@ -151,74 +154,96 @@ namespace RCD
         // init control time counter
         this->time_start = std::chrono::system_clock::now();
 
-        Eigen::Vector3d p_d;
+        Eigen::Vector3d p_d, dp_d, ddp_d;
         Eigen::Vector3d p_d0(this->robot_->p_c);  // init pd0 from current state
+        p_d = this->get_pDesiredTrajectory(p_d0, 0.0); // ASK init p_d as dt = 0.0
+        dp_d = Eigen::Vector3d::Zero();
+        ddp_d = Eigen::Vector3d::Zero();
 
-        Eigen::Quaterniond stand_up_Q(0.99999, -0.00016,-0.00135, -0.00188);
-        stand_up_Q.normalize();
+        // Eigen::Quaterniond stand_up_Q(0.99999, -0.00016,-0.00135, -0.00188); ASK
+        // stand_up_Q.normalize();
         // init pd0 from current orientatio or replace to set your desired oriantetion
-        Eigen::Matrix3d R_d = this->robot_->R_c;//stand_up_Q.toRotationMatrix();
+        Eigen::Matrix3d R_d = this->robot_->R_c; //stand_up_Q.toRotationMatrix();
 
         Eigen::Vector3d e_p, e_o;
+        Eigen::VectorXd e_v;
+        e_v.resize(6);
         Eigen::AngleAxisd ang;
         Eigen::Matrix3d Re;
-
         Eigen::VectorXd fcontrol; // vector to help with eq. 11
         fcontrol.resize(6);
 
-        // this->setMotorModeGains();
-        for(int i=0; i<this->n_leg; i++)
+        this->setMotorModeGains();
+
+        while(this->robot_->KEEP_CONTROL) //
         {
-            // Init motor Parameter for Gazebo
-            this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-            this->next_LowCmd_.motorCmd[i*3+0].Kp = 0;
-            this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-            this->next_LowCmd_.motorCmd[i*3+0].Kd = 3;
-            this->next_LowCmd_.motorCmd[i*3+0].tau = 0;
-            this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-            this->next_LowCmd_.motorCmd[i*3+1].Kp = 0;
-            this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-            this->next_LowCmd_.motorCmd[i*3+1].Kd = 8;
-            this->next_LowCmd_.motorCmd[i*3+1].tau = 0;
-            this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-            this->next_LowCmd_.motorCmd[i*3+2].Kp = 0;
-            this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-            this->next_LowCmd_.motorCmd[i*3+2].Kd = 15;
-            this->next_LowCmd_.motorCmd[i*3+2].tau = 0;
-        }
-        while(true) //
-        {
+            // get dt
             this->time_elapsed =  std::chrono::system_clock::now() - this->time_start;
-            p_d(0) = p_d0(0) + 0.1*sin(2*M_PI*0.1*this->time_elapsed.count()); 
-            p_d(1) = p_d0(1) + 0.1*cos(2*M_PI*0.1*this->time_elapsed.count()); 
-            p_d(2) = p_d0(2);
 
-            std::cout << "pd0 \n"<<p_d0 << std::endl;
-            std::cout << "robot pc \n"<<this->robot_->p_c << std::endl;
+            // get next desired positions
+            ddp_d = this->get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->time_elapsed.count());
+            dp_d = this->get_dpDesiredTrajectory(p_d0, p_d, this->time_elapsed.count());
+            p_d = this->get_pDesiredTrajectory(p_d0, this->time_elapsed.count());
 
-            // dt compute and update
             // compute the updated variables/Matrix
             this->update();
-            // compute Fc based on error
+            // compute position error
             e_p = this->robot_->p_c - p_d;
+            // compute orientation error
             Re = this->robot_->R_c*R_d.transpose();
             ang.fromRotationMatrix(Re);
             e_o = ang.angle()*ang.axis();
-
-            fcontrol.block(0,0,3,1) = this->kp*e_p;
-            fcontrol.block(3,0,3,1) = this->ko*e_o;
-
-            this->robot_->F_c = fcontrol + this->robot_->gc;  // eq.11 TODO
+            // term of Fc eq. 11
+            fcontrol.block(0,0,3,1) = -this->kp*e_p;
+            fcontrol.block(3,0,3,1) = -this->ko*e_o;
+            // compute velocity error
+            e_v.block(0,0,3,1) = this->robot_->com_vel_linear - dp_d;
+            e_v.block(3,0,3,1) = this->robot_->com_vel_ang ; //- Eigen::Vector3d::Zero() TODO
+            // current Fc ep. 11
+            this->robot_->F_c = fcontrol  + this->robot_->gc; //- this->kv*e_v
+            // solve eq. 1 with respect to Fa
             this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ; 
             for(int l = 0; l < this->n_leg ; l++)
             {
-                this->leg_mng[l].f_cmd = -this->robot_->F_a.block(l*3,0,3,1);
-                leg_mng[l].tau = (this->robot_->R_c*(leg_mng[l].J.block<3,3>(0,0))).transpose()*leg_mng[l].f_cmd;
+                this->leg_mng[l].f_cmd = -this->robot_->F_a.block(l*3,0,3,1); // slip Fa eq. 3
+                leg_mng[l].tau = (this->robot_->R_c*(leg_mng[l].J.block<3,3>(0,0))).transpose()*leg_mng[l].f_cmd; // compute eq. 4
             }
             this->setNewCmd();
             sleep(0.01); // TODO adapt it
         }
     }
+    Eigen::Vector3d Controller::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double dt)
+    {
+        Eigen::Vector3d p_d;
+        // desired position of t_now = dt = time_elapsed
+        p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*this->b_coef*dt); 
+        p_d(1) = p_d0_(1) + 0.1*cos(2*M_PI*this->b_coef*dt); 
+        p_d(2) = p_d0_(2) + 0.0;
+
+        // x, z axis TODO extra change id od static axis 
+        // p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*0.1*dt); 
+        // p_d(1) = p_d0_(1) + 0.0; 
+        // p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.1*dt);
+        return p_d;
+    }
+    Eigen::Vector3d Controller::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt)
+    {
+        Eigen::Vector3d p_d_next;
+        p_d_next = get_pDesiredTrajectory(p_d0_, dt);
+        Eigen::Vector3d dp_d;
+        dp_d = (p_d_next - p_d_cur)/dt;
+        dp_d(2) = 0; // axis id which axis traj is static
+        return dp_d;
+    }  
+    Eigen::Vector3d Controller::get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt)
+    {
+        Eigen::Vector3d dp_d_next;
+        dp_d_next = get_dpDesiredTrajectory(p_d0_, p_d_cur, dt);
+        Eigen::Vector3d ddp_d;
+        ddp_d = (dp_d_next - dp_d_cur)/dt;
+        ddp_d(2) = 0; // axis id which axis traj is static
+        return ddp_d;
+    }    
     void Controller::setNewCmd()
     {
         for(int l = 0; l < this->n_leg ; l++)
@@ -303,12 +328,17 @@ namespace RCD
         }
 
     }
-
+    // void Controller::sitDown()
+    // {   
+    //     double pos[robot_->num_joints] = {0.0, 0.0, 0.0, -0.0, 0.0,0.0, 
+    //                                         0.0, 0.67, 0.0, -0.0, 0.0, 0.0};
+    //     moveDesiredQs(pos, 4*1000);
+    // }
     void Controller::standUp()
     {   
         double pos[robot_->num_joints] = {0.0, 0.67, -1.3, -0.0, 0.67, -1.3, 
                                             0.0, 0.67, -1.3, -0.0, 0.67, -1.3};
-        moveDesiredQs(pos, 2*1000);
+        moveDesiredQs(pos, 4*1000);
     }
     void Controller::moveDesiredQs(double* targetPos, double duration)
     {

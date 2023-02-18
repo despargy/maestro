@@ -13,7 +13,7 @@ namespace RCD
         this->robot_ = robot;
         this->nh_main_ = nh_main;
         this->nh_cmh_= new ros::NodeHandle;
-        this->MODELSTATE_ID = 2;
+        this->MODELSTATE_ID = 4; //do not cure unless is simulation = not real+experiment
     }
     CommunicationHandler::~CommunicationHandler()
     {
@@ -38,31 +38,46 @@ namespace RCD
         {
             this->lowcmd_topic = this->SIM_LOWCMD_TOPIC; // Select the simulation topics
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
-            this->modelstate_topic = this->SIM_MODELSTATE_TOPIC; // Select the simulation topics
+            this->modelstate_topic = this->SIM_MODELSTATE_TOPIC; // Select the simulation topics // diff. Cb
+            sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this); // diff. Cb
         }
         else
         {
+            this->robot_->mass = 12.0; // do not forget it
             this->lowcmd_topic = this->REAL_LOWCMD_TOPIC; // Select the real topics
             this->lowstate_topic = this->REAL_LOWSTATE_TOPIC; // Select the real topics
-            // this->modelstate_topic = this->REAL_MODELSTATE_TOPIC; // Select the simulation topics
+            this->modelstate_topic = this->REAL_MODELSTATE_TOPIC; // Select the simulation topics // diff. Topic
+            sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::RealCoMStateCallback, this); // diff. Cb
             std::cout<<"TODO set real connection with robot and CoM state topic"<<std::endl;
         }
         // General sub-pus to /LowCmds and /LowState
-        sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this);
         sub_LowState_ = nh_cmh_->subscribe(this->lowstate_topic, 1, &RCD::CommunicationHandler::lowStateCallback, this);
         pub_LowCmd_ = nh_cmh_->advertise<unitree_legged_msgs::LowCmd>(this->lowcmd_topic,1);
+        sub_Control_ = nh_cmh_->subscribe(this->control_topic, 1, &RCD::CommunicationHandler::controlCallback, this);
     }
                                 /* Callbacks */
+    void CommunicationHandler::controlCallback(const std_msgs::Bool& msg)
+    {
+        // Cb CoM State 
+        // std::cout<<msg<<std::endl;
+        this->robot_->KEEP_CONTROL = msg.data; 
+    }    
     void CommunicationHandler::CoMStateCallback(const gazebo_msgs::ModelStates& msg)
     {
         // Cb CoM State 
-        this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID], msg.twist[MODELSTATE_ID]); // TODO set barrier ?
-        // std::cout<<"msg state\n"<<msg<<std::endl;
+        this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID], msg.twist[MODELSTATE_ID]); 
+    }
+    // TODO real com pos vel
+    void CommunicationHandler::RealCoMStateCallback(const gazebo_msgs::ModelStates& msg)
+    {
+        // Cb CoM State REAL
+        // this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID], msg.twist[MODELSTATE_ID]); 
+        std::cout<<"msg state REAL TODO\n"<<msg<<std::endl;
     }
     void CommunicationHandler::lowStateCallback(const unitree_legged_msgs::LowState& msg)
     {
         // Cb Low State
-        this->updateRobotState(msg); // TODO set barrier ?
+        this->updateRobotState(msg); 
     }
     void CommunicationHandler::updateRobotState(const unitree_legged_msgs::LowState& msg)
     {
@@ -73,7 +88,6 @@ namespace RCD
     {
         pub_LowCmd_.publish(next_low_cmd);
         ros::spinOnce();
-        // ROS_INFO("Published at '%s' ", lowcmd_topic);
     }
 
 

@@ -32,6 +32,7 @@ namespace RCD
         int num_joints;  // init by communication handler
         // int num_motors = 20;
         double mass, g_gravity;
+        bool KEEP_CONTROL;
         // unitree_legged_msgs::MotorCmd *motor_cmd_; // list of 20 motors
         unitree_legged_msgs::LowState low_state_; 
         Eigen::Vector3d p_c, com_vel_linear, com_vel_ang;

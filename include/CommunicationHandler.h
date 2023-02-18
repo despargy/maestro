@@ -18,6 +18,7 @@
 #include <geometry_msgs/WrenchStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <tf/tf.h>
+#include <std_msgs/Bool.h>
 #ifndef _COMMUNICATIONHANDLER_H_
 #define _COMMUNICATIONHANDLER_H_
 
@@ -34,8 +35,11 @@ namespace RCD
         const char* SIM_LOWSTATE_TOPIC="/gazebo/lowState/state";
         const char* SIM_MODELSTATE_TOPIC="/gazebo/model_states";
 
-        const char* REAL_LOWCMD_TOPIC="/lowCmd";
-        const char* REAL_LOWSTATE_TOPIC="/lowState";
+        const char* REAL_LOWCMD_TOPIC="/low_cmd";
+        const char* REAL_LOWSTATE_TOPIC="/low_state";
+        const char* REAL_MODELSTATE_TOPIC="/TODO_COM"; //TODO
+
+        const char* control_topic="/maestro/ctrl";
 
         const char* lowcmd_topic;
         const char* lowstate_topic;
@@ -52,8 +56,7 @@ namespace RCD
         ros::NodeHandle *nh_cmh_;
 
         // GAZEBO 
-        ros::Subscriber sub_CoMState_;
-        ros::Subscriber sub_LowState_;
+        ros::Subscriber sub_CoMState_, sub_LowState_, sub_Control_;
         ros::Publisher pub_LowCmd_;
 
         CommunicationHandler();
@@ -64,7 +67,9 @@ namespace RCD
         void updateRobotState(const unitree_legged_msgs::LowState& msg); // updates the robot's state from ROS UNITREE
         void lowStateCallback(const unitree_legged_msgs::LowState& msg);
         void CoMStateCallback(const gazebo_msgs::ModelStates& msg);
+        void RealCoMStateCallback(const gazebo_msgs::ModelStates& msg); // TODO SOSOSOSOSOSSO
         void sendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd); 
+        void controlCallback(const std_msgs::Bool& msg);
 
     };
 

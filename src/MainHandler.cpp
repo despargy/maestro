@@ -55,6 +55,10 @@ int main(int argc, char **argv)
 
     ctrl->loop();
 
+    // NOT WORKING DO NOT TRY UNCOMMENTS need to smoothdown
+    // ctrl->initMotorParamsHard();
+    // sleep(5);
+
     ros::waitForShutdown();
 
     // De-Constructors

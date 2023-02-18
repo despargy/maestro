@@ -26,7 +26,7 @@ namespace RCD
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         Leg *leg_mng;
         int n_leg;
-        double kp,ko;
+        double kp,ko,kv,b_coef;
     public:
         // Chrono
         std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
@@ -37,9 +37,6 @@ namespace RCD
         urdf::Model urdf_model_;
         std::string urdf_file_;
         KDL::Tree robot_kin;
-        double STAND_POS[12] = {0.0, 0.67, -1.3, -0.0, 0.67, -1.3, 
-                                            0.0, 0.67, -1.3, -0.0, 0.67, -1.3};
-                   
         Controller();
         Controller( Robot* robot, CommunicationHandler* cmh);
         ~Controller();
@@ -59,6 +56,10 @@ namespace RCD
         // void setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd);
         Eigen::Matrix3d scewSymmetric(Eigen::Vector3d t);
         unitree_legged_msgs::LowCmd getLowCmd();
+        Eigen::Vector3d get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double dt);
+        Eigen::Vector3d get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt);
+        Eigen::Vector3d get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt);
+        // void sitDown();
 
     };
 

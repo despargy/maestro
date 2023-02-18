@@ -26,11 +26,13 @@ namespace RCD
         // init W once
         Eigen::VectorXd wv;
         wv.resize(12);
-        wv << 20,20,1,1,1,1,1,1,1,1,1,1; //TODO
+        wv << 1,1,1,1,1,1,1,1,1,1,1,1; //TODO
         this->W_inv = (wv.asDiagonal()).inverse();
-        this->mass = 13.1;
+
+        this->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 
         this->g_gravity = 10.0;
         this->gc << 0,0,this->mass*this->g_gravity,0,0,0;
+        this->KEEP_CONTROL = true;
 
     }
 
@@ -78,7 +80,6 @@ namespace RCD
         cur_c.normalize();
         this->R_c = cur_c.toRotationMatrix();
         // std::cout << "R_c=" << std::endl << this->R_c << std::endl;
-
 
         this->com_vel_linear(0) = com_state_dot.linear.x;
         this->com_vel_linear(1) = com_state_dot.linear.y;
