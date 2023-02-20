@@ -14,9 +14,11 @@ namespace RCD
         this->cmh_ = cmh ;
         this->robot_ = robot;
         this->ns = this->cmh_->ns;
+        // Read urdf
         if (!this->cmh_->nh_main_->getParam( this->ns + "/urdf_file_path", this->urdf_file_)){
             ROS_ERROR("No is_simulation given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
+        // Gains
         if (!this->cmh_->nh_main_->getParam( this->ns + "/kp", this->kp)){
             ROS_ERROR("No kp given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
@@ -31,10 +33,7 @@ namespace RCD
         this->loadTree();
         // pas num of joints
         robot_->num_joints = robot_kin.getNrOfJoints();  
-        // Controller Gains
-        // this->kp = 1000.0;
-        // this->ko = 500.0;
-        // this->kv = 40;
+        // for orientation tracking
         this->b_coef = 0.1;
     }
     Controller::~Controller()
@@ -49,7 +48,7 @@ namespace RCD
         // Motor Params
         this->initMotorParamsHard();
         // Set the starting pose before stands up
-        // this->startingPose();
+        // this->startingPose(); TODO
         // get joint qs and foot forces
         this->getLegQF(); // stored at leg 'q'
         for(int l = 0 ; l < this->n_leg ; l++)
@@ -202,75 +201,73 @@ namespace RCD
     }
     void Controller::loop()
     {   
-        // re- init control time counter
+        // init control time counter
         this->time_start = std::chrono::system_clock::now();
-
+        
+        // Desired position variables
         Eigen::Vector3d p_d, dp_d, ddp_d;
         Eigen::Vector3d p_d0(this->robot_->p_c);  // init pd0 from current state
         p_d = this->math_lib.get_pDesiredTrajectory(p_d0, 0.0); // ASK init p_d as dt = 0.0
         dp_d = Eigen::Vector3d::Zero();
         ddp_d = Eigen::Vector3d::Zero();
 
-        // Eigen::Quaterniond stand_up_Q(0.99999, -0.00016,-0.00135, -0.00188); //ASK
-        // stand_up_Q.normalize();
-        // init pd0 from current orientatio or replace to set your desired oriantetion
+        // Desired orientation variables
+        Eigen::Matrix3d R_d, dR_d, ddR_d;
         Eigen::Matrix3d R_d_0 =  this->robot_->R_c; //stand_up_Q.toRotationMatrix(); //
-        Eigen::Matrix3d R_d =  this->robot_->R_c; //stand_up_Q.toRotationMatrix(); //
-        Eigen::Quaterniond Q_0(R_d_0); //ASK
-        
-        Eigen::Quaterniond temp =Q_0; //ASK
+        Eigen::Quaterniond Q_0(R_d_0); 
 
+        // Error variables
         Eigen::Vector3d e_p, e_o;
         Eigen::VectorXd e_v;
         e_v.resize(6);
         Eigen::AngleAxisd ang;
         Eigen::Matrix3d Re;
-        Eigen::VectorXd fcontrol; // vector to help with eq. 11
+
+        // vector to help with eq. 11
+        Eigen::VectorXd fcontrol; 
         fcontrol.resize(6);
 
         this->setMotorModeGains();
-        // this->cmh_->loop_rate = new ros::Rate(10000); // TODO
 
         while(this->robot_->KEEP_CONTROL) //
         {
-            // get dt
+            // get delta t
             this->time_elapsed =  std::chrono::system_clock::now() - this->time_start;
-            // std::cout<< "PosStopF \n"<<(double)(2.146E+9f)<<std::endl;
-            // std::cout<< "VelStopF \n"<<(double)(16000.0f)<<std::endl;
 
-            // get next desired positions
+            // get next desired position
             ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->time_elapsed.count());
             dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, this->time_elapsed.count());
             p_d = this->math_lib.get_pDesiredTrajectory(p_d0, this->time_elapsed.count());
+            // get next desired orientation
+            R_d = this->math_lib.get_RDesiredOrientation(Q_0, this->time_elapsed.count());
+            // dot R_d
 
-
-            temp.x() = Q_0.x() + 0.2*cos(2*this->b_coef*M_PI*this->time_elapsed.count());
-            //temp(= Q_0(2) + 0.1*sin(2*this->b_coef*M_PI*this->time_elapsed.count());
-            temp.normalize();
-            R_d = temp.toRotationMatrix(); //
-
-
-
-            // compute the updated variables/Matrix
-            this->update();
             // compute position error
             e_p = this->robot_->p_c - p_d;
             // compute orientation error
             Re = this->robot_->R_c*R_d.transpose();
             ang.fromRotationMatrix(Re);
             e_o = ang.angle()*ang.axis();
-
-            std::cout<<"error o :" << e_o.transpose() << std::endl;
-            // term of Fc eq. 11
-            fcontrol.block(0,0,3,1) = -this->kp*e_p;
-            fcontrol.block(3,0,3,1) = -this->ko*e_o;
             // compute velocity error
             e_v.block(0,0,3,1) = this->robot_->com_vel_linear - dp_d;
             e_v.block(3,0,3,1) = this->robot_->com_vel_ang ; //- Eigen::Vector3d::Zero() TODO
+
+            // std::cout<<"error o :" << e_o.transpose() << std::endl;
+
+            // updates Legs variables n' Jacobian Matrix
+            this->updateLegs();
+            // updates Coriolis/Inertia Matrix etc.
+            this->updateControlLaw();
+
+            // term of Fc eq. 11
+            fcontrol.block(0,0,3,1) = -this->kp*e_p;
+            fcontrol.block(3,0,3,1) = -this->ko*e_o;
             // current Fc ep. 11
             this->robot_->F_c = fcontrol  + this->robot_->gc; //- this->kv*e_v
             // solve eq. 1 with respect to Fa
-            this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ; 
+            this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
+
+            // Torque control per leg 
             for(int l = 0; l < this->n_leg ; l++)
             {
                 this->leg_mng[l].f_cmd = -this->robot_->F_a.block(l*3,0,3,1); // slip Fa eq. 3
@@ -282,9 +279,22 @@ namespace RCD
                 // if (leg_mng[l].tau(2) > 5.0 || leg_mng[l].tau(2) < -5.0) 
                 //     std::cout<< leg_mng[l].tau <<std::endl;
             }
+            // send New Torque Command
             this->setNewCmd();
-            sleep(0.01); // TODO adapt it replaced by loop rate sleep 10000
         }
+    }
+    void Controller::updateControlLaw()
+    {
+        // compute sudo Gq
+        this->computeSudoGq();
+
+        // update Coriolis and Inertia
+        this->robot_->I_c = this->robot_->R_c*this->robot_->I*this->robot_->R_c.transpose();
+        this->robot_->H_c.block(3,3,3,3) =  this->robot_->I_c ; 
+        // SOS TODO ASK wc den to xw?
+        // wc = this->math_lib.reverse_scewSymmetric(dR_d*R_d.transpos());
+        // icwc_vector = this->robot_->I_c*wc
+        // this->robot_->C_c.block(3,3,3,3) = this->math_lib.scewSymmetric(icwc_vector);
     }
     void Controller::setNewCmd()
     {
@@ -295,15 +305,14 @@ namespace RCD
             next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
         }
         cmh_->sendLowCmd(this->next_LowCmd_);
+        sleep(0.01); // TODO adapt it 
     }
-    void Controller::update()
+    void Controller::updateLegs()
     {   
         // get current leg info Joint Qs and footForces
         this->getLegQF(); 
         // solve Jacs etc. for each leg
         this->solveJacP();
-        // compute sudo Gq
-        this->computeSudoGq();
     }
     void Controller::loadTree()
     {
@@ -373,12 +382,6 @@ namespace RCD
         }
 
     }
-    // void Controller::sitDown()
-    // {   
-    //     double pos[robot_->num_joints] = {0.0, 0.0, 0.0, -0.0, 0.0,0.0, 
-    //                                         0.0, 0.67, 0.0, -0.0, 0.0, 0.0};
-    //     moveDesiredQs(pos, 4*1000);
-    // }
     void Controller::standUp()
     {   
         double pos[robot_->num_joints] = {0.0, 0.67, -1.3, -0.0, 0.67, -1.3, 
@@ -401,15 +404,6 @@ namespace RCD
                 next_LowCmd_.motorCmd[j].q = lastPos[j]*(1-percent) + targetPos[j]*percent; 
                 ROS_INFO("q =  %f", next_LowCmd_.motorCmd[j].q);
             }
-    /////////////////////// NEW //////////////////
-            // // ADDED FOR SAFETY as unitree does
-            // safe->PositionLimit(this->next_LowCmd_);
-            // int res1 = safe->PowerProtect(this->next_LowCmd_, this->robot_->low_state_, 1);
-            // // You can uncomment it for position protection
-            // // int res2 = safe.PositionProtect(cmd, state, 0.087);
-            // if(res1 < 0) exit(-1);
-    /////////////////////// NEW //////////////////
-            
             /* send nextMotorCmd through lowCmd*/ 
             cmh_->sendLowCmd(this->next_LowCmd_);
             sleep(0.01); // TODO up to sleep(0.002) ~ 500Hz, better test sleep (0.01)

@@ -6,8 +6,7 @@ namespace RCD
     Robot::Robot()
     {
         ROS_INFO("Robot Constructor");
-        // this->motor_state_= new unitree_legged_msgs::MotorState[this->num_motors];
-        // this->motor_cmd_ = new unitree_legged_msgs::MotorCmd[this->num_motors];
+
         this->p_c = Eigen::Vector3d::Zero();
         this->com_vel_linear = Eigen::Vector3d::Zero();
         this->com_vel_ang= Eigen::Vector3d::Zero();
@@ -17,23 +16,33 @@ namespace RCD
         this->Gq.resize(6,12);
         this->Gq_sudo.resize(12,6);
         this->gc.resize(6);
-        //init Gq
-        this->Gq.block(0,0,3,3) =  Eigen::Matrix3d::Identity();
-        this->Gq.block(0,3,3,3) =  Eigen::Matrix3d::Identity();
-        this->Gq.block(0,6,3,3) =  Eigen::Matrix3d::Identity();
-        this->Gq.block(0,9,3,3) =  Eigen::Matrix3d::Identity();
-
-        // init W once
-        Eigen::VectorXd wv;
-        wv.resize(12);
-        wv << 20,20,1,1,1,1,1,1,1,1,1,1; //TODO
-        this->W_inv = (wv.asDiagonal()).inverse();
 
         this->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 
         this->g_gravity = 10.0;
         this->gc << 0,0,this->mass*this->g_gravity,0,0,0;
         this->KEEP_CONTROL = true;
 
+        this->H_c.resize(6,6);
+        this->C_c.resize(6,6);
+        // init I
+        Eigen::Vector3d ii(0.02, 0.07, 0.08); //inetria tensor
+        this->I = ii.asDiagonal();
+        // init H_c
+        this->H_c.block(0,0,3,3) = this->mass*Eigen::Matrix3d::Identity();
+        this->H_c.block(3,3,3,3) = Eigen::Matrix3d::Zero(); // will later be set based on Rc*Ic*Rc.t() 
+        // init C_c
+        this->C_c.block(0,0,3,3) = Eigen::Matrix3d::Zero();
+        this->C_c.block(3,3,3,3) = Eigen::Matrix3d::Zero();
+        //init Gq
+        this->Gq.block(0,0,3,3) =  Eigen::Matrix3d::Identity();
+        this->Gq.block(0,3,3,3) =  Eigen::Matrix3d::Identity();
+        this->Gq.block(0,6,3,3) =  Eigen::Matrix3d::Identity();
+        this->Gq.block(0,9,3,3) =  Eigen::Matrix3d::Identity();
+        // init W once
+        Eigen::VectorXd wv;
+        wv.resize(12);
+        wv << 1,1,1,1,1,1,1,1,1,1,1,1; //TODO
+        this->W_inv = (wv.asDiagonal()).inverse();
     }
 
     Robot::~Robot()

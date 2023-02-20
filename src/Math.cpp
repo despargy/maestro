@@ -52,4 +52,21 @@ namespace RCD
         ddp_d(1) = 0; // axis id which axis traj is static
         return ddp_d;
     }    
+
+    // Orientation
+    Eigen::Matrix3d Math::get_RDesiredOrientation(Eigen::Quaterniond Q_0, double dt)
+    {
+        Eigen::Quaterniond temp = Q_0;
+        // desired orientation of t_now = dt = time_elapsed
+        temp.x() = Q_0.x() + 0.2*cos(2*0.1*M_PI*dt);
+        temp.normalize();
+        return temp.toRotationMatrix(); 
+    }
+    // Eigen::Matrix3d Math::get_RDesiredOrientation(uble dt)
+    // {
+    //     Eigen::Vector3d v_sx(1,0,0);
+    //     Eigen::Matrix3d dR_d;
+
+    //     return dR_d;
+    // }
 }

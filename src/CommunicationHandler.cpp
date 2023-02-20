@@ -60,7 +60,6 @@ namespace RCD
     void CommunicationHandler::controlCallback(const std_msgs::Bool& msg)
     {
         // Cb CoM State 
-        // std::cout<<msg<<std::endl;
         this->robot_->KEEP_CONTROL = msg.data; 
     }    
     void CommunicationHandler::CoMStateCallback(const gazebo_msgs::ModelStates& msg)
@@ -73,7 +72,7 @@ namespace RCD
     {
         // Cb CoM State REAL
         // this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID], msg.twist[MODELSTATE_ID]); 
-        std::cout<<"msg state REAL TODO\n"<<msg<<std::endl;
+        std::cout<<"SOSOSOS COM msg state REAL TODO\n"<<msg<<std::endl;
     }
     void CommunicationHandler::lowStateCallback(const unitree_legged_msgs::LowState& msg)
     {
@@ -90,11 +89,5 @@ namespace RCD
         pub_LowCmd_.publish(next_low_cmd);
         ros::spinOnce();
     }
-    // void CommunicationHandler::sendLowCmdSleep(unitree_legged_msgs::LowCmd& next_low_cmd)
-    // {
-    //     pub_LowCmd_.publish(next_low_cmd);
-    //     ros::spinOnce();
-    //     this->loop_rate->sleep();
-    // }
 
 } // namespace CommunicationHandler 

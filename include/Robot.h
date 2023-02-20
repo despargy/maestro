@@ -38,7 +38,8 @@ namespace RCD
         Eigen::Vector3d p_c, com_vel_linear, com_vel_ang;
         // Eigen::Quaterniond com_q;
         Eigen::VectorXd F_a, F_c, gc;
-        Eigen::MatrixXd R_c, Gq, Gq_sudo;
+        Eigen::MatrixXd R_c, Gq, Gq_sudo, H_c, C_c;
+        Eigen::Matrix3d I, I_c;
         Eigen::DiagonalMatrix<double,12> W_inv;
         Robot(/* args */);
         ~Robot();

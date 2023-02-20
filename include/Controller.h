@@ -51,9 +51,10 @@ namespace RCD
         void getLegQF();
         void initControl();
         void loop();
-        void update();
+        void updateLegs();
         void solveJacP();
         void computeSudoGq();
+        void updateControlLaw();
         void setNewCmd();
         void setMotorModeGains();
         void gravComp();
