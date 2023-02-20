@@ -32,6 +32,10 @@
     <group ns="/" >
 
          <!-- ==================== PARAMETERS ==================== -->
+        <param name="kp" value="1000"/>
+        <param name="kv" value="500"/>
+        <param name="ko" value="40"/>
+
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>
         <param name="has_simulation" value="$(arg has_simulation)"/>
@@ -45,7 +49,7 @@
 
         <!-- ==================== GAZEBO ==================== -->
         <node pkg="gazebo_ros" type="spawn_model" name="urdf_spawner" respawn="false" output="screen"
-            args="-urdf -x 0.0 -y 1.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
+            args="-urdf -x 0.0 -y 0.8 -z 0.6 -model go1_gazebo -param robot_description -unpause"
             unless="$(arg real_experiment)" />
     
         <!-- ==================== YAML ==================== -->

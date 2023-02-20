@@ -77,6 +77,7 @@ SET( rcd_cpp_src
   src/CommunicationHandler.cpp
   src/Controller.cpp
   src/Leg.cpp
+  src/Math.cpp
 )
 
 add_executable(main_handler src/MainHandler.cpp ${rcd_cpp_src}) 

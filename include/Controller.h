@@ -11,7 +11,7 @@
 #include <Leg.h>
 #include <chrono>
 #include <ctime>
-// #include <unitree_legged_sdk/safety.h>
+#include <Math.h>
 
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
@@ -38,9 +38,7 @@ namespace RCD
         urdf::Model urdf_model_;
         std::string urdf_file_;
         KDL::Tree robot_kin;
-
-        // UNITREE_LEGGED_SDK::Safety *safe;
-
+        Math math_lib;
 
         Controller();
         Controller( Robot* robot, CommunicationHandler* cmh);
@@ -60,16 +58,7 @@ namespace RCD
         void setMotorModeGains();
         void gravComp();
         void startingPose();
-
-        // void setLowCmd(unitree_legged_msgs::LowCmd next_LowCmd);
-        Eigen::Matrix3d scewSymmetric(Eigen::Vector3d t);
-        unitree_legged_msgs::LowCmd getLowCmd();
-        Eigen::Vector3d get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double dt);
-        Eigen::Vector3d get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt);
-        Eigen::Vector3d get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt);
-        // void sitDown();
-
-    };
+  };
 
 }
 

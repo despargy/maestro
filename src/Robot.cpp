@@ -26,7 +26,7 @@ namespace RCD
         // init W once
         Eigen::VectorXd wv;
         wv.resize(12);
-        wv << 1,1,1,1,1,1,1,1,1,1,1,1; //TODO
+        wv << 20,20,1,1,1,1,1,1,1,1,1,1; //TODO
         this->W_inv = (wv.asDiagonal()).inverse();
 
         this->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 

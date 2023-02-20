@@ -17,16 +17,25 @@ namespace RCD
         if (!this->cmh_->nh_main_->getParam( this->ns + "/urdf_file_path", this->urdf_file_)){
             ROS_ERROR("No is_simulation given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
+        if (!this->cmh_->nh_main_->getParam( this->ns + "/kp", this->kp)){
+            ROS_ERROR("No kp given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
+        }
+        if (!this->cmh_->nh_main_->getParam( this->ns + "/ko", this->ko)){
+            ROS_ERROR("No ko given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
+        }
+        if (!this->cmh_->nh_main_->getParam( this->ns + "/kv", this->kp)){
+            ROS_ERROR("No kv given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
+        }
+
         // Pass Tree form URDF
         this->loadTree();
         // pas num of joints
         robot_->num_joints = robot_kin.getNrOfJoints();  
         // Controller Gains
-        this->kp = 1000.0;
-        this->ko = 500.0;
-        this->kv = 40;
+        // this->kp = 1000.0;
+        // this->ko = 500.0;
+        // this->kv = 40;
         this->b_coef = 0.1;
-        // safe = new UNITREE_LEGGED_SDK::Safety(UNITREE_LEGGED_SDK::LeggedType::Go1);
     }
     Controller::~Controller()
     {
@@ -57,14 +66,6 @@ namespace RCD
         if (this->n_leg*leg_mng[0].n_superV_joints != robot_->num_joints)  //eq. joint distribution, 3 per leg 
         ROS_ERROR("Robot Joints Number Not Matching");
     }
-    Eigen::Matrix3d Controller::scewSymmetric(Eigen::Vector3d t)
-    {
-        Eigen::Matrix3d t_hat;
-        t_hat << 0, -t(2), t(1),
-            t(2), 0, -t(0),
-            -t(1), t(0), 0;
-        return t_hat;
-    }
     void Controller::getLegQF()
     {
         // robot state updates automatically
@@ -94,7 +95,7 @@ namespace RCD
         // compute Gq eq. 2
         // top Identities remain the same
         for(int l = 0; l < this->n_leg ; l++)
-            this->robot_->Gq.block(3,l*3,3,3) =  this->scewSymmetric(this->robot_->R_c*this->leg_mng[l].p.translation()); //eq. 2 //SCEW   
+            this->robot_->Gq.block(3,l*3,3,3) =  this->math_lib.scewSymmetric(this->robot_->R_c*this->leg_mng[l].p.translation()); //eq. 2 //SCEW   
         // compute Gp_sude eq. 7
         this->robot_->Gq_sudo = this->robot_->W_inv * this->robot_->Gq.transpose()*(this->robot_->Gq*this->robot_->W_inv*this->robot_->Gq.transpose()).inverse() ;
     }
@@ -206,7 +207,7 @@ namespace RCD
 
         Eigen::Vector3d p_d, dp_d, ddp_d;
         Eigen::Vector3d p_d0(this->robot_->p_c);  // init pd0 from current state
-        p_d = this->get_pDesiredTrajectory(p_d0, 0.0); // ASK init p_d as dt = 0.0
+        p_d = this->math_lib.get_pDesiredTrajectory(p_d0, 0.0); // ASK init p_d as dt = 0.0
         dp_d = Eigen::Vector3d::Zero();
         ddp_d = Eigen::Vector3d::Zero();
 
@@ -238,9 +239,9 @@ namespace RCD
             // std::cout<< "VelStopF \n"<<(double)(16000.0f)<<std::endl;
 
             // get next desired positions
-            ddp_d = this->get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->time_elapsed.count());
-            dp_d = this->get_dpDesiredTrajectory(p_d0, p_d, this->time_elapsed.count());
-            p_d = this->get_pDesiredTrajectory(p_d0, this->time_elapsed.count());
+            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->time_elapsed.count());
+            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, this->time_elapsed.count());
+            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, this->time_elapsed.count());
 
 
             temp.x() = Q_0.x() + 0.2*cos(2*this->b_coef*M_PI*this->time_elapsed.count());
@@ -285,38 +286,6 @@ namespace RCD
             sleep(0.01); // TODO adapt it replaced by loop rate sleep 10000
         }
     }
-    Eigen::Vector3d Controller::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double dt)
-    {
-        Eigen::Vector3d p_d;
-        // desired position of t_now = dt = time_elapsed
-        // p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*this->b_coef*dt); 
-        // p_d(1) = p_d0_(1) + 0.1*cos(2*M_PI*this->b_coef*dt); 
-        // p_d(2) = p_d0_(2) + 0.0;
-
-        // x, z axis TODO extra change id od static axis 
-        p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*0.1*dt); 
-        p_d(1) = p_d0_(1) + 0.0; 
-        p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.1*dt);
-        return p_d;
-    }
-    Eigen::Vector3d Controller::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt)
-    {
-        Eigen::Vector3d p_d_next;
-        p_d_next = get_pDesiredTrajectory(p_d0_, dt);
-        Eigen::Vector3d dp_d;
-        dp_d = (p_d_next - p_d_cur)/dt;
-        dp_d(1) = 0; // axis id which axis traj is static
-        return dp_d;
-    }  
-    Eigen::Vector3d Controller::get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt)
-    {
-        Eigen::Vector3d dp_d_next;
-        dp_d_next = get_dpDesiredTrajectory(p_d0_, p_d_cur, dt);
-        Eigen::Vector3d ddp_d;
-        ddp_d = (dp_d_next - dp_d_cur)/dt;
-        ddp_d(1) = 0; // axis id which axis traj is static
-        return ddp_d;
-    }    
     void Controller::setNewCmd()
     {
         for(int l = 0; l < this->n_leg ; l++)
