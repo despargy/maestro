@@ -25,8 +25,6 @@
 #ifndef _LEG_H_
 #define _LEG_H_
 
-#define PosStopF (2.146E+9f)
-#define VelStopF (16000.f)
 namespace RCD
 {
     class Leg

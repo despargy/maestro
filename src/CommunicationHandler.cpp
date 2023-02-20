@@ -13,6 +13,7 @@ namespace RCD
         this->robot_ = robot;
         this->nh_main_ = nh_main;
         this->nh_cmh_= new ros::NodeHandle;
+        // this->loop_rate = new ros::Rate(5000);
         this->MODELSTATE_ID = 4; //do not cure unless is simulation = not real+experiment
     }
     CommunicationHandler::~CommunicationHandler()
@@ -39,7 +40,7 @@ namespace RCD
             this->lowcmd_topic = this->SIM_LOWCMD_TOPIC; // Select the simulation topics
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
             this->modelstate_topic = this->SIM_MODELSTATE_TOPIC; // Select the simulation topics // diff. Cb
-            sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this); // diff. Cb
+            this->sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this); // diff. Cb
         }
         else
         {
@@ -47,7 +48,7 @@ namespace RCD
             this->lowcmd_topic = this->REAL_LOWCMD_TOPIC; // Select the real topics
             this->lowstate_topic = this->REAL_LOWSTATE_TOPIC; // Select the real topics
             this->modelstate_topic = this->REAL_MODELSTATE_TOPIC; // Select the simulation topics // diff. Topic
-            sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::RealCoMStateCallback, this); // diff. Cb
+            this->sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::RealCoMStateCallback, this); // diff. Cb
             std::cout<<"TODO set real connection with robot and CoM state topic"<<std::endl;
         }
         // General sub-pus to /LowCmds and /LowState
@@ -89,6 +90,11 @@ namespace RCD
         pub_LowCmd_.publish(next_low_cmd);
         ros::spinOnce();
     }
-
+    // void CommunicationHandler::sendLowCmdSleep(unitree_legged_msgs::LowCmd& next_low_cmd)
+    // {
+    //     pub_LowCmd_.publish(next_low_cmd);
+    //     ros::spinOnce();
+    //     this->loop_rate->sleep();
+    // }
 
 } // namespace CommunicationHandler 

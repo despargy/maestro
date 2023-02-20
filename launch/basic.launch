@@ -23,9 +23,11 @@
         </include>
     </group>
 
-    <include file="$(find unitree_legged_real)/launch/real.launch">
-        <arg name="ctrl_level" value="lowlevel"/> 
-    </include>
+    <group ns="/" if="$(arg real_experiment)">
+        <include file="$(find unitree_legged_real)/launch/real.launch">
+            <arg name="ctrl_level" value="lowlevel"/> 
+        </include>
+    </group>
 
     <group ns="/" >
 

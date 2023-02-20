@@ -54,6 +54,7 @@ namespace RCD
         Robot *robot_;
         ros::NodeHandle *nh_main_;
         ros::NodeHandle *nh_cmh_;
+        // ros::Rate *loop_rate;
 
         // GAZEBO 
         ros::Subscriber sub_CoMState_, sub_LowState_, sub_Control_;
@@ -70,6 +71,7 @@ namespace RCD
         void RealCoMStateCallback(const gazebo_msgs::ModelStates& msg); // TODO SOSOSOSOSOSSO
         void sendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd); 
         void controlCallback(const std_msgs::Bool& msg);
+        void sendLowCmdSleep(unitree_legged_msgs::LowCmd& next_low_cmd);
 
     };
 

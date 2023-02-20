@@ -39,21 +39,23 @@ int main(int argc, char **argv)
     // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
 
-    //Time counter START
-    // ctrl->time_start = std::chrono::system_clock::now();
     sleep(3); // sleep for 3 seconds
-    // ctrl->time_end = std::chrono::system_clock::now();
-    // ctrl->time_elapsed =  ctrl->time_end - ctrl->time_start;
-    // std::cout << "elapsed time: " << ctrl->time_elapsed.count() << "s\n";
-    // ros::Duration(3).sleep(); // sleep for 5 seconds
+
     // Initialize Controller
     ctrl->initControl();
 
+    sleep(2); // sleep for 3 seconds
+
+    ROS_INFO("StandUp(): starts");
     // Send first cmds
     ctrl->standUp();
-    sleep(5); // sleep for 3 seconds
+    ROS_INFO("StandUp(): ends");
 
+    sleep(5); // sleep for 5 seconds
+
+    ROS_INFO("Control loop(): starts");
     ctrl->loop();
+    ROS_INFO("Control loop(): ends");
 
     // NOT WORKING DO NOT TRY UNCOMMENTS need to smoothdown
     // ctrl->initMotorParamsHard();
