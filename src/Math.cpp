@@ -20,6 +20,14 @@ namespace RCD
             -t(1), t(0), 0;
         return t_hat;
     }
+    Eigen::Vector3d Math::scewSymmetricInverse(Eigen::Matrix3d m)
+    {
+        return Eigen::Vector3d( (m(2,1)-m(1,2))/2.0, (m(0,2) - m(2,0))/2.0, (m(1,0) - m(0,1))/2.0 );
+    }
+    Eigen::Vector3d Math::deriv_RcRdTwd(Eigen::Vector3d RcRdTwd_prev,Eigen::Vector3d RcRdTwd_cur, double dt)
+    {
+        return  (RcRdTwd_cur - RcRdTwd_prev)/dt;
+    }
     Eigen::Vector3d Math::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double dt)
     {
         Eigen::Vector3d p_d;
@@ -54,7 +62,7 @@ namespace RCD
     }    
 
     // Orientation
-    Eigen::Matrix3d Math::get_RDesiredOrientation(Eigen::Quaterniond Q_0, double dt)
+    Eigen::Matrix3d Math::get_RDesiredRotationMatrix(Eigen::Quaterniond Q_0, double dt)
     {
         Eigen::Quaterniond temp = Q_0;
         // desired orientation of t_now = dt = time_elapsed
@@ -62,11 +70,8 @@ namespace RCD
         temp.normalize();
         return temp.toRotationMatrix(); 
     }
-    // Eigen::Matrix3d Math::get_RDesiredOrientation(uble dt)
-    // {
-    //     Eigen::Vector3d v_sx(1,0,0);
-    //     Eigen::Matrix3d dR_d;
-
-    //     return dR_d;
-    // }
+    Eigen::Matrix3d Math::get_dRDesiredRotationMatrix(Eigen::Quaterniond Q_0, Eigen::Matrix3d R_cur,double dt)
+    {
+        return (get_RDesiredRotationMatrix(Q_0, dt) - R_cur) / dt;
+    }
 }
