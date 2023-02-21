@@ -40,6 +40,7 @@ namespace RCD
         Eigen::VectorXd F_a, F_c, gc;
         Eigen::MatrixXd R_c, Gq, Gq_sudo, H_c, C_c;
         Eigen::Matrix3d I, I_c;
+        Eigen::VectorXd vvvv;
         Eigen::DiagonalMatrix<double,12> W_inv;
         Robot(/* args */);
         ~Robot();

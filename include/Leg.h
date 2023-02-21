@@ -29,23 +29,13 @@ namespace RCD
 {
     class Leg
     {
-        // enum
-        // {
-        //     Joints = 3
-        // };
-        // // http://library.isr.ist.utl.pt/docs/roswiki/pr2_mechanism(2f)Tutorials(2f)Coding(20)a(20)realtime(20)Cartesian(20)controller(20)with(20)Eigen.html
-        // typedef Eigen::Matrix<double, Joints, 1>  JointVector;
-        // typedef Eigen::Affine3d                CartPose;
-        // typedef Eigen::Matrix<double, 3, 1>       Cart3Vector;
-        // typedef Eigen::Matrix<double, 6, 1>       Cart6Vector;
-        // typedef Eigen::Matrix<double, 6, Joints>  JacobianMatrix;
     public:
-        // EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         int id;
         int n_superV_joints;
         std::string base_frame;
         std::string tip_frame;
+        double prob_stab;
         //KDL
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;
@@ -56,8 +46,10 @@ namespace RCD
         //Eigen
         Eigen::MatrixXd J;            // Jacobian Eigen
         Eigen::Affine3d p;
-        Eigen::Vector3d f,f_cmd, tau; //applyied force to the tip  
-        // Eigen::MatrixXd xdot;
+        Eigen::Vector3d f,f_cmd, tau; //applyied force to the tip
+        // init W once
+        Eigen::Vector3d wv_leg;
+
         Leg();
         ~Leg();
 

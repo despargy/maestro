@@ -30,9 +30,9 @@ namespace RCD
         f.resize(3);
         f_cmd.resize(3);
         tau.resize(3);
-        
-        // p = KDL::Frame(KDL::Rotation::RPY(0,0,0),
-        //                                 KDL::Vector(0.0, 0.67, -1.3));
+        // Leg Weights based on Slip Prob 
+        prob_stab = 1.0; // init as stable contact
+        wv_leg = Eigen::Vector3d::Ones();  
     }
     void Leg::kdlSolver()
     {

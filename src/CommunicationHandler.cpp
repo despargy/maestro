@@ -13,8 +13,14 @@ namespace RCD
         this->robot_ = robot;
         this->nh_main_ = nh_main;
         this->nh_cmh_= new ros::NodeHandle;
+        this->nh_slip_= new ros::NodeHandle;
         // this->loop_rate = new ros::Rate(5000);
         this->MODELSTATE_ID = 4; //do not cure unless is simulation = not real+experiment
+        this->slip[0] = 1.0;
+        this->slip[1] = 1.0;
+        this->slip[2] = 1.0;
+        this->slip[3] = 1.0;
+
     }
     CommunicationHandler::~CommunicationHandler()
     {
@@ -34,6 +40,9 @@ namespace RCD
         {
             ROS_ERROR("Param /joint_names missing from namespace: '%s' ", nh_main_->getNamespace().c_str());
         }
+        if (!this->nh_main_->getParam( this->ns + "/slip_detection", this->SLIP_DETECTION)){
+            ROS_ERROR("No SLIP_DETECTION given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
         // Select topics if is real or simulation
         if (!this->real_experiment_)
         {
@@ -41,6 +50,14 @@ namespace RCD
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
             this->modelstate_topic = this->SIM_MODELSTATE_TOPIC; // Select the simulation topics // diff. Cb
             this->sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this); // diff. Cb
+            if(this->SLIP_DETECTION)
+            {
+                this->sub_Slip0_ = nh_slip_->subscribe(this->slip_0_topic, 1, &RCD::CommunicationHandler::lowSlip0Callback, this);
+                this->sub_Slip1_ = nh_slip_->subscribe(this->slip_1_topic, 1, &RCD::CommunicationHandler::lowSlip1Callback, this);
+                this->sub_Slip2_ = nh_slip_->subscribe(this->slip_2_topic, 1, &RCD::CommunicationHandler::lowSlip2Callback, this);
+                this->sub_Slip3_ = nh_slip_->subscribe(this->slip_3_topic, 1, &RCD::CommunicationHandler::lowSlip3Callback, this);
+
+            }
         }
         else
         {
@@ -57,6 +74,22 @@ namespace RCD
         sub_Control_ = nh_cmh_->subscribe(this->control_topic, 1, &RCD::CommunicationHandler::controlCallback, this);
     }
                                 /* Callbacks */
+    void CommunicationHandler::lowSlip0Callback(const std_msgs::Float32& msg)
+    {
+        this->slip[0] = msg.data; 
+    }   
+    void CommunicationHandler::lowSlip1Callback(const std_msgs::Float32& msg)
+    {
+        this->slip[1] = msg.data; 
+    } 
+    void CommunicationHandler::lowSlip2Callback(const std_msgs::Float32& msg)
+    {
+        this->slip[2] = msg.data; 
+    } 
+    void CommunicationHandler::lowSlip3Callback(const std_msgs::Float32& msg)
+    {
+        this->slip[3] = msg.data; 
+    } 
     void CommunicationHandler::controlCallback(const std_msgs::Bool& msg)
     {
         // Cb CoM State 

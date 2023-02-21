@@ -39,10 +39,9 @@ namespace RCD
         this->Gq.block(0,6,3,3) =  Eigen::Matrix3d::Identity();
         this->Gq.block(0,9,3,3) =  Eigen::Matrix3d::Identity();
         // init W once
-        Eigen::VectorXd wv;
-        wv.resize(12);
-        wv << 1,1,1,1,1,1,1,1,1,1,1,1; //TODO
-        this->W_inv = (wv.asDiagonal()).inverse();
+        vvvv.resize(12);
+        vvvv << 1,1,1,1,1,1,1,1,1,1,1,1; //TODO as Legs wv_leg init
+        this->W_inv = (vvvv.asDiagonal()).inverse();
     }
 
     Robot::~Robot()

@@ -27,7 +27,7 @@ namespace RCD
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         Leg *leg_mng;
         int n_leg;
-        double kp,ko,kv,b_coef;
+        double kp,ko,kv,b_coef, alpha;
     public:
         // Chrono
         std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
@@ -59,6 +59,8 @@ namespace RCD
         void setMotorModeGains();
         void gravComp();
         void startingPose();
+        void computeWeights(double dt);
+
   };
 
 }

@@ -28,13 +28,14 @@ namespace RCD
         if (!this->cmh_->nh_main_->getParam( this->ns + "/kv", this->kp)){
             ROS_ERROR("No kv given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
-
         // Pass Tree form URDF
         this->loadTree();
         // pas num of joints
         robot_->num_joints = robot_kin.getNrOfJoints();  
         // for orientation tracking
         this->b_coef = 0.1;
+        this->alpha = 1000.0;
+
     }
     Controller::~Controller()
     {
@@ -89,12 +90,30 @@ namespace RCD
             leg_mng[l].kdlSolver();
 
     }
+    void Controller::computeWeights(double dt)
+    {
+
+        for(int l = 0; l < this->n_leg ; l++)
+        {
+            this->leg_mng[l].prob_stab = 1 - this->cmh_->slip[l];
+            this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
+            this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
+            
+            // update vvvv vector of robot                          // z stays 1.0 do not change
+            this->robot_->vvvv.block(l*3,0,3,1) = this->leg_mng[l].wv_leg;   
+        }
+
+        // save as matrix the inverse of diagonal vvvv vector
+        this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
+    }
     void Controller::computeSudoGq()
     {
         // compute Gq eq. 2
         // top Identities remain the same
         for(int l = 0; l < this->n_leg ; l++)
-            this->robot_->Gq.block(3,l*3,3,3) =  this->math_lib.scewSymmetric(this->robot_->R_c*this->leg_mng[l].p.translation()); //eq. 2 //SCEW   
+        {
+            this->robot_->Gq.block(3,l*3,3,3) =  this->math_lib.scewSymmetric(this->robot_->R_c*this->leg_mng[l].p.translation()); //eq. 2 //SCEW
+        }
         // compute Gp_sude eq. 7
         this->robot_->Gq_sudo = this->robot_->W_inv * this->robot_->Gq.transpose()*(this->robot_->Gq*this->robot_->W_inv*this->robot_->Gq.transpose()).inverse() ;
     }
@@ -232,6 +251,11 @@ namespace RCD
 
         while(this->robot_->KEEP_CONTROL) //
         {
+            if (this->cmh_->SLIP_DETECTION)
+                std::cout<<"SLIP_DETECTION true"<<std::endl;
+            else
+                std::cout<<"SLIP_DETECTION false"<<std::endl;
+
             // get delta t
             this->time_elapsed =  std::chrono::system_clock::now() - this->time_start;
             dt = this->time_elapsed.count();
@@ -258,6 +282,11 @@ namespace RCD
 
             // updates Legs variables n' Jacobian Matrix
             this->updateLegs();
+            if (this->cmh_->SLIP_DETECTION)
+            {
+                // compute Weights based on prob for slip detection
+                this->computeWeights(dt);
+            }
             // updates Coriolis/Inertia Matrix etc.
             this->updateControlLaw();
 
@@ -297,7 +326,6 @@ namespace RCD
     {
         // compute sudo Gq
         this->computeSudoGq();
-
         // update Coriolis and Inertia
         this->robot_->I_c = this->robot_->R_c*this->robot_->I*this->robot_->R_c.transpose();
         this->robot_->H_c.block(3,3,3,3) =  this->robot_->I_c ; 
