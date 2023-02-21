@@ -54,7 +54,7 @@ namespace RCD
         
         std::string ns = "/";  // as in group of 'basic.launch'
         int MODELSTATE_ID; 
-        bool SLIP_DETECTION;
+        bool SLIP_DETECTION, IMU_OK;
 
         double t;
         float slip[4];

@@ -51,6 +51,14 @@ int main(int argc, char **argv)
     ctrl->standUp();
     ROS_INFO("StandUp(): ends");
 
+    if(cmh->SLIP_DETECTION)
+    {
+        while(!cmh->IMU_OK )
+        {
+            ROS_INFO("Wait for IMUs");
+        }
+
+    }
     sleep(5); // sleep for 5 seconds
 
     ROS_INFO("Control loop(): starts");

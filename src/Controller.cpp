@@ -96,8 +96,8 @@ namespace RCD
         for(int l = 0; l < this->n_leg ; l++)
         {
             this->leg_mng[l].prob_stab = this->cmh_->slip[l];
-            this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
             this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
+            this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
             
             // update vvvv vector of robot                          // z stays 1.0 do not change
             this->robot_->vvvv.block(l*3,0,3,1) = this->leg_mng[l].wv_leg;   
