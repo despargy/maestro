@@ -95,7 +95,7 @@ namespace RCD
 
         for(int l = 0; l < this->n_leg ; l++)
         {
-            this->leg_mng[l].prob_stab = 1 - this->cmh_->slip[l];
+            this->leg_mng[l].prob_stab = this->cmh_->slip[l];
             this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
             this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
             
@@ -251,10 +251,10 @@ namespace RCD
 
         while(this->robot_->KEEP_CONTROL) //
         {
-            if (this->cmh_->SLIP_DETECTION)
-                std::cout<<"SLIP_DETECTION true"<<std::endl;
-            else
-                std::cout<<"SLIP_DETECTION false"<<std::endl;
+            // if (this->cmh_->SLIP_DETECTION)
+            //     std::cout<<"SLIP_DETECTION true"<<std::endl;
+            // else
+            //     std::cout<<"SLIP_DETECTION false"<<std::endl;
 
             // get delta t
             this->time_elapsed =  std::chrono::system_clock::now() - this->time_start;
