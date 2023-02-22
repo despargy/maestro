@@ -33,8 +33,8 @@
     <group ns="/" >
 
          <!-- ==================== PARAMETERS ==================== -->
-        <param name="kp" value="1000"/>
-        <param name="kv" value="500"/>
+        <param name="kp" value="2000"/>
+        <param name="kv" value="1000"/>
         <param name="ko" value="40"/>
 
         <param name="slip_detection" value="$(arg slip_detection)"/>
@@ -42,17 +42,19 @@
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>
         <param name="has_simulation" value="$(arg has_simulation)"/>
+        <!-- <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1.urdf"/> -->
         <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1_slip.urdf"/>
 
         <!-- ==================== ROBOT XACRO ==================== -->
         <!-- Debug mode will hung up the robot, use "true" or "false" to switch it. -->
         <arg name="user_debug" default="false"/>
        <!--  <param name="robot_description" command="$(find xacro)/xacro - -inorder '$(find maestro)/go1_description/xacro/robot.xacro' DEBUG:=$(arg user_debug)" />-->
+        <!-- <param name="robot_description" textfile="$(find maestro)/go1_description/urdf/go1.urdf"/> -->
         <param name="robot_description" textfile="$(find maestro)/go1_description/urdf/go1_slip.urdf"/>
 
         <!-- ==================== GAZEBO ==================== -->
         <node pkg="gazebo_ros" type="spawn_model" name="urdf_spawner" respawn="false" output="screen"
-            args="-urdf -x 0.0 -y 0.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
+            args="-urdf -x 0.0 -y -0.8 -z 0.6 -model go1_gazebo -param robot_description -unpause"
             unless="$(arg real_experiment)" />
     
         <!-- ==================== YAML ==================== -->
@@ -90,7 +92,5 @@
             output="screen" unless="$(arg real_experiment)"/> 
 
     </group>
-        <!-- <param name="urdf_file" textfile="$(find maestro)/go1_description/urdf/go1.urdf"/> -->
-        <!-- <param name="urdf_file" value="$(find maestro)/go1_description/urdf/go1.urdf"/> -->
 
 </launch>

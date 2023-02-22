@@ -41,18 +41,18 @@
         <model name="slip_plate">
             <static>true</static>
             <link name="slip_plate">
-                <pose>0.2 -0.3 0 0 0 0</pose>
+                <pose>-0.3 -0.3 0 0 0 0</pose>
                 <collision name="slip_plate">
                     <geometry>
                         <box>
-                            <size>0.4 0.6 0.005</size>
+                            <size>0.6 0.6 0.005</size>
                         </box>
                     </geometry>
                     <surface>
                         <friction>
                         <ode>
-                            <mu>0.01</mu>
-                            <mu2>0.01</mu2>
+                            <mu>0.4</mu>
+                            <mu2>0.4</mu2>
                         </ode>
                         </friction>
                     </surface>
@@ -60,7 +60,7 @@
                 <visual name="static_slip_visual">
                     <geometry>
                         <box>
-                            <size>0.4 0.6 0.005</size>
+                            <size>0.6 0.6 0.005</size>
                         </box>
                     </geometry>
                     <material>
@@ -74,7 +74,7 @@
         <model name="normal_plate_fl">
             <static>true</static>
             <link name="normal_plate_fl">
-                <pose>0.2 0.3 0 0 0 0</pose>
+                <pose>-0.2 0.3 0 0 0 0</pose>
                 <collision name="normal_plate_fl">
                     <geometry>
                         <box>
@@ -84,8 +84,8 @@
                     <surface>
                         <friction>
                         <ode>
-                            <mu>1.0</mu>
-                            <mu2>1.0</mu2>
+                            <mu>10.0</mu>
+                            <mu2>10.0</mu2>
                         </ode>
                         </friction>
                     </surface>
@@ -107,7 +107,7 @@
         <model name="normal_plate_rr_rl">
             <static>true</static>
             <link name="normal_plate_rr_rl">
-                <pose>-0.3 0 0 0 0 0</pose>
+                <pose>0.3 0 0 0 0 0</pose>
                 <collision name="normal_plate_rr_rl">
                     <geometry>
                         <box>
@@ -117,8 +117,8 @@
                     <surface>
                         <friction>
                         <ode>
-                            <mu>1.0</mu>
-                            <mu2>1.0</mu2>
+                            <mu>10.0</mu>
+                            <mu2>10.0</mu2>
                         </ode>
                         </friction>
                     </surface>

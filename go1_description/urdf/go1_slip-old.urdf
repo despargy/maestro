@@ -200,7 +200,7 @@
 
 
   <!-- FOOT IMUs -->
-  <!-- <gazebo reference="FR_foot">
+  <gazebo reference="FR_foot">
     <gravity>false</gravity>
     <sensor name="fr_imu_sensor_foot" type="imu">
       <always_on>true</always_on>
@@ -219,6 +219,9 @@
       <pose>0 0 0 0 0 0</pose>
     </sensor>
   </gazebo>
+
+
+
   <gazebo reference="FL_foot">
     <gravity>false</gravity>
     <sensor name="fl_imu_sensor_foot" type="imu">
@@ -280,53 +283,7 @@
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>
-  </gazebo> -->
-
-  <gazebo>
-      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
-        <alwaysOn>true</alwaysOn>
-        <bodyName>FR_foot</bodyName>
-        <topicName>fr_foot_imu</topicName>
-        <serviceName>fr_imu_service</serviceName>
-        <gaussianNoise>0.0</gaussianNoise>
-        <updateRate>1000.0</updateRate>
-      </plugin>
   </gazebo>
-
-  <gazebo>
-      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
-        <alwaysOn>true</alwaysOn>
-        <bodyName>FL_foot</bodyName>
-        <topicName>fl_foot_imu</topicName>
-        <serviceName>fl_imu_service</serviceName>
-        <gaussianNoise>0.0</gaussianNoise>
-        <updateRate>1000.0</updateRate>
-      </plugin>
-  </gazebo>
-
-  <gazebo>
-      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
-        <alwaysOn>true</alwaysOn>
-        <bodyName>RL_foot</bodyName>
-        <topicName>rl_foot_imu</topicName>
-        <serviceName>rl_imu_service</serviceName>
-        <gaussianNoise>0.0</gaussianNoise>
-        <updateRate>1000.0</updateRate>
-      </plugin>
-  </gazebo>
-
-  <gazebo>
-      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
-        <alwaysOn>true</alwaysOn>
-        <bodyName>RR_foot</bodyName>
-        <topicName>rr_foot_imu</topicName>
-        <serviceName>rr_imu_service</serviceName>
-        <gaussianNoise>0.0</gaussianNoise>
-        <updateRate>1000.0</updateRate>
-      </plugin>
-  </gazebo>
-
-  
   <!-- Foot contacts. -->
   <gazebo reference="FR_calf">
     <sensor name="FR_foot_contact" type="contact">

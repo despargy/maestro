@@ -32,14 +32,19 @@ namespace RCD
     {
         Eigen::Vector3d p_d;
         // desired position of t_now = dt = time_elapsed
-        // p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*this->b_coef*dt); 
-        // p_d(1) = p_d0_(1) + 0.1*cos(2*M_PI*this->b_coef*dt); 
+        // p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*0.1*dt); 
+        // p_d(1) = p_d0_(1) + 0.1*cos(2*M_PI*0.1*dt); 
         // p_d(2) = p_d0_(2) + 0.0;
 
         // x, z axis TODO extra change id od static axis 
-        p_d(0) = p_d0_(0) + 0.1*sin(2*M_PI*0.1*dt); 
+        // p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*0.3*dt); 
+        // p_d(1) = p_d0_(1) + 0.0; 
+        // p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.25*dt) - 0.1;
+
+        // x, z axis TODO extra change id od static axis 
+        p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*0.1*dt); 
         p_d(1) = p_d0_(1) + 0.0; 
-        p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.1*dt);
+        p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.1*dt) ;
         return p_d;
     }
     Eigen::Vector3d Math::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt)
@@ -66,7 +71,7 @@ namespace RCD
     {
         Eigen::Quaterniond temp = Q_0;
         // desired orientation of t_now = dt = time_elapsed
-        temp.x() = Q_0.x() + 0.2*cos(2*0.1*M_PI*dt);
+        temp.x() = Q_0.x() ;//+ 0.2*cos(2*0.1*M_PI*dt);
         temp.normalize();
         return temp.toRotationMatrix(); 
     }

@@ -39,10 +39,22 @@ int main(int argc, char **argv)
     // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
 
+
+    // std::cout << "MAESTRO CONTROL: " << std::endl
+    //           << "Make sure the robot is standing on the ground." << std::endl
+    //           << "Press Enter: Next Starting Pose..." << std::endl;
+    // std::cin.ignore();
+
     sleep(3); // sleep for 3 seconds
 
     // Initialize Controller
     ctrl->initControl();
+
+
+    // std::cout << "MAESTRO CONTROL: " << std::endl
+    //           << "Make sure the robot is standing on the ground." << std::endl
+    //           << "Press Enter: Next StandUp..." << std::endl;
+    // std::cin.ignore();
 
     sleep(2); // sleep for 3 seconds
 
@@ -57,17 +69,13 @@ int main(int argc, char **argv)
         {
             ROS_INFO("Wait for IMUs");
         }
-
     }
-    sleep(5); // sleep for 5 seconds
+
+    sleep(4); // sleep for 5 seconds
 
     ROS_INFO("Control loop(): starts");
     ctrl->loop();
     ROS_INFO("Control loop(): ends");
-
-    // NOT WORKING DO NOT TRY UNCOMMENTS need to smoothdown
-    // ctrl->initMotorParamsHard();
-    // sleep(5);
 
     ros::waitForShutdown();
 

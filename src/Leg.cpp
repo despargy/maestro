@@ -42,7 +42,9 @@ namespace RCD
         J = jacobian_kdl.data; // jac KDL to Eigen  
         tf::transformKDLToEigen(p_frame, p); // p to eigen Affine
         // std::cout<<"tip pos \n"<<p_frame<<std::endl;
-        // std::cout<<"p \n"<<p<<std::endl;
+        // std::cout<<"J \t"<<id<<" \n"<<J<<std::endl;
+
+
     }
 
 

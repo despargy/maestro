@@ -56,7 +56,7 @@ namespace RCD
         void computeSudoGq();
         void updateControlLaw();
         void setNewCmd();
-        void setMotorModeGains();
+        void setMaestroMotorGains();
         void gravComp();
         void startingPose();
         void computeWeights(double dt);
