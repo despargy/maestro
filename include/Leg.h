@@ -35,7 +35,7 @@ namespace RCD
         int n_superV_joints;
         std::string base_frame;
         std::string tip_frame;
-        double prob_stab;
+        double prob_stab, fric_coef, p_contactFriction;
         //KDL
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;
@@ -46,7 +46,7 @@ namespace RCD
         //Eigen
         Eigen::MatrixXd J;            // Jacobian Eigen
         Eigen::Affine3d p;
-        Eigen::Vector3d f,f_cmd, tau; //applyied force to the tip
+        Eigen::Vector3d f,f_tf_toBase, f_cmd, tau; //applyied force to the tip
         // init W once
         Eigen::Vector3d wv_leg;
         Leg();

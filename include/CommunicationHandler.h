@@ -20,6 +20,7 @@
 #include <tf/tf.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Float32MultiArray.h>
 
 #ifndef _COMMUNICATIONHANDLER_H_
 #define _COMMUNICATIONHANDLER_H_
@@ -36,6 +37,7 @@ namespace RCD
         const char* SIM_LOWCMD_TOPIC="/gazebo/lowCmd/command";
         const char* SIM_LOWSTATE_TOPIC="/gazebo/lowState/state";
         const char* SIM_MODELSTATE_TOPIC="/gazebo/model_states";
+        const char* SIM_FOOTR_TOPIC="/maestro/foot/rotation";
 
         const char* REAL_LOWCMD_TOPIC="/low_cmd";
         const char* REAL_LOWSTATE_TOPIC="/low_state";
@@ -57,19 +59,20 @@ namespace RCD
         bool IMU_OK_0, IMU_OK_1, IMU_OK_2, IMU_OK_3; 
         bool SLIP_DETECTION;
 
+        std_msgs::Float32MultiArray dat;
+
         double t;
         float slip[4];
         bool real_experiment_;
         Robot *robot_;
         ros::NodeHandle *nh_main_;
         ros::NodeHandle *nh_cmh_, *nh_slip_;
-        // ros::Rate *loop_rate;
 
         // GAZEBO 
         ros::Subscriber sub_CoMState_, sub_LowState_, sub_Control_;
         ros::Subscriber sub_Slip0_, sub_Slip1_, sub_Slip2_, sub_Slip3_;
 
-        ros::Publisher pub_LowCmd_;
+        ros::Publisher pub_LowCmd_, pub_FootR_;
 
         CommunicationHandler();
         CommunicationHandler(Robot* robot, ros::NodeHandle* nh_main);
@@ -90,6 +93,7 @@ namespace RCD
         void lowSlip3Callback(const std_msgs::Float32& msg);
         // function to check init of imus
         bool ALLIMUOK();
+        void publishRotation(Eigen::Matrix3d R);
 
     };
 

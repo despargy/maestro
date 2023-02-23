@@ -12,6 +12,7 @@
 #include <chrono>
 #include <ctime>
 #include <Math.h>
+#include <vector>
 
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
@@ -60,6 +61,7 @@ namespace RCD
         void gravComp();
         void startingPose();
         void computeWeights(double dt);
+        void contactFrictionCones();
 
   };
 

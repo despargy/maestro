@@ -63,14 +63,30 @@ namespace RCD
             this->lowcmd_topic = this->SIM_LOWCMD_TOPIC; // Select the simulation topics
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
             this->modelstate_topic = this->SIM_MODELSTATE_TOPIC; // Select the simulation topics // diff. Cb
+            
             this->sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this); // diff. Cb
+        
+
+        ////////////////////////////// PUBLISH ROTATION //////////////////////////////
+            // Contact Friction Cones
+            this->pub_FootR_ = nh_cmh_->advertise<std_msgs::Float32MultiArray>(this->SIM_FOOTR_TOPIC,1);
+            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
+            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
+            this->dat.layout.dim[0].label = "height";
+            this->dat.layout.dim[1].label = "width";
+            this->dat.layout.dim[0].size = 3;
+            this->dat.layout.dim[1].size = 3;
+            this->dat.layout.dim[0].stride = 3*3;
+            this->dat.layout.dim[1].stride = 3;
+            this->dat.layout.data_offset = 0;
+
+        //////////////////////////////               //////////////////////////////
             if(this->SLIP_DETECTION)
             {
                 this->sub_Slip0_ = nh_slip_->subscribe(this->slip_0_topic, 1, &RCD::CommunicationHandler::lowSlip0Callback, this);
                 this->sub_Slip1_ = nh_slip_->subscribe(this->slip_1_topic, 1, &RCD::CommunicationHandler::lowSlip1Callback, this);
                 this->sub_Slip2_ = nh_slip_->subscribe(this->slip_2_topic, 1, &RCD::CommunicationHandler::lowSlip2Callback, this);
                 this->sub_Slip3_ = nh_slip_->subscribe(this->slip_3_topic, 1, &RCD::CommunicationHandler::lowSlip3Callback, this);
-
             }
         }
         else
@@ -131,7 +147,7 @@ namespace RCD
     void CommunicationHandler::lowStateCallback(const unitree_legged_msgs::LowState& msg)
     {
         // Cb Low State
-        this->updateRobotState(msg); 
+        this->updateRobotState(msg);
     }
     void CommunicationHandler::updateRobotState(const unitree_legged_msgs::LowState& msg)
     {
@@ -148,5 +164,16 @@ namespace RCD
         if ((this->IMU_OK_0? 1:0) + (this->IMU_OK_1? 1:0) + (this->IMU_OK_2? 1:0) + (this->IMU_OK_3? 1:0)  == this->NUM_IMUs)
                 return true;
         return false;
+    }
+    void CommunicationHandler::publishRotation(Eigen::Matrix3d R)
+    {
+        // std::cout<<"publishRotation"<<std::endl;
+        std::vector<float> vec(3*3, 0);
+        for (int i=0; i<3; i++)
+            for (int j=0; j<3; j++)
+                vec[i*3 + j] = R(i,j);
+        dat.data = vec;
+        pub_FootR_.publish(dat);
+        // ros::spinOnce();
     }
 } // namespace CommunicationHandler 

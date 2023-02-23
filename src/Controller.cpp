@@ -314,8 +314,13 @@ namespace RCD
                 // if (leg_mng[l].tau(2) > 5.0 || leg_mng[l].tau(2) < -5.0) 
                 //     std::cout<< leg_mng[l].tau <<std::endl;
             }
+            this->contactFrictionCones();
+            // MICHAEL  FOOT_IMU_ID IS FOOT to publish rotation, if world not needed remove this->robot_->R_c*
+            int FOOT_IMU_ID = 0;
+            this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
             // send New Torque Command
             this->setNewCmd();
+
         }
     }
     void Controller::updateControlLaw(Eigen::Vector3d w_com)
@@ -326,6 +331,15 @@ namespace RCD
         this->robot_->I_c = this->robot_->R_c*this->robot_->I*this->robot_->R_c.transpose();
         this->robot_->H_c.block(3,3,3,3) =  this->robot_->I_c ; 
         this->robot_->C_c.block(3,3,3,3) = this->math_lib.scewSymmetric(this->robot_->I_c*w_com);
+    }
+    void Controller::contactFrictionCones()
+    {
+        for(int l = 0 ; l < n_leg ; l++)
+        {
+            this->leg_mng[l].f_tf_toBase = this->robot_->R_c*this->leg_mng[l].p.matrix().block(0,0,3,3)*this->leg_mng[l].f;
+            this->leg_mng[l].p_contactFriction = 1.0 - (sqrt( this->leg_mng[l].f_tf_toBase(0) * this->leg_mng[l].f_tf_toBase(0) + this->leg_mng[l].f_tf_toBase(1) * this->leg_mng[l].f_tf_toBase(1) / this->leg_mng[l].f_tf_toBase(2)  <= this->leg_mng[l].fric_coef))*1.0 ;
+            std::cout<<"p_contactFriction "<<leg_mng[l].id<<"\n "<<this->leg_mng[l].p_contactFriction<<std::endl;
+        }
     }
     void Controller::setNewCmd()
     {
