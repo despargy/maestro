@@ -49,7 +49,6 @@ namespace RCD
         Eigen::Vector3d f,f_cmd, tau; //applyied force to the tip
         // init W once
         Eigen::Vector3d wv_leg;
-        Eigen::Matrix3d mat_from_frame;
         Leg();
         ~Leg();
 

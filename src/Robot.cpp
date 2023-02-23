@@ -16,9 +16,6 @@ namespace RCD
         this->Gq_sudo.resize(12,6);
         this->gc.resize(6);
 
-        this->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 
-        this->g_gravity = 9.80;
-        this->gc << 0,0,this->mass*this->g_gravity,0,0,0;
         this->KEEP_CONTROL = true;
 
         this->H_c.resize(6,6);
@@ -42,6 +39,15 @@ namespace RCD
          vvvv << 1,1,1,   1,1,1,    1000,1000,1,    1,1,1; //TODO as Legs wv_leg init
         // vvvv << 10,10,10,10,10,10,10,10,10,10,10,10; //TODO as Legs wv_leg init
         this->W_inv = (vvvv.asDiagonal()).inverse();
+
+        this->g_gravity = 9.80;
+        // mass and grav vector are set from CMH
+
+        LegR_frame[0] = Eigen::Matrix3d::Identity();
+        LegR_frame[1] = Eigen::Matrix3d::Identity();
+        LegR_frame[2] = Eigen::Matrix3d::Identity();
+        LegR_frame[3] = Eigen::Matrix3d::Identity();
+
     }
 
     Robot::~Robot()

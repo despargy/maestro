@@ -85,6 +85,7 @@ namespace RCD
             // calc Jacobian and Pos
             // need for eq. 4
             leg_mng[l].kdlSolver();
+            this->robot_->LegR_frame[l] = leg_mng[l].p.matrix().block(0,0,3,3);
         }
     }
     void Controller::computeWeights(double dt)

@@ -16,7 +16,12 @@ namespace RCD
         this->nh_slip_= new ros::NodeHandle;
         // this->loop_rate = new ros::Rate(5000);
         this->MODELSTATE_ID = 4; //do not cure unless is simulation = not real+experiment
-        this->IMU_OK = false;
+        
+        this->IMU_OK_0 = false;
+        this->IMU_OK_1 = false;
+        this->IMU_OK_2 = false;
+        this->IMU_OK_3 = false;
+
         this->slip[0] = 1.0;
         this->slip[1] = 1.0;
         this->slip[2] = 1.0;
@@ -36,6 +41,10 @@ namespace RCD
         {
             ROS_ERROR("Param /real_experiment missing from namespace: '%s'", nh_main_->getNamespace().c_str());
         }
+        if (!nh_main_->getParam(this->ns + "/num_imus", this->NUM_IMUs))
+        {
+            ROS_ERROR("Param /num_imus missing from namespace: '%s'", nh_main_->getNamespace().c_str());
+        }
         // Set info to 'Robot' obj.
         if (!nh_main_->getParam(this->ns + "/joint_names", this->robot_->joint_names))
         {
@@ -47,6 +56,10 @@ namespace RCD
         // Select topics if is real or simulation
         if (!this->real_experiment_)
         {
+            // select robot mass and grav. vector
+            this->robot_->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 
+            this->robot_->gc << 0,0,this->robot_->mass*this->robot_->g_gravity,0,0,0;
+            // select topics
             this->lowcmd_topic = this->SIM_LOWCMD_TOPIC; // Select the simulation topics
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
             this->modelstate_topic = this->SIM_MODELSTATE_TOPIC; // Select the simulation topics // diff. Cb
@@ -62,7 +75,10 @@ namespace RCD
         }
         else
         {
-            this->robot_->mass = 12.0; // do not forget it
+            // select robot mass and grav. vector
+            this->robot_->mass = 12.0; 
+            this->robot_->gc << 0,0,this->robot_->mass*this->robot_->g_gravity,0,0,0;
+            // select topics
             this->lowcmd_topic = this->REAL_LOWCMD_TOPIC; // Select the real topics
             this->lowstate_topic = this->REAL_LOWSTATE_TOPIC; // Select the real topics
             this->modelstate_topic = this->REAL_MODELSTATE_TOPIC; // Select the simulation topics // diff. Topic
@@ -77,19 +93,22 @@ namespace RCD
                                 /* Callbacks */
     void CommunicationHandler::lowSlip0Callback(const std_msgs::Float32& msg)
     {
-        this->IMU_OK = true;
+        this->IMU_OK_0 = true;
         this->slip[0] = msg.data; 
     }   
     void CommunicationHandler::lowSlip1Callback(const std_msgs::Float32& msg)
     {
+        this->IMU_OK_1 = true;
         this->slip[1] = msg.data; 
     } 
     void CommunicationHandler::lowSlip2Callback(const std_msgs::Float32& msg)
     {
+        this->IMU_OK_2 = true;
         this->slip[2] = msg.data; 
     } 
     void CommunicationHandler::lowSlip3Callback(const std_msgs::Float32& msg)
     {
+        this->IMU_OK_3 = true;
         this->slip[3] = msg.data; 
     } 
     void CommunicationHandler::controlCallback(const std_msgs::Bool& msg)
@@ -124,5 +143,10 @@ namespace RCD
         pub_LowCmd_.publish(next_low_cmd);
         ros::spinOnce();
     }
-
+    bool CommunicationHandler::ALLIMUOK()
+    {
+        if ((this->IMU_OK_0? 1:0) + (this->IMU_OK_1? 1:0) + (this->IMU_OK_2? 1:0) + (this->IMU_OK_3? 1:0)  == this->NUM_IMUs)
+                return true;
+        return false;
+    }
 } // namespace CommunicationHandler 

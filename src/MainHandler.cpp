@@ -39,7 +39,6 @@ int main(int argc, char **argv)
     // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
 
-
     // std::cout << "MAESTRO CONTROL: " << std::endl
     //           << "Make sure the robot is standing on the ground." << std::endl
     //           << "Press Enter: Next Starting Pose..." << std::endl;
@@ -50,7 +49,8 @@ int main(int argc, char **argv)
     // Initialize Controller
     ctrl->initControl();
 
-
+    std::cout<<cmh->ALLIMUOK()<<std::endl;
+    
     // std::cout << "MAESTRO CONTROL: " << std::endl
     //           << "Make sure the robot is standing on the ground." << std::endl
     //           << "Press Enter: Next StandUp..." << std::endl;
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
     if(cmh->SLIP_DETECTION)
     {
-        while(!cmh->IMU_OK )
+        while(!cmh->ALLIMUOK() )
         {
             ROS_INFO("Wait for IMUs");
         }

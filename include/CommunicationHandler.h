@@ -53,8 +53,9 @@ namespace RCD
         const char* slip_3_topic= "/rl_contact_state";
         
         std::string ns = "/";  // as in group of 'basic.launch'
-        int MODELSTATE_ID; 
-        bool SLIP_DETECTION, IMU_OK;
+        int MODELSTATE_ID, NUM_IMUs;
+        bool IMU_OK_0, IMU_OK_1, IMU_OK_2, IMU_OK_3; 
+        bool SLIP_DETECTION;
 
         double t;
         float slip[4];
@@ -87,6 +88,8 @@ namespace RCD
         void lowSlip1Callback(const std_msgs::Float32& msg);
         void lowSlip2Callback(const std_msgs::Float32& msg);
         void lowSlip3Callback(const std_msgs::Float32& msg);
+        // function to check init of imus
+        bool ALLIMUOK();
 
     };
 

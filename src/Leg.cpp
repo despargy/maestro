@@ -41,14 +41,6 @@ namespace RCD
         kdl_solver_pos->JntToCart(q,p_frame);
         J = jacobian_kdl.data; // jac KDL to Eigen  
         tf::transformKDLToEigen(p_frame, p); // p to eigen Affine
-        // std::cout<<"tip pos"<<id<<" \n"<<p_frame.M<<std::endl;
-        // Eigen::Matrix3d frame_m(p_frame.M);
-        // std::cout<<p<<std::endl;
-        mat_from_frame = p.matrix().block(0,0,3,3);
-        // mframe*p
-        // std::cout<<"rotation Matrix pos \t"<<id<<" \n"<<mat_from_frame.block(0,0,3,3)<<std::endl;
-
-
     }
 
 

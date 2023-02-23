@@ -4,6 +4,8 @@
     <arg name="real_experiment" default="false"/>
     <arg name="has_simulation" default="true"/>
     <arg name="slip_detection" default="false"/>
+    <arg name="num_imus" default="0"/>
+
 
     <group ns="/" unless="$(arg real_experiment)">
         <!-- ==================== GAZEBO WORLD ==================== -->
@@ -38,6 +40,7 @@
         <param name="ko" value="100"/>
 
         <param name="slip_detection" value="$(arg slip_detection)"/>
+        <param name="num_imus" value="$(arg num_imus)"/>
 
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>
