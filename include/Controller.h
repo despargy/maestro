@@ -54,7 +54,7 @@ namespace RCD
         void updateLegs();
         void solveJacP();
         void computeSudoGq();
-        void updateControlLaw();
+        void updateControlLaw(Eigen::Vector3d w_com);
         void setNewCmd();
         void setMaestroMotorGains();
         void gravComp();

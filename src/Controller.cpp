@@ -48,10 +48,8 @@ namespace RCD
         this->initLegsControl();
         // Set the starting pose before stands up
         this->startingPose(); 
-        // get joint qs and foot forces
-        this->getLegQF(); // stored at leg 'q'
-        for(int l = 0 ; l < this->n_leg ; l++)
-            this->leg_mng[l].kdl_solver_pos->JntToCart(leg_mng[l].q,leg_mng[l].p_frame);
+        // get joint qs and solveKDL for initialization
+        this->updateLegs();
     }
     void Controller::initLegsControl()
     {
@@ -125,19 +123,22 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+0].Kp = 0;
                 this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+0].Kd = 0.5;
                 this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+1].Kp = 0;
                 this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 0.5;
                 this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+2].Kp = 0;
                 this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 0.5;
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
+            // this->next_LowCmd_.motorCmd[2*3+0].Kd = 0.0;
+            // this->next_LowCmd_.motorCmd[2*3+1].Kd = 0.0;
+            // this->next_LowCmd_.motorCmd[2*3+2].Kd = 0.0;
         }
         else
         {
@@ -220,6 +221,18 @@ namespace RCD
         fcontrol2.resize(6);
         fcontrol3.resize(6);
 
+        Eigen::Vector3d com_p_prev, dCoM_p;
+        Eigen::Vector3d w_CoM;
+        Eigen::Matrix3d R_CoM_prev, dR_CoM;
+
+        Eigen::MatrixXd Gbc = Eigen::MatrixXd::Identity(6,6);
+        Eigen::Vector3d pbc ;
+        pbc << 0.003 , 0.001 , 0.0;
+        
+
+        com_p_prev = this->robot_->p_c;
+        R_CoM_prev = this->robot_->R_c;
+
         this->setMaestroMotorGains();
 
         while(this->robot_->KEEP_CONTROL) //
@@ -238,6 +251,11 @@ namespace RCD
             R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, dt);
             // DESIRED angular velocity of Com
             w_d = this->math_lib.scewSymmetricInverse(dR_d*R_d.transpose());
+            
+            // compute CoM velocity
+            dCoM_p = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, dt);
+            dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, dt);
+            w_CoM = this->math_lib.scewSymmetricInverse(dR_CoM*this->robot_->R_c.transpose());
 
             // compute position ERROR
             e_p = this->robot_->p_c - p_d;
@@ -245,9 +263,11 @@ namespace RCD
             Re = this->robot_->R_c*R_d.transpose();
             ang.fromRotationMatrix(Re);
             e_o = ang.angle()*ang.axis();
+
             // compute velocity ERROR
-            e_v.block(0,0,3,1) = this->robot_->com_vel_linear - dp_d;
-            e_v.block(3,0,3,1) = this->robot_->com_vel_ang - this->robot_->R_c*R_d.transpose()*w_d ;
+            e_v.block(0,0,3,1) = dCoM_p - dp_d;
+            e_v.block(3,0,3,1) = w_CoM - this->robot_->R_c*R_d.transpose()*w_d ;
+            e_v.block(3,0,3,1) = 0.5*e_v.block(3,0,3,1) ;
 
             // updates Legs variables n' Jacobian Matrix
             this->updateLegs();
@@ -258,7 +278,7 @@ namespace RCD
                 this->computeWeights(dt);
             }
             // updates Coriolis/Inertia Matrix etc.
-            this->updateControlLaw();
+            this->updateControlLaw(w_CoM);
 
             // first term of Fc eq. 11
             fcontrol1.block(0,0,3,1) = ddp_d;
@@ -271,8 +291,11 @@ namespace RCD
             fcontrol3.block(0,0,3,1) = -this->kp*e_p;
             fcontrol3.block(3,0,3,1) = -this->ko*e_o;
 
+
+            Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
             // Final Fc ep. 11
-            this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2 + fcontrol3 - this->kv*e_v + this->robot_->gc ; 
+             //// SOSOSOSOSSOSOSOSOSO TODO  ERASE 0 
+            this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*e_v + Gbc*this->robot_->gc ; 
             // solve eq. 1 with respect to Fa
             this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
             
@@ -294,14 +317,14 @@ namespace RCD
             this->setNewCmd();
         }
     }
-    void Controller::updateControlLaw()
+    void Controller::updateControlLaw(Eigen::Vector3d w_com)
     {
         // compute sudo Gq
         this->computeSudoGq();
         // update Coriolis and Inertia
         this->robot_->I_c = this->robot_->R_c*this->robot_->I*this->robot_->R_c.transpose();
         this->robot_->H_c.block(3,3,3,3) =  this->robot_->I_c ; 
-        this->robot_->C_c.block(3,3,3,3) = this->math_lib.scewSymmetric(this->robot_->I_c*this->robot_->com_vel_ang);
+        this->robot_->C_c.block(3,3,3,3) = this->math_lib.scewSymmetric(this->robot_->I_c*w_com);
     }
     void Controller::setNewCmd()
     {

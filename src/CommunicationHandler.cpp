@@ -100,7 +100,7 @@ namespace RCD
     void CommunicationHandler::CoMStateCallback(const gazebo_msgs::ModelStates& msg)
     {
         // Cb CoM State 
-        this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID], msg.twist[MODELSTATE_ID]); 
+        this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID]); 
     }
     // TODO real com pos vel
     void CommunicationHandler::RealCoMStateCallback(const gazebo_msgs::ModelStates& msg)
