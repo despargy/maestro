@@ -35,7 +35,8 @@ namespace RCD
         int n_superV_joints;
         std::string base_frame;
         std::string tip_frame;
-        double prob_stab, fric_coef, p_contactFriction;
+        double prob_stab, fric_coef;
+        bool tip_is_stable;
         //KDL
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;

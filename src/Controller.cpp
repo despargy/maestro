@@ -337,8 +337,9 @@ namespace RCD
         for(int l = 0 ; l < n_leg ; l++)
         {
             this->leg_mng[l].f_tf_toBase = this->robot_->R_c*this->leg_mng[l].p.matrix().block(0,0,3,3)*this->leg_mng[l].f;
-            this->leg_mng[l].p_contactFriction = 1.0 - (sqrt( this->leg_mng[l].f_tf_toBase(0) * this->leg_mng[l].f_tf_toBase(0) + this->leg_mng[l].f_tf_toBase(1) * this->leg_mng[l].f_tf_toBase(1) / this->leg_mng[l].f_tf_toBase(2)  <= this->leg_mng[l].fric_coef))*1.0 ;
-            std::cout<<"p_contactFriction "<<leg_mng[l].id<<"\n "<<this->leg_mng[l].p_contactFriction<<std::endl;
+            this->leg_mng[l].tip_is_stable = sqrt( std::pow(this->leg_mng[l].f_tf_toBase(0), 2.0) + std::pow(this->leg_mng[l].f_tf_toBase(1), 2.0) / this->leg_mng[l].f_tf_toBase(2)  <= this->leg_mng[l].fric_coef) ;
+            if ( !leg_mng[l].tip_is_stable)
+                std::cout<<"tip_is_UNstable "<<leg_mng[l].id<<"\n "<<this->leg_mng[l].tip_is_stable<<std::endl;
         }
     }
     void Controller::setNewCmd()

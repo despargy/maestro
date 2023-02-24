@@ -34,7 +34,10 @@ namespace RCD
         // Leg Weights based on Slip Prob 
         prob_stab = 1.0; // init as stable contact
         wv_leg = Eigen::Vector3d::Ones();  
-        fric_coef = 1.0;
+        fric_coef = 10.4; //(stable 10.0 + 0.4 foot tip)
+        if (tip_frame == "RR_foot") ; // TODO ADAPT IT check it
+            fric_coef = 1.0;
+        tip_is_stable = true;
     }
     void Leg::kdlSolver()
     {
