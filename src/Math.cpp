@@ -28,14 +28,14 @@ namespace RCD
     {
         return  (RcRdTwd_cur - RcRdTwd_prev)/dt;
     }
-    Eigen::Vector3d Math::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double dt)
+    Eigen::Vector3d Math::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double t_real)
     {
         Eigen::Vector3d p_d;
-        double freq = 0.3;
+        double freq = 0.1;
         // desired position of t_now = dt = time_elapsed
-        p_d(0) = p_d0_(0) + (0.06-0.06*cos(2*M_PI*freq*dt)); 
-        p_d(1) = p_d0_(1) + 0.02*sin(2*M_PI*freq*dt); 
-        p_d(2) = p_d0_(2) + 0.0;
+        // p_d(0) = p_d0_(0) - (0.01-0.01*cos(2*M_PI*freq*t_real)); 
+        // p_d(1) = p_d0_(1) + 0.01*sin(2*M_PI*freq*t_real); 
+        // p_d(2) = p_d0_(2) ;//+ 0.0;
 
         // x, z axis TODO extra change id od static axis 
         // p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*0.3*dt); 
@@ -43,46 +43,35 @@ namespace RCD
         // p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.25*dt) - 0.1;
 
         // x, z axis TODO extra change id od static axis 
-        // p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*0.1*dt); 
-        // p_d(1) = p_d0_(1) + 0.0; 
-        // p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.1*dt) ;
+        p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*freq*t_real); 
+        p_d(1) = p_d0_(1) + 0.0; 
+        p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*freq*t_real);
         return p_d;
     }
-    Eigen::Vector3d Math::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt)
+    // SOS
+    Eigen::Vector3d Math::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt, double t_real)
     {
-        Eigen::Vector3d p_d_next;
-        p_d_next = get_pDesiredTrajectory(p_d0_, dt);
-        Eigen::Vector3d dp_d;
-        dp_d = (p_d_next - p_d_cur)/dt;
-        //dp_d(1) = 0; // axis id which axis traj is static
-       // dp_d(2) = 0; // axis id which axis traj is static
-
-        return dp_d;
+        return (get_pDesiredTrajectory(p_d0_, t_real) - p_d_cur)/dt;
     }  
-    Eigen::Vector3d Math::get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt)
+    // SOS
+    Eigen::Vector3d Math::get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt, double t_real)
     {
-        Eigen::Vector3d dp_d_next;
-        dp_d_next = get_dpDesiredTrajectory(p_d0_, p_d_cur, dt);
-        Eigen::Vector3d ddp_d;
-        ddp_d = (dp_d_next - dp_d_cur)/dt;
-       // ddp_d(1) = 0; // axis id which axis traj is static
-       // ddp_d(2) = 0; // axis id which axis traj is static
 
-        return ddp_d;
+        return ( get_dpDesiredTrajectory(p_d0_, p_d_cur, dt, t_real) - dp_d_cur)/dt;
     }    
 
     // Orientation
-    Eigen::Matrix3d Math::get_RDesiredRotationMatrix(Eigen::Quaterniond Q_0, double dt)
+    Eigen::Matrix3d Math::get_RDesiredRotationMatrix(Eigen::Quaterniond Q_0, double t_real)
     {
         Eigen::Quaterniond temp = Q_0;
-        // desired orientation of t_now = dt = time_elapsed
-        temp.x() = Q_0.x() + 0.2*sin(2*0.1*M_PI*dt);
+        // desired orientation of t_now = t_real
+        temp.x() = Q_0.x() ;//;+ 0.2*sin(2*0.0*M_PI*t_real);
         temp.normalize();
         return temp.toRotationMatrix(); 
     }
-    Eigen::Matrix3d Math::get_dRDesiredRotationMatrix(Eigen::Quaterniond Q_0, Eigen::Matrix3d R_cur,double dt)
+    Eigen::Matrix3d Math::get_dRDesiredRotationMatrix(Eigen::Quaterniond Q_0, Eigen::Matrix3d R_cur,double dt, double t_real)
     {
-        return (get_RDesiredRotationMatrix(Q_0, dt) - R_cur) / dt;
+        return (get_RDesiredRotationMatrix(Q_0, t_real) - R_cur)/ dt;
     }
     Eigen::Vector3d Math::get_dp_CoM(Eigen::Vector3d com_p_prev,Eigen::Vector3d com_p_cur,double dt)
     {

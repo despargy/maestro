@@ -36,7 +36,7 @@ namespace RCD
         this->Gq.block(0,9,3,3) =  Eigen::Matrix3d::Identity();
         // init W once
         vvvv.resize(12);
-         vvvv << 1,1,1,   1,1,1,    1000,1000,1,    1,1,1; //TODO as Legs wv_leg init
+         vvvv << 1,1,1,   1,1,1,    1,1,1,    1,1,1; //TODO as Legs wv_leg init
         // vvvv << 10,10,10,10,10,10,10,10,10,10,10,10; //TODO as Legs wv_leg init
         this->W_inv = (vvvv.asDiagonal()).inverse();
 

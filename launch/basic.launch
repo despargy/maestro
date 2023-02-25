@@ -35,9 +35,13 @@
     <group ns="/" >
 
          <!-- ==================== PARAMETERS ==================== -->
-        <param name="kp" value="1000"/>
-        <param name="kv" value="250"/>
-        <param name="ko" value="100"/>
+        <param name="kp" value="3000.0"/>
+        <param name="kv" value="350.0"/>
+        <param name="ko" value="5.0"/>
+
+        <!-- <param name="kp" value="3000.0"/>
+        <param name="kv" value="350.0"/>
+        <param name="ko" value="5.0"/> -->
 
         <param name="slip_detection" value="$(arg slip_detection)"/>
         <param name="num_imus" value="$(arg num_imus)"/>
@@ -57,7 +61,7 @@
 
         <!-- ==================== GAZEBO ==================== -->
         <node pkg="gazebo_ros" type="spawn_model" name="urdf_spawner" respawn="false" output="screen"
-            args="-urdf -x -0.10 -y -0.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
+            args="-urdf -x -0.10 -y -2.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
             unless="$(arg real_experiment)" />
     
         <!-- ==================== YAML ==================== -->
@@ -87,10 +91,10 @@
         </node>
 
         <!-- ==================== RVIZ ==================== -->
-        <node pkg="rviz" type="rviz" name="rviz" respawn="false" output="screen"
+        <!-- <node pkg="rviz" type="rviz" name="rviz" respawn="false" output="screen"
             args="-d $(find maestro)/rviz/go1_maestro.rviz"
             unless="$(arg real_experiment)"  /> 
-            
+             -->
         <node pkg="maestro"  name="maestro_gazebo_interpreter" type="maestro_gazebo_interpreter"  
             output="screen" unless="$(arg real_experiment)"/> 
 

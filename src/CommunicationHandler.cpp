@@ -14,7 +14,7 @@ namespace RCD
         this->nh_main_ = nh_main;
         this->nh_cmh_= new ros::NodeHandle;
         this->nh_slip_= new ros::NodeHandle;
-        // this->loop_rate = new ros::Rate(5000);
+        this->loop_rate = new ros::Rate(500);
         this->MODELSTATE_ID = 4; //do not cure unless is simulation = not real+experiment
         
         this->IMU_OK_0 = false;
@@ -158,6 +158,7 @@ namespace RCD
     {
         pub_LowCmd_.publish(next_low_cmd);
         ros::spinOnce();
+        // loop_rate->sleep();
     }
     bool CommunicationHandler::ALLIMUOK()
     {

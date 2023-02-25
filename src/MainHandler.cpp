@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     }
 
     // Async Ros
-    ros::AsyncSpinner spinner(4); // 0 means as many threads my machine gives EXTRA gibve callback queue
+    ros::AsyncSpinner spinner(0); // 0 means as many threads my machine gives EXTRA gibve callback queue
     spinner.start();
 
     // Initialize Communication Handler either simulated or real experiment
@@ -72,6 +72,8 @@ int main(int argc, char **argv)
     }
 
     sleep(4); // sleep for 5 seconds
+
+    // ctrl->WaitToStabilize();
 
     ROS_INFO("Control loop(): starts");
     ctrl->loop();

@@ -67,7 +67,7 @@ namespace RCD
         Robot *robot_;
         ros::NodeHandle *nh_main_;
         ros::NodeHandle *nh_cmh_, *nh_slip_;
-
+        ros::Rate *loop_rate;
         // GAZEBO 
         ros::Subscriber sub_CoMState_, sub_LowState_, sub_Control_;
         ros::Subscriber sub_Slip0_, sub_Slip1_, sub_Slip2_, sub_Slip3_;
