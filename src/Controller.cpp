@@ -360,8 +360,8 @@ namespace RCD
             }
 
             // FOOT_IMU_ID IS FOOT to publish rotation
-            // int FOOT_IMU_ID = 0;
-            // this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
+            int FOOT_IMU_ID = 0;
+            this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
             
             // send New Torque Command
             this->setNewCmd();
@@ -398,13 +398,13 @@ namespace RCD
         this->robot_->H_c.block(3,3,3,3) =  this->robot_->I_c ; 
         this->robot_->C_c.block(3,3,3,3) = this->math_lib.scewSymmetric(this->robot_->I_c*w_com);
     }
-    // void Controller::forceTrasform()
-    // {
-    //     for(int l = 0 ; l < n_leg ; l++)
-    //     {
-    //         this->leg_mng[l].f_tf_toBase = this->robot_->R_c*this->leg_mng[l].p.matrix().block(0,0,3,3)*this->leg_mng[l].f;
-    //     }
-    // }
+    void Controller::forceTrasform()
+    {
+        for(int l = 0 ; l < n_leg ; l++)
+        {
+            this->leg_mng[l].f_tf_toBase = this->robot_->R_c*this->leg_mng[l].p.matrix().block(0,0,3,3)*this->leg_mng[l].f;
+        }
+    }
     void Controller::setNewCmd()
     {
         for(int l = 0; l < this->n_leg ; l++)

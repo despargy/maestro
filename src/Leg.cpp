@@ -28,7 +28,7 @@ namespace RCD
         //Eigen init
         J.resize(6, n_superV_joints);
         f.resize(3);
-        // f_tf_toBase.resize(3);
+        f_tf_toBase.resize(3);
         f_cmd.resize(3);
         tau.resize(3);
         // Leg Weights based on Slip Prob 

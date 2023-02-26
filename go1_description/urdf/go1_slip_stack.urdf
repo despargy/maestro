@@ -200,7 +200,7 @@
 
 
   <!-- FOOT IMUs -->
-  <gazebo reference="FR_foot">
+  <!-- <gazebo reference="FR_foot">
     <gravity>false</gravity>
     <sensor name="fr_imu_sensor_foot" type="imu">
       <always_on>true</always_on>
@@ -219,9 +219,6 @@
       <pose>0 0 0 0 0 0</pose>
     </sensor>
   </gazebo>
-
-
-
   <gazebo reference="FL_foot">
     <gravity>false</gravity>
     <sensor name="fl_imu_sensor_foot" type="imu">
@@ -283,9 +280,55 @@
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>
+  </gazebo> -->
+
+  <gazebo>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+        <alwaysOn>true</alwaysOn>
+        <bodyName>FR_foot</bodyName>
+        <topicName>fr_foot_imu</topicName>
+        <serviceName>fr_imu_service</serviceName>
+        <gaussianNoise>0.0</gaussianNoise>
+        <updateRate>1000.0</updateRate>
+      </plugin>
   </gazebo>
+
+  <gazebo>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+        <alwaysOn>true</alwaysOn>
+        <bodyName>FL_foot</bodyName>
+        <topicName>fl_foot_imu</topicName>
+        <serviceName>fl_imu_service</serviceName>
+        <gaussianNoise>0.0</gaussianNoise>
+        <updateRate>1000.0</updateRate>
+      </plugin>
+  </gazebo>
+
+  <gazebo>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+        <alwaysOn>true</alwaysOn>
+        <bodyName>RL_foot</bodyName>
+        <topicName>rl_foot_imu</topicName>
+        <serviceName>rl_imu_service</serviceName>
+        <gaussianNoise>0.0</gaussianNoise>
+        <updateRate>1000.0</updateRate>
+      </plugin>
+  </gazebo>
+
+  <gazebo>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+        <alwaysOn>true</alwaysOn>
+        <bodyName>RR_foot</bodyName>
+        <topicName>rr_foot_imu</topicName>
+        <serviceName>rr_imu_service</serviceName>
+        <gaussianNoise>0.0</gaussianNoise>
+        <updateRate>1000.0</updateRate>
+      </plugin>
+  </gazebo>
+
+<!-- TODO SOS COMMENT START -->
   <!-- Foot contacts. -->
-  <gazebo reference="FR_calf">
+  <!-- <gazebo reference="FR_calf">
     <sensor name="FR_foot_contact" type="contact">
       <update_rate>100</update_rate>
       <plugin filename="libunitreeFootContactPlugin.so" name="contactPlugin"/>
@@ -320,9 +363,9 @@
         <collision>RL_calf_fixed_joint_lump__RL_foot_collision_1</collision>
       </contact>
     </sensor>
-  </gazebo>
+  </gazebo> -->
   <!-- Visualization of Foot contacts. -->
-  <gazebo reference="FR_foot">
+  <!-- <gazebo reference="FR_foot">
     <visual>
       <plugin filename="libunitreeDrawForcePlugin.so" name="drawForcePlugin">
         <topicName>FR_foot_contact</topicName>
@@ -349,7 +392,29 @@
         <topicName>RL_foot_contact</topicName>
       </plugin>
     </visual>
+  </gazebo> -->
+
+  <!-- TODO SOS COMMENT END-->
+
+  <!-- TODO SOS ADD END-->
+  <!-- <gazebo reference="FL_foot_fixed">
+     <disableFixedJointLumping> true </disableFixedJointLumping>
   </gazebo>
+  
+  <gazebo reference="FR_foot_fixed">
+     <disableFixedJointLumping> true </disableFixedJointLumping>
+  </gazebo>
+  
+  <gazebo reference="RR_foot_fixed">
+     <disableFixedJointLumping> true </disableFixedJointLumping>
+  </gazebo>
+  
+  <gazebo reference="RL_foot_fixed">
+     <disableFixedJointLumping> true </disableFixedJointLumping>
+  </gazebo> -->
+  <!-- TODO SOS ADD END-->
+
+
   <gazebo reference="base">
     <material>Gazebo/Green</material>
     <turnGravityOff>false</turnGravityOff>
@@ -390,8 +455,8 @@
     <self_collide>1</self_collide>
   </gazebo>
   <gazebo reference="FL_foot">
-    <mu1>0.6</mu1>
-    <mu2>0.6</mu2>
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
     <self_collide>1</self_collide>
     <material>Gazebo/DarkGrey</material>
     <kp value="1000000.0"/>
@@ -417,8 +482,8 @@
     <self_collide>1</self_collide>
   </gazebo>
   <gazebo reference="FR_foot">
-    <mu1>0.6</mu1>
-    <mu2>0.6</mu2>
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
     <self_collide>1</self_collide>
     <material>Gazebo/DarkGrey</material>
     <kp value="1000000.0"/>
@@ -444,8 +509,8 @@
     <self_collide>1</self_collide>
   </gazebo>
   <gazebo reference="RL_foot">
-    <mu1>0.6</mu1>
-    <mu2>0.6</mu2>
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
     <self_collide>1</self_collide>
     <material>Gazebo/DarkGrey</material>
     <kp value="1000000.0"/>
@@ -471,8 +536,8 @@
     <self_collide>1</self_collide>
   </gazebo>
   <gazebo reference="RR_foot">
-    <mu1>0.6</mu1>
-    <mu2>0.6</mu2>
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
     <self_collide>1</self_collide>
     <material>Gazebo/DarkGrey</material>
     <kp value="1000000.0"/>
@@ -708,10 +773,13 @@
       <inertia ixx="5.9647e-05" ixy="0.0" ixz="0.0" iyy="0.000111842" iyz="0.0" izz="5.9647e-05"/>
     </inertial>
   </link>
-  <joint name="FR_foot_fixed" type="fixed">
+  <joint name="FR_foot_fixed" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.213"/>
     <parent link="FR_calf"/>
     <child link="FR_foot"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="10" friction="10"/>
+    <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="FR_foot">
     <visual>
@@ -921,10 +989,13 @@
       <inertia ixx="5.9647e-05" ixy="0.0" ixz="0.0" iyy="0.000111842" iyz="0.0" izz="5.9647e-05"/>
     </inertial>
   </link>
-  <joint name="FL_foot_fixed" type="fixed">
+  <joint name="FL_foot_fixed" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.213"/>
     <parent link="FL_calf"/>
     <child link="FL_foot"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="10" friction="10"/>
+    <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="FL_foot">
     <visual>
@@ -1134,10 +1205,13 @@
       <inertia ixx="5.9647e-05" ixy="0.0" ixz="0.0" iyy="0.000111842" iyz="0.0" izz="5.9647e-05"/>
     </inertial>
   </link>
-  <joint name="RR_foot_fixed" type="fixed">
+  <joint name="RR_foot_fixed" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.213"/>
     <parent link="RR_calf"/>
     <child link="RR_foot"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="10" friction="10"/>
+    <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="RR_foot">
     <visual>
@@ -1347,10 +1421,13 @@
       <inertia ixx="5.9647e-05" ixy="0.0" ixz="0.0" iyy="0.000111842" iyz="0.0" izz="5.9647e-05"/>
     </inertial>
   </link>
-  <joint name="RL_foot_fixed" type="fixed">
+  <joint name="RL_foot_fixed" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.213"/>
     <parent link="RL_calf"/>
     <child link="RL_foot"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="10" friction="10"/>
+    <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="RL_foot">
     <visual>

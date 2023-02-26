@@ -47,7 +47,7 @@ namespace RCD
         Eigen::MatrixXd J;            // Jacobian Eigen
         Eigen::Affine3d p;
         Eigen::Vector3d f, f_cmd, tau; //applyied force to the tip
-        // Eigen::Vector3d f_tf_toBase;
+        Eigen::Vector3d f_tf_toBase;
 
         // init W once
         Eigen::Vector3d wv_leg;

@@ -65,7 +65,7 @@ namespace RCD
         void gravComp();
         void startingPose();
         void computeWeights(double dt);
-        // void forceTrasform();
+        void forceTrasform();
         void computeBeta_t();
         void initDataHandler();
   };
