@@ -7,6 +7,7 @@
 #include <urdf/model.h>
 #include <robot_state_publisher/robot_state_publisher.h>
 #include <CommunicationHandler.h>
+#include <DataHandler.h>
 #include <Robot.h>
 #include <Leg.h>
 #include <chrono>
@@ -26,9 +27,10 @@ namespace RCD
     private:
         std::string ns;
         unitree_legged_msgs::LowCmd next_LowCmd_; 
-        Leg *leg_mng;
         int n_leg;
         double kp,ko,kv,b_coef, alpha;
+        double w_thres, d_tv, tv ;
+
     public:
         // Chrono
         std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
@@ -36,13 +38,15 @@ namespace RCD
         // Maestro obj.
         CommunicationHandler *cmh_;
         Robot *robot_;
+        DataHandler *data_handler_;
+        Leg *leg_mng;
         urdf::Model urdf_model_;
         std::string urdf_file_;
         KDL::Tree robot_kin;
         Math math_lib;
 
         Controller();
-        Controller( Robot* robot, CommunicationHandler* cmh);
+        Controller( Robot* robot, CommunicationHandler* cmh, DataHandler* data_handler);
         ~Controller();
         void loadTree();
         void initMotorParamsHard();
@@ -62,9 +66,9 @@ namespace RCD
         void startingPose();
         void computeWeights(double dt);
         void contactFrictionCones();
-        double computeBeta_t();
+        void computeBeta_t();
         void WaitToStabilize();
-
+        void initDataHandler();
   };
 
 }

@@ -6,6 +6,7 @@
 #include <Robot.h>
 #include <CommunicationHandler.h>
 #include <Controller.h>
+#include <DataHandler.h>
 #include <chrono>
 #include <ctime> 
 
@@ -18,11 +19,12 @@ int main(int argc, char **argv)
 
     ros::Rate loop_rate(500);
 
-    // Constructor Robot, CommunicationHandler, Controller
+    // Constructor Robot, CommunicationHandler, Controller, DataHandler
+    RCD::DataHandler* data_handler = new RCD::DataHandler();
     RCD::Robot* robot = new RCD::Robot();
     RCD::CommunicationHandler* cmh = new RCD::CommunicationHandler(robot, &nh);
-    RCD::Controller* ctrl = new RCD::Controller(robot, cmh);
-
+    RCD::Controller* ctrl = new RCD::Controller(robot, cmh, data_handler);
+    
     // Info for user
     if (!nh.getParam(robot->robot_name_ + "/robot_name", robot->robot_name_)){
         ROS_ERROR("No robot name given in namespace: '%s')", nh.getNamespace().c_str());
@@ -44,19 +46,20 @@ int main(int argc, char **argv)
     //           << "Press Enter: Next Starting Pose..." << std::endl;
     // std::cin.ignore();
 
-    sleep(3); // sleep for 3 seconds
+    sleep(1); // sleep for 1 second
 
     // Initialize Controller
     ctrl->initControl();
 
-    std::cout<<cmh->ALLIMUOK()<<std::endl;
-    
+    // std::cout<<cmh->ALLIMUOK()<<std::endl;
+    ROS_INFO("IMU status %d", cmh->ALLIMUOK());
+
     // std::cout << "MAESTRO CONTROL: " << std::endl
     //           << "Make sure the robot is standing on the ground." << std::endl
     //           << "Press Enter: Next StandUp..." << std::endl;
     // std::cin.ignore();
 
-    sleep(2); // sleep for 3 seconds
+    sleep(1); // sleep for 1 second
 
     ROS_INFO("StandUp(): starts");
     // Send first cmds
@@ -71,7 +74,7 @@ int main(int argc, char **argv)
         }
     }
 
-    sleep(4); // sleep for 5 seconds
+    sleep(2); // sleep for 2 seconds
 
     // ctrl->WaitToStabilize();
 

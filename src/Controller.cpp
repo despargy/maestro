@@ -8,11 +8,12 @@ namespace RCD
     {
         ROS_INFO("Controller Constructor");
     }
-    Controller::Controller(Robot* robot, CommunicationHandler* cmh)
+    Controller::Controller(Robot* robot, CommunicationHandler* cmh, DataHandler* data_handler)
     {
         ROS_INFO("Controller Constructor");
         this->cmh_ = cmh ;
         this->robot_ = robot;
+        this->data_handler_ = data_handler;
         this->ns = this->cmh_->ns;
         // Read urdf
         if (!this->cmh_->nh_main_->getParam( this->ns + "/urdf_file_path", this->urdf_file_)){
@@ -35,6 +36,7 @@ namespace RCD
         // for orientation tracking
         this->b_coef = 0.1;
         this->alpha = 1000.0;
+        this->w_thres = 100.0;
 
     }
     Controller::~Controller()
@@ -50,6 +52,29 @@ namespace RCD
         this->startingPose(); 
         // get joint qs and solveKDL for initialization
         this->updateLegs();
+        // set pointers to DataHandler
+        this->initDataHandler();
+    }
+    void Controller::initDataHandler()
+    {
+        // low_state pointer 
+        this->data_handler_->log_data.low_state = &(this->robot_->low_state_);
+        // p_c pointer 
+        this->data_handler_->log_data.p_c = &(this->robot_->p_c);
+        // F_a pointer 
+        this->data_handler_->log_data.F_a = &(this->robot_->F_a);     
+        this->data_handler_->log_data.F_a->resize(12);
+             
+        // R_c pointer
+        this->data_handler_->log_data.R_c = &(this->robot_->R_c);
+        this->data_handler_->log_data.R_c->resize(3,3);
+        // std::cout<<this->data_handler_->log_data.R_c<<std::endl;
+        // std::cout<<*(this->data_handler_->log_data.R_c)<<std::endl;
+        // std::cout<<this->robot_->R_c<<std::endl;
+
+
+        // KEEP WITH OTHER LOGs TODO
+        this->data_handler_->log_data.LegsProfile[0].id = &(this->leg_mng[0].id);
     }
     void Controller::initLegsControl()
     {
@@ -137,9 +162,6 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
-            // this->next_LowCmd_.motorCmd[2*3+0].Kd = 0.0;
-            // this->next_LowCmd_.motorCmd[2*3+1].Kd = 0.0;
-            // this->next_LowCmd_.motorCmd[2*3+2].Kd = 0.0;
         }
         else
         {
@@ -194,8 +216,8 @@ namespace RCD
     void Controller::loop()
     {   
         // set dt    
-        // double dt = 0.002;
-        // double t_real = 0.0;
+        double dt = 0.002;
+        double t_real = 0.0;
 
         // ROS TIME
         double time_start_ROS = ros::Time::now().toSec();
@@ -206,7 +228,8 @@ namespace RCD
 
         ros::Duration sleep_dt_ROS = ros::Duration(0.002);
 
-        // double tv, d_tv = 1.0;
+        tv = 0.0;
+        d_tv = 1.0;
         
         // Desired position variables
         Eigen::Vector3d p_d, dp_d, ddp_d;
@@ -247,40 +270,36 @@ namespace RCD
 
         this->setMaestroMotorGains();
 
-        while(this->robot_->KEEP_CONTROL) //
+        while(this->robot_->KEEP_CONTROL & ros::ok()) 
         {
 
             // get delta t
             time_real_ROS = ros::Time::now().toSec() - time_start_ROS; // whole time
             dt_ROS = time_real_ROS - time_real_ROS_previous;
+
             time_real_ROS_previous = time_real_ROS; // update time_real_ROS_previous uing time_real_ROS for the nect cycle
 
-            std::cout<<"p_d"<<p_d<<std::endl;
-            std::cout<<"p_d0"<<p_d0<<std::endl;
-            std::cout<<"p_c robot"<<this->robot_->p_c<<std::endl;
-
             // give dt or keep old time to compute ros dt?
-            // t_real += dt;
+            t_real += dt;
             
-            // // compute b(t) -> beta_t, eq. 
-            // d_tv = 1.0; //this->computeBeta_t();
             // tv += d_tv*dt;
 
+            this->computeBeta_t();
 
             // tv affects only desired trajectory scaling 
             // get next DESIRED position
-            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, dt_ROS, time_real_ROS);
-            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, dt_ROS, time_real_ROS);
-            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, time_real_ROS);
+            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, dt, t_real);
+            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, dt, t_real);
+            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, t_real);
             // get next DESIRED orientation
-            dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, dt_ROS, time_real_ROS);
-            R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, time_real_ROS);
+            dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, dt, t_real);
+            R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, t_real);
             // DESIRED angular velocity of Com
             w_d = this->math_lib.scewSymmetricInverse(dR_d*R_d.transpose());
             
             // compute CoM velocity
-            dCoM_p = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, dt_ROS);  
-            dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, dt_ROS); 
+            dCoM_p = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, dt);  
+            dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, dt); 
             w_CoM = this->math_lib.scewSymmetricInverse(dR_CoM*this->robot_->R_c.transpose());
 
 
@@ -302,14 +321,14 @@ namespace RCD
             if (this->cmh_->SLIP_DETECTION)
             {
                 // compute Weights based on prob for slip detection
-                this->computeWeights(dt_ROS); 
+                this->computeWeights(dt); 
             }
             // updates Coriolis/Inertia Matrix etc.
             this->updateControlLaw(w_CoM);
 
             // first term of Fc eq. 11
             fcontrol1.block(0,0,3,1) = ddp_d;
-            fcontrol1.block(3,0,3,1) = this->math_lib.deriv_RcRdTwd( RcRdTwd, this->robot_->R_c*R_d.transpose()*w_d, dt_ROS); 
+            fcontrol1.block(3,0,3,1) = this->math_lib.deriv_RcRdTwd( RcRdTwd, this->robot_->R_c*R_d.transpose()*w_d, dt); 
             RcRdTwd = this->robot_->R_c*R_d.transpose()*w_d;
             // second term of Fc eq. 11
             fcontrol2.block(0,0,3,1) = dp_d;
@@ -319,6 +338,10 @@ namespace RCD
             fcontrol3.block(3,0,3,1) = -this->ko*e_o; 
 
             Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
+
+            std::cout<<"e_p"<<e_p<<std::endl;
+            std::cout<<"e_o"<<e_o<<std::endl;
+            std::cout<<"e_v"<<e_v<<std::endl;
 
             // Final Fc ep. 11
             this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*e_v + Gbc*this->robot_->gc ;
@@ -347,10 +370,18 @@ namespace RCD
 
         }
     }
-    double Controller::computeBeta_t()
+    void Controller::computeBeta_t()
     {
-        std::cout<<"TODO computeBeta_t"<<std::endl;
-        return 1.0;
+        
+        this->d_tv = this->robot_->w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
+        for(int l = 0 ; l < n_leg ; l++)
+        {
+            this->d_tv = this->d_tv * (this->w_thres/std::fmax(this->w_thres,this->leg_mng[l].wv_leg(0)));
+        }
+        
+       
+        std::cout<<"wwww  "<< this->robot_->vvvv.transpose() << " ------- "<<"d_tv  "<< d_tv<<std::endl;
+        //std::cout<<"d_tv  "<< d_tv<<std::endl;
     }
     void Controller::updateControlLaw(Eigen::Vector3d w_com)
     {

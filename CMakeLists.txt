@@ -78,6 +78,7 @@ SET( rcd_cpp_src
   src/Controller.cpp
   src/Leg.cpp
   src/Math.cpp
+  src/DataHandler.cpp
 )
 
 add_executable(main_handler src/MainHandler.cpp ${rcd_cpp_src}) 

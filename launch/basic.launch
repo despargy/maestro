@@ -36,8 +36,8 @@
 
          <!-- ==================== PARAMETERS ==================== -->
         <param name="kp" value="3000.0"/>
-        <param name="kv" value="350.0"/>
-        <param name="ko" value="5.0"/>
+        <param name="kv" value="550.0"/>
+        <param name="ko" value="15.0"/>
 
         <!-- <param name="kp" value="3000.0"/>
         <param name="kv" value="350.0"/>
@@ -61,7 +61,7 @@
 
         <!-- ==================== GAZEBO ==================== -->
         <node pkg="gazebo_ros" type="spawn_model" name="urdf_spawner" respawn="false" output="screen"
-            args="-urdf -x -0.10 -y -2.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
+            args="-urdf -x -0.10 -y -0.0 -z 0.6 -model go1_gazebo -param robot_description -unpause"
             unless="$(arg real_experiment)" />
     
         <!-- ==================== YAML ==================== -->

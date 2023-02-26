@@ -31,7 +31,7 @@ namespace RCD
         std::vector<std::string> joint_names{}; // init by communication handler
         int num_joints;  // init by communication handler
         // int num_motors = 20;
-        double mass, g_gravity;
+        double mass, g_gravity, w0;
         bool KEEP_CONTROL;
         // unitree_legged_msgs::MotorCmd *motor_cmd_; // list of 20 motors
         unitree_legged_msgs::LowState low_state_; 
