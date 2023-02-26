@@ -372,11 +372,18 @@ namespace RCD
     }
     void Controller::computeBeta_t()
     {
-        
+        double slope = 0.001;
         this->d_tv = this->robot_->w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
         for(int l = 0 ; l < n_leg ; l++)
         {
-            this->d_tv = this->d_tv * (this->w_thres/std::fmax(this->w_thres,this->leg_mng[l].wv_leg(0)));
+            if(this->leg_mng[l].wv_leg(0)>this->w_thres){
+                this->d_tv = this->d_tv * (1.0- slope*(this->leg_mng[l].wv_leg(0) -this->w_thres));
+            }
+            
+            if(this->d_tv<0){
+                this->d_tv = 0.0;
+            }
+            //this->d_tv = this->d_tv * (this->w_thres/std::fmax(this->w_thres,this->leg_mng[l].wv_leg(0)));
         }
         
        

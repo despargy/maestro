@@ -74,7 +74,7 @@ int main(int argc, char **argv)
         }
     }
 
-    sleep(2); // sleep for 2 seconds
+    sleep(6); // sleep for 2 seconds
 
     // ctrl->WaitToStabilize();
 
