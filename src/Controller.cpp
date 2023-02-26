@@ -32,7 +32,8 @@ namespace RCD
         // Pass Tree form URDF
         this->loadTree();
         // pas num of joints
-        robot_->num_joints = robot_kin.getNrOfJoints();  
+        robot_->num_joints = 12;//robot_kin.getNrOfJoints();   // CHANGED AFTER EXTRA FOOT ADDED TO SIMULATED IMU
+        // std::cout<< robot_kin.getNrOfJoints() <<std::endl;
         // for orientation tracking
         this->b_coef = 0.1;
         this->alpha = 1000.0;
@@ -94,6 +95,10 @@ namespace RCD
             leg_mng[i].q(0) = this->robot_->low_state_.motorState[i*3 + 0].q;
             leg_mng[i].q(1) = this->robot_->low_state_.motorState[i*3 + 1].q;
             leg_mng[i].q(2) = this->robot_->low_state_.motorState[i*3 + 2].q;
+            std::cout<<this->robot_->low_state_.motorState[i*3 + 0].q<<std::endl;
+            std::cout<<this->robot_->low_state_.motorState[i*3 + 1].q<<std::endl;
+            std::cout<<this->robot_->low_state_.motorState[i*3 + 2].q<<std::endl;
+
             // get foot Force on tip  
             leg_mng[i].f(0) = this->robot_->low_state_.eeForce[leg_mng[i].id].x;
             leg_mng[i].f(1) = this->robot_->low_state_.eeForce[leg_mng[i].id].y;
@@ -320,6 +325,7 @@ namespace RCD
             {
                 // compute Weights based on prob for slip detection
                 this->computeWeights(dt); 
+                std::cout<<"Compute weights"<<std::endl;
             }
             // updates Coriolis/Inertia Matrix etc.
             this->updateControlLaw(w_CoM);
@@ -337,9 +343,11 @@ namespace RCD
 
             Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
 
-            std::cout<<"e_p"<<e_p<<std::endl;
-            std::cout<<"e_o"<<e_o<<std::endl;
-            std::cout<<"e_v"<<e_v<<std::endl;
+            // std::cout<<"e_p"<<e_p<<std::endl;
+            // std::cout<<"e_o"<<e_o<<std::endl;
+            // std::cout<<"e_v"<<e_v<<std::endl;
+
+            std::cout<<"vvv"<<this->robot_->vvvv.transpose()<<std::endl;
 
             // Final Fc ep. 11
             this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*e_v + Gbc*this->robot_->gc ;

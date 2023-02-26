@@ -778,7 +778,7 @@
     <parent link="FR_calf"/>
     <child link="FR_foot"/>
     <axis xyz="1 0 0"/>
-    <dynamics damping="10" friction="10"/>
+    <dynamics damping="0.01" friction="0.2"/>
     <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="FR_foot">
@@ -994,7 +994,7 @@
     <parent link="FL_calf"/>
     <child link="FL_foot"/>
     <axis xyz="1 0 0"/>
-    <dynamics damping="10" friction="10"/>
+    <dynamics damping="0.01" friction="0.2"/>
     <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="FL_foot">
@@ -1210,7 +1210,7 @@
     <parent link="RR_calf"/>
     <child link="RR_foot"/>
     <axis xyz="1 0 0"/>
-    <dynamics damping="10" friction="10"/>
+    <dynamics damping="0.01" friction="0.2"/>
     <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="RR_foot">
@@ -1426,7 +1426,7 @@
     <parent link="RL_calf"/>
     <child link="RL_foot"/>
     <axis xyz="1 0 0"/>
-    <dynamics damping="10" friction="10"/>
+    <dynamics damping="0.01" friction="0.2"/>
     <limit effort="23.7" lower="-0.863" upper="0.863" velocity="30.1"/>
   </joint>
   <link name="RL_foot">
