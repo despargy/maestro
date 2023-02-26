@@ -5,7 +5,6 @@ GazeboInterpreter::GazeboInterpreter()
     ROS_INFO("Constrauctor GazeboInterpreter");
     this->n_sub = new ros::NodeHandle ;
     this->n_adv = new ros::NodeHandle ;
-    // this->n_sub.setCallbackQueue(&my_callback_queue);
 }
 GazeboInterpreter::~GazeboInterpreter()
 {

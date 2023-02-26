@@ -74,9 +74,7 @@ int main(int argc, char **argv)
         }
     }
 
-    sleep(6); // sleep for 2 seconds
-
-    // ctrl->WaitToStabilize();
+    sleep(2); // sleep for 2 seconds
 
     ROS_INFO("Control loop(): starts");
     ctrl->loop();

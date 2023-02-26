@@ -57,8 +57,6 @@ namespace RCD
     }
     void Controller::initDataHandler()
     {
-        // low_state pointer 
-        this->data_handler_->log_data.low_state = &(this->robot_->low_state_);
         // p_c pointer 
         this->data_handler_->log_data.p_c = &(this->robot_->p_c);
         // F_a pointer 
@@ -360,10 +358,11 @@ namespace RCD
                 // if (leg_mng[l].tau(2) > 5.0 || leg_mng[l].tau(2) < -5.0) 
                 //     std::cout<< leg_mng[l].tau <<std::endl;
             }
-            this->contactFrictionCones();
-            // MICHAEL  FOOT_IMU_ID IS FOOT to publish rotation, if world not needed remove this->robot_->R_c*
-            int FOOT_IMU_ID = 0;
-            this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
+
+            // FOOT_IMU_ID IS FOOT to publish rotation
+            // int FOOT_IMU_ID = 0;
+            // this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
+            
             // send New Torque Command
             this->setNewCmd();
             sleep_dt_ROS.sleep();
@@ -399,16 +398,13 @@ namespace RCD
         this->robot_->H_c.block(3,3,3,3) =  this->robot_->I_c ; 
         this->robot_->C_c.block(3,3,3,3) = this->math_lib.scewSymmetric(this->robot_->I_c*w_com);
     }
-    void Controller::contactFrictionCones()
-    {
-        for(int l = 0 ; l < n_leg ; l++)
-        {
-            this->leg_mng[l].f_tf_toBase = this->robot_->R_c*this->leg_mng[l].p.matrix().block(0,0,3,3)*this->leg_mng[l].f;
-            this->leg_mng[l].tip_is_stable = sqrt( std::pow(this->leg_mng[l].f_tf_toBase(0), 2.0) + std::pow(this->leg_mng[l].f_tf_toBase(1), 2.0) / this->leg_mng[l].f_tf_toBase(2)  <= this->leg_mng[l].fric_coef) ;
-            // if ( !leg_mng[l].tip_is_stable)
-                // std::cout<<"tip_is_UNstable "<<leg_mng[l].id<<"\n "<<this->leg_mng[l].tip_is_stable<<std::endl;
-        }
-    }
+    // void Controller::forceTrasform()
+    // {
+    //     for(int l = 0 ; l < n_leg ; l++)
+    //     {
+    //         this->leg_mng[l].f_tf_toBase = this->robot_->R_c*this->leg_mng[l].p.matrix().block(0,0,3,3)*this->leg_mng[l].f;
+    //     }
+    // }
     void Controller::setNewCmd()
     {
         for(int l = 0; l < this->n_leg ; l++)
@@ -418,58 +414,6 @@ namespace RCD
             next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
         }
         cmh_->sendLowCmd(this->next_LowCmd_);
-    }
-    void Controller::WaitToStabilize()
-    {
-        // init control time counter
-        this->time_start = std::chrono::system_clock::now();
-        // set dt    
-        double dt = 0.002;
-        double t_real = 0.0;
-        
-        Eigen::MatrixXd Gbc = Eigen::MatrixXd::Identity(6,6);
-        Eigen::Vector3d pbc ;
-        pbc << 0.0025 , 0.001 , 0.0;
-
-        this->setMaestroMotorGains();
-
-        while(t_real < 350.00) //
-        {
-            t_real += dt;
-            std::cout<<t_real<<std::endl;
-            // updates Legs variables n' Jacobian Matrix
-            this->updateLegs();
-
-            // if (this->cmh_->SLIP_DETECTION)
-            // {
-            //     // compute Weights based on prob for slip detection
-            //     this->computeWeights(dt); 
-            // }
-            // compute sudo Gq
-            this->computeSudoGq();
-            Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
-            // Final Fc ep. 11
-             //// SOSOSOSOSSOSOSOSOSO TODO  ERASE 
-            this->robot_->F_c =Gbc*this->robot_->gc ; 
-            // solve eq. 1 with respect to Fa
-            this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
-            // Torque control per leg 
-            for(int l = 0; l < this->n_leg ; l++)
-            {
-                this->leg_mng[l].f_cmd = -this->robot_->F_a.block(l*3,0,3,1); // slip Fa eq. 3
-                leg_mng[l].tau =  (this->robot_->R_c*(leg_mng[l].J.block<3,3>(0,0))).transpose()*leg_mng[l].f_cmd; // compute eq. 4
-            }
-            // send New Torque Command
-            for(int l = 0; l < this->n_leg ; l++)
-            {
-                next_LowCmd_.motorCmd[l*3+0].tau = (float) leg_mng[l].tau(0);
-                next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
-                next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
-            }
-            cmh_->sendLowCmd(this->next_LowCmd_);     
-            
-       }
-
     }
     void Controller::updateLegs()
     {   
@@ -568,7 +512,6 @@ namespace RCD
             /* send nextMotorCmd through lowCmd*/ 
             cmh_->sendLowCmd(this->next_LowCmd_);
             ros::Duration(0.002).sleep();
-      
         }
 
     }

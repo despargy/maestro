@@ -30,9 +30,6 @@ namespace RCD
 {
     class CommunicationHandler
     {
-    private:
-        const double tick = 0.001;
-
     public:
         const char* SIM_LOWCMD_TOPIC="/gazebo/lowCmd/command";
         const char* SIM_LOWSTATE_TOPIC="/gazebo/lowState/state";
@@ -59,7 +56,7 @@ namespace RCD
         bool IMU_OK_0, IMU_OK_1, IMU_OK_2, IMU_OK_3; 
         bool SLIP_DETECTION;
 
-        std_msgs::Float32MultiArray dat;
+        // std_msgs::Float32MultiArray dat;
 
         double t;
         float slip[4];
@@ -93,7 +90,7 @@ namespace RCD
         void lowSlip3Callback(const std_msgs::Float32& msg);
         // function to check init of imus
         bool ALLIMUOK();
-        void publishRotation(Eigen::Matrix3d R);
+        // void publishRotation(Eigen::Matrix3d R);
 
     };
 

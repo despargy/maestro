@@ -16,11 +16,10 @@ namespace RCD
             /* data */
             int *a;
             // ------ Logging Robot class ------ //
-            unitree_legged_msgs::LowState *low_state; // TODO
             Eigen::Vector3d *p_c;
             Eigen::VectorXd *F_a;
             Eigen::MatrixXd *R_c;
-
+            // vvvv, F_c
             // ------                       ------ //
             // ------ Logging Leg class ------ //
             Eigen::MatrixXd *J0, *J1, *J2, *J3;
@@ -31,14 +30,14 @@ namespace RCD
                 Eigen::Vector3d *tau;
                 double *prob_stab;
             }LegsProfile[4];
-            
+            // q 
             // Eigen::Vector3d tau[4];
             // double prob_stab[4];
             // ------                       ------ //
             // ------ Logging Controller class ------ //
 
             // ------                       ------ //
-            // ev, eo, ep
+            // ev, eo, ep, t_real, tv, d_tv
 
         }log_data;
 

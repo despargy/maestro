@@ -32,28 +32,26 @@ namespace RCD
     {
         Eigen::Vector3d p_d;
         double freq = 0.7;
-        // desired position of t_now = dt = time_elapsed
+        // x,y axis
         // p_d(0) = p_d0_(0) - (0.01-0.01*cos(2*M_PI*freq*t_real)); 
         // p_d(1) = p_d0_(1) + 0.01*sin(2*M_PI*freq*t_real); 
         // p_d(2) = p_d0_(2) ;//+ 0.0;
 
-        // x, z axis TODO extra change id od static axis 
+        // x, z axis 
         // p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*0.3*dt); 
         // p_d(1) = p_d0_(1) + 0.0; 
         // p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.25*dt) - 0.1;
 
-        // x, z axis TODO extra change id od static axis 
+        // x, z axis 
         p_d(0) = p_d0_(0) - 0.05*sin(2*M_PI*freq*t_real); 
         p_d(1) = p_d0_(1) + 0.0; 
         p_d(2) = p_d0_(2) -(0.05- 0.05*cos(2*M_PI*freq*t_real));
         return p_d;
     }
-    // SOS
     Eigen::Vector3d Math::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt, double t_real)
     {
         return (get_pDesiredTrajectory(p_d0_, t_real) - p_d_cur)/dt;
     }  
-    // SOS
     Eigen::Vector3d Math::get_ddpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur,Eigen::Vector3d dp_d_cur, double dt, double t_real)
     {
 
@@ -64,7 +62,6 @@ namespace RCD
     Eigen::Matrix3d Math::get_RDesiredRotationMatrix(Eigen::Quaterniond Q_0, double t_real)
     {
         Eigen::Quaterniond temp = Q_0;
-        // desired orientation of t_now = t_real
         temp.x() = Q_0.x() + 0.2*sin(2*0.2*M_PI*t_real);
         temp.normalize();
         return temp.toRotationMatrix(); 

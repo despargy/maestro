@@ -69,16 +69,16 @@ namespace RCD
 
         ////////////////////////////// PUBLISH ROTATION //////////////////////////////
             // Contact Friction Cones
-            this->pub_FootR_ = nh_cmh_->advertise<std_msgs::Float32MultiArray>(this->SIM_FOOTR_TOPIC,1);
-            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
-            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
-            this->dat.layout.dim[0].label = "height";
-            this->dat.layout.dim[1].label = "width";
-            this->dat.layout.dim[0].size = 3;
-            this->dat.layout.dim[1].size = 3;
-            this->dat.layout.dim[0].stride = 3*3;
-            this->dat.layout.dim[1].stride = 3;
-            this->dat.layout.data_offset = 0;
+            // this->pub_FootR_ = nh_cmh_->advertise<std_msgs::Float32MultiArray>(this->SIM_FOOTR_TOPIC,1);
+            // this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
+            // this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
+            // this->dat.layout.dim[0].label = "height";
+            // this->dat.layout.dim[1].label = "width";
+            // this->dat.layout.dim[0].size = 3;
+            // this->dat.layout.dim[1].size = 3;
+            // this->dat.layout.dim[0].stride = 3*3;
+            // this->dat.layout.dim[1].stride = 3;
+            // this->dat.layout.data_offset = 0;
 
         //////////////////////////////               //////////////////////////////
             if(this->SLIP_DETECTION)
@@ -166,15 +166,15 @@ namespace RCD
                 return true;
         return false;
     }
-    void CommunicationHandler::publishRotation(Eigen::Matrix3d R)
-    {
-        // std::cout<<"publishRotation"<<std::endl;
-        std::vector<float> vec(3*3, 0);
-        for (int i=0; i<3; i++)
-            for (int j=0; j<3; j++)
-                vec[i*3 + j] = R(i,j);
-        dat.data = vec;
-        pub_FootR_.publish(dat);
-        // ros::spinOnce();
-    }
+    // void CommunicationHandler::publishRotation(Eigen::Matrix3d R)
+    // {
+    //     // std::cout<<"publishRotation"<<std::endl;
+    //     std::vector<float> vec(3*3, 0);
+    //     for (int i=0; i<3; i++)
+    //         for (int j=0; j<3; j++)
+    //             vec[i*3 + j] = R(i,j);
+    //     dat.data = vec;
+    //     pub_FootR_.publish(dat);
+    //     // ros::spinOnce();
+    // }
 } // namespace CommunicationHandler 

@@ -65,9 +65,8 @@ namespace RCD
         void gravComp();
         void startingPose();
         void computeWeights(double dt);
-        void contactFrictionCones();
+        // void forceTrasform();
         void computeBeta_t();
-        void WaitToStabilize();
         void initDataHandler();
   };
 

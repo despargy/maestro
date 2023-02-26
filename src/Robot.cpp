@@ -37,8 +37,7 @@ namespace RCD
         // init W once
         vvvv.resize(12);
         this->w0=1.0;
-         vvvv = w0*Eigen::VectorXd::Ones(12); //TODO as Legs wv_leg init
-        // vvvv << 10,10,10,10,10,10,10,10,10,10,10,10; //TODO as Legs wv_leg init
+        vvvv = w0*Eigen::VectorXd::Ones(12); //as Legs wv_leg init
         this->W_inv = (vvvv.asDiagonal()).inverse();
 
         this->g_gravity = 9.80;
