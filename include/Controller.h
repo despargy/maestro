@@ -29,12 +29,13 @@ namespace RCD
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         int n_leg;
         double kp,ko,kv,b_coef, alpha;
-        double w_thres, d_tv, tv ;
+        double w_thres, d_tv, tv, t_real, dt ;
 
     public:
         // Chrono
-        std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
-        std::chrono::duration<double> time_elapsed;
+        // std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
+        // std::chrono::duration<double> time_elapsed;
+
         // Maestro obj.
         CommunicationHandler *cmh_;
         Robot *robot_;
@@ -45,6 +46,10 @@ namespace RCD
         KDL::Tree robot_kin;
         Math math_lib;
 
+        // Error variables
+        Eigen::Vector3d e_p, e_o;
+        Eigen::VectorXd e_v;
+        
         Controller();
         Controller( Robot* robot, CommunicationHandler* cmh, DataHandler* data_handler);
         ~Controller();

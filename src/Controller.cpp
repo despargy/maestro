@@ -39,6 +39,8 @@ namespace RCD
         this->alpha = 1000.0;
         this->w_thres = 100.0;
 
+        this->e_v.resize(6);
+
     }
     Controller::~Controller()
     {
@@ -219,20 +221,19 @@ namespace RCD
     void Controller::loop()
     {   
         // set dt    
-        double dt = 0.002;
-        double t_real = 0.0;
+        this->dt = 0.002;
+        this->t_real = 0.0;
 
-        // ROS TIME
-        double time_start_ROS = ros::Time::now().toSec();
-        double time_real_ROS = ros::Time::now().toSec();
-        double time_real_ROS_previous = ros::Time::now().toSec();
-
-        double dt_ROS = 0.0;
+        /* ROS TIME not used */
+        // double time_start_ROS = ros::Time::now().toSec();
+        // double time_real_ROS = ros::Time::now().toSec();
+        // double time_real_ROS_previous = ros::Time::now().toSec();
+        // double dt_ROS = 0.0;
 
         ros::Duration sleep_dt_ROS = ros::Duration(0.002);
 
-        tv = 0.0;
-        d_tv = 1.0;
+        this->tv = 0.0;
+        this->d_tv = 1.0;
         
         // Desired position variables
         Eigen::Vector3d p_d, dp_d, ddp_d;
@@ -247,10 +248,7 @@ namespace RCD
         // desired angular veocity
         Eigen::Vector3d w_d;
         Eigen::Vector3d RcRdTwd = Eigen::Vector3d::Zero();
-        // Error variables
-        Eigen::Vector3d e_p, e_o;
-        Eigen::VectorXd e_v;
-        e_v.resize(6);
+
         Eigen::AngleAxisd ang;
         Eigen::Matrix3d Re;
         // vector to help with eq. 11
@@ -266,7 +264,6 @@ namespace RCD
         Eigen::MatrixXd Gbc = Eigen::MatrixXd::Identity(6,6);
         Eigen::Vector3d pbc ;
         pbc << 0.0025 , 0.001 , 0.0;
-        // pbc << 0.0031 , 0.001 , 0.0;
 
         com_p_prev = p_d0;
         R_CoM_prev = R_d_0;
@@ -276,14 +273,13 @@ namespace RCD
         while(this->robot_->KEEP_CONTROL & ros::ok()) 
         {
 
-            // get delta t
-            time_real_ROS = ros::Time::now().toSec() - time_start_ROS; // whole time
-            dt_ROS = time_real_ROS - time_real_ROS_previous;
-
-            time_real_ROS_previous = time_real_ROS; // update time_real_ROS_previous uing time_real_ROS for the nect cycle
+            /* ROS TIME not used */
+            // time_real_ROS = ros::Time::now().toSec() - time_start_ROS; // whole time
+            // dt_ROS = time_real_ROS - time_real_ROS_previous;
+            // time_real_ROS_previous = time_real_ROS; // update time_real_ROS_previous uing time_real_ROS for the nect cycle
 
             // give dt or keep old time to compute ros dt?
-            t_real += dt;
+            this->t_real += this->dt;
             
             // tv += d_tv*dt;
 
@@ -291,32 +287,32 @@ namespace RCD
 
             // tv affects only desired trajectory scaling 
             // get next DESIRED position
-            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, dt, t_real);
-            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, dt, t_real);
-            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, t_real);
+            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->dt, this->t_real);
+            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, this->dt, this->t_real);
+            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, this->t_real);
             // get next DESIRED orientation
-            dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, dt, t_real);
-            R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, t_real);
+            dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, this->dt, this->t_real);
+            R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, this->t_real);
             // DESIRED angular velocity of Com
             w_d = this->math_lib.scewSymmetricInverse(dR_d*R_d.transpose());
             
             // compute CoM velocity
-            dCoM_p = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, dt);  
-            dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, dt); 
+            dCoM_p = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, this->dt);  
+            dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, this->dt); 
             w_CoM = this->math_lib.scewSymmetricInverse(dR_CoM*this->robot_->R_c.transpose());
 
 
             // compute position ERROR
-            e_p = this->robot_->p_c - p_d;
+            this->e_p = this->robot_->p_c - p_d;
             // compute orientation ERROR
             Re = this->robot_->R_c*R_d.transpose();
             ang.fromRotationMatrix(Re);
-            e_o = ang.angle()*ang.axis();
+            this->e_o = ang.angle()*ang.axis();
 
             // compute velocity ERROR
-            e_v.block(0,0,3,1) = dCoM_p - dp_d;
-            e_v.block(3,0,3,1) = w_CoM - this->robot_->R_c*R_d.transpose()*w_d ;
-            e_v.block(3,0,3,1) = 0.7*e_v.block(3,0,3,1) ;
+            this->e_v.block(0,0,3,1) = dCoM_p - dp_d;
+            this->e_v.block(3,0,3,1) = w_CoM - this->robot_->R_c*R_d.transpose()*w_d ;
+            this->e_v.block(3,0,3,1) = 0.7*this->e_v.block(3,0,3,1) ;
 
             // updates Legs variables n' Jacobian Matrix
             this->updateLegs();
@@ -324,7 +320,7 @@ namespace RCD
             if (this->cmh_->SLIP_DETECTION)
             {
                 // compute Weights based on prob for slip detection
-                this->computeWeights(dt); 
+                this->computeWeights(this->dt); 
                 std::cout<<"Compute weights"<<std::endl;
             }
             // updates Coriolis/Inertia Matrix etc.
@@ -332,14 +328,14 @@ namespace RCD
 
             // first term of Fc eq. 11
             fcontrol1.block(0,0,3,1) = ddp_d;
-            fcontrol1.block(3,0,3,1) = this->math_lib.deriv_RcRdTwd( RcRdTwd, this->robot_->R_c*R_d.transpose()*w_d, dt); 
+            fcontrol1.block(3,0,3,1) = this->math_lib.deriv_RcRdTwd( RcRdTwd, this->robot_->R_c*R_d.transpose()*w_d, this->dt); 
             RcRdTwd = this->robot_->R_c*R_d.transpose()*w_d;
             // second term of Fc eq. 11
             fcontrol2.block(0,0,3,1) = dp_d;
             fcontrol2.block(3,0,3,1) = RcRdTwd;
             // third term of Fc eq. 11
-            fcontrol3.block(0,0,3,1) = -this->kp*e_p;
-            fcontrol3.block(3,0,3,1) = -this->ko*e_o; 
+            fcontrol3.block(0,0,3,1) = -this->kp*this->e_p;
+            fcontrol3.block(3,0,3,1) = -this->ko*this->e_o; 
 
             Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
 
@@ -350,7 +346,7 @@ namespace RCD
             std::cout<<"vvv"<<this->robot_->vvvv.transpose()<<std::endl;
 
             // Final Fc ep. 11
-            this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*e_v + Gbc*this->robot_->gc ;
+            this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*this->e_v + Gbc*this->robot_->gc ;
             // solve eq. 1 with respect to Fa
             this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
                         

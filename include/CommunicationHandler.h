@@ -34,13 +34,14 @@ namespace RCD
         const char* SIM_LOWCMD_TOPIC="/gazebo/lowCmd/command";
         const char* SIM_LOWSTATE_TOPIC="/gazebo/lowState/state";
         const char* SIM_MODELSTATE_TOPIC="/gazebo/model_states";
-        const char* SIM_FOOTR_TOPIC="/maestro/foot/rotation";
 
         const char* REAL_LOWCMD_TOPIC="/low_cmd";
         const char* REAL_LOWSTATE_TOPIC="/low_state";
         const char* REAL_MODELSTATE_TOPIC="/TODO_COM"; //TODO
 
         const char* control_topic="/maestro/ctrl";
+        const char* FOOTR_TOPIC="/maestro/foot/rotation";
+
 
         const char* lowcmd_topic;
         const char* lowstate_topic;

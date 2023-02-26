@@ -66,21 +66,6 @@ namespace RCD
             
             this->sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::CoMStateCallback, this); // diff. Cb
         
-
-        ////////////////////////////// PUBLISH ROTATION //////////////////////////////
-            // Contact Friction Cones
-            this->pub_FootR_ = nh_cmh_->advertise<std_msgs::Float32MultiArray>(this->SIM_FOOTR_TOPIC,1);
-            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
-            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
-            this->dat.layout.dim[0].label = "height";
-            this->dat.layout.dim[1].label = "width";
-            this->dat.layout.dim[0].size = 3;
-            this->dat.layout.dim[1].size = 3;
-            this->dat.layout.dim[0].stride = 3*3;
-            this->dat.layout.dim[1].stride = 3;
-            this->dat.layout.data_offset = 0;
-
-        //////////////////////////////               //////////////////////////////
             if(this->SLIP_DETECTION)
             {
                 this->sub_Slip0_ = nh_slip_->subscribe(this->slip_0_topic, 1, &RCD::CommunicationHandler::lowSlip0Callback, this);
@@ -105,6 +90,21 @@ namespace RCD
         sub_LowState_ = nh_cmh_->subscribe(this->lowstate_topic, 1, &RCD::CommunicationHandler::lowStateCallback, this);
         pub_LowCmd_ = nh_cmh_->advertise<unitree_legged_msgs::LowCmd>(this->lowcmd_topic,1);
         sub_Control_ = nh_cmh_->subscribe(this->control_topic, 1, &RCD::CommunicationHandler::controlCallback, this);
+
+        ////////////////////////////// PUBLISH ROTATION //////////////////////////////
+            // Contact Friction Cones
+            this->pub_FootR_ = nh_cmh_->advertise<std_msgs::Float32MultiArray>(this->FOOTR_TOPIC,1);
+            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
+            this->dat.layout.dim.push_back(std_msgs::MultiArrayDimension());
+            this->dat.layout.dim[0].label = "height";
+            this->dat.layout.dim[1].label = "width";
+            this->dat.layout.dim[0].size = 3;
+            this->dat.layout.dim[1].size = 3;
+            this->dat.layout.dim[0].stride = 3*3;
+            this->dat.layout.dim[1].stride = 3;
+            this->dat.layout.data_offset = 0;
+        //////////////////////////////               //////////////////////////////
+        
     }
                                 /* Callbacks */
     void CommunicationHandler::lowSlip0Callback(const std_msgs::Float32& msg)
