@@ -37,7 +37,7 @@ namespace RCD
 
         const char* REAL_LOWCMD_TOPIC="/low_cmd";
         const char* REAL_LOWSTATE_TOPIC="/low_state";
-        const char* REAL_MODELSTATE_TOPIC="/TODO_COM"; //TODO
+        const char* REAL_MODELSTATE_TOPIC="/maestro/com_state"; 
 
         const char* control_topic="/maestro/ctrl";
         const char* FOOTR_TOPIC="/maestro/foot/rotation";
