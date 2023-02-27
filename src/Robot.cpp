@@ -11,7 +11,7 @@ namespace RCD
 
         this->R_c.resize(3,3);
         this->F_a.resize(12);
-        this->F_c.resize(12);
+        this->F_c.resize(6);
         this->Gq.resize(6,12);
         this->Gq_sudo.resize(12,6);
         this->gc.resize(6);

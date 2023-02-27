@@ -49,6 +49,10 @@ namespace RCD
         // Error variables
         Eigen::Vector3d e_p, e_o;
         Eigen::VectorXd e_v;
+        Eigen::Vector3d p_d;
+        Eigen::Matrix3d R_d;
+        Eigen::Vector3d w_d;
+        Eigen::Vector3d dp_d;
         
         Controller();
         Controller( Robot* robot, CommunicationHandler* cmh, DataHandler* data_handler);

@@ -60,22 +60,59 @@ namespace RCD
     }
     void Controller::initDataHandler()
     {
+                        /* Robot var. to be logged */
         // p_c pointer 
-        this->data_handler_->log_data.p_c = &(this->robot_->p_c);
-        // F_a pointer 
-        this->data_handler_->log_data.F_a = &(this->robot_->F_a);     
-        this->data_handler_->log_data.F_a->resize(12);
-             
+        this->data_handler_->log_data.p_c = &(this->robot_->p_c);             
         // R_c pointer
         this->data_handler_->log_data.R_c = &(this->robot_->R_c);
-        this->data_handler_->log_data.R_c->resize(3,3);
+        // this->data_handler_->log_data.R_c->resize(3,3);
+        // F_a pointer 
+        this->data_handler_->log_data.F_a = &(this->robot_->F_a);     
+        // this->data_handler_->log_data.F_a->resize(12);
+        // F_c pointer 
+        this->data_handler_->log_data.F_c = &(this->robot_->F_c);     
+        // this->data_handler_->log_data.F_c->resize(12);
+        // Weight vector
+        this->data_handler_->log_data.vvvv = &(this->robot_->vvvv);     
+        // this->data_handler_->log_data.vvvv->resize(12);
+
+        // p_d pointer 
+        this->data_handler_->log_data.p_d = &(this->p_d);             
+        // R_d pointer
+        this->data_handler_->log_data.R_d = &(this->R_d);
+
+                        /* Legs var. to be logged */
+        for(int l = 0 ; l < n_leg ; l++)
+        {
+            // id pointer
+            this->data_handler_->log_data.LegsProfile[l].id = &(this->leg_mng[l].id);
+            // J pointer
+            this->data_handler_->log_data.LegsProfile[l].J = &(this->leg_mng[l].J);
+            // tau pointer
+            this->data_handler_->log_data.LegsProfile[l].tau = &(this->leg_mng[l].tau);
+            // prob_stab pointer
+            this->data_handler_->log_data.LegsProfile[l].prob_stab = &(this->leg_mng[l].prob_stab);
+            // q pointer
+            this->data_handler_->log_data.LegsProfile[l].q = &(this->leg_mng[l].q);
+                        
+        }
+                        /* Controller var. to be logged */
+        // e_p pointer 
+        this->data_handler_->log_data.e_p = &(this->e_p); 
+        // e_o pointer 
+        this->data_handler_->log_data.e_o = &(this->e_o); 
+        // e_v pointer 
+        this->data_handler_->log_data.e_v = &(this->e_v); 
+        // t_real pointer 
+        this->data_handler_->log_data.t_real = &(this->t_real); 
+        // tv pointer 
+        this->data_handler_->log_data.tv = &(this->tv); 
+        // d_tv pointer 
+        this->data_handler_->log_data.d_tv = &(this->d_tv);       
+
         // std::cout<<this->data_handler_->log_data.R_c<<std::endl;
         // std::cout<<*(this->data_handler_->log_data.R_c)<<std::endl;
         // std::cout<<this->robot_->R_c<<std::endl;
-
-
-        // KEEP WITH OTHER LOGs TODO
-        this->data_handler_->log_data.LegsProfile[0].id = &(this->leg_mng[0].id);
     }
     void Controller::initLegsControl()
     {
@@ -97,10 +134,7 @@ namespace RCD
             leg_mng[i].q(0) = this->robot_->low_state_.motorState[i*3 + 0].q;
             leg_mng[i].q(1) = this->robot_->low_state_.motorState[i*3 + 1].q;
             leg_mng[i].q(2) = this->robot_->low_state_.motorState[i*3 + 2].q;
-            std::cout<<this->robot_->low_state_.motorState[i*3 + 0].q<<std::endl;
-            std::cout<<this->robot_->low_state_.motorState[i*3 + 1].q<<std::endl;
-            std::cout<<this->robot_->low_state_.motorState[i*3 + 2].q<<std::endl;
-
+           
             // get foot Force on tip  
             leg_mng[i].f(0) = this->robot_->low_state_.eeForce[leg_mng[i].id].x;
             leg_mng[i].f(1) = this->robot_->low_state_.eeForce[leg_mng[i].id].y;
@@ -236,17 +270,17 @@ namespace RCD
         this->d_tv = 1.0;
         
         // Desired position variables
-        Eigen::Vector3d p_d, dp_d, ddp_d;
+        Eigen::Vector3d ddp_d;
         Eigen::Vector3d p_d0(this->robot_->p_c);  // init pd0 from current state
-        p_d = this->math_lib.get_pDesiredTrajectory(p_d0, 0.0);
+        this->p_d = this->math_lib.get_pDesiredTrajectory(p_d0, 0.0);
         dp_d = Eigen::Vector3d::Zero();
         ddp_d = Eigen::Vector3d::Zero();
         // Desired orientation variables
-        Eigen::Matrix3d R_d, dR_d;
+        Eigen::Matrix3d dR_d;
         Eigen::Matrix3d R_d_0 =  this->robot_->R_c; 
         Eigen::Quaterniond Q_0(R_d_0); 
         // desired angular veocity
-        Eigen::Vector3d w_d;
+
         Eigen::Vector3d RcRdTwd = Eigen::Vector3d::Zero();
 
         Eigen::AngleAxisd ang;
@@ -339,17 +373,11 @@ namespace RCD
 
             Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
 
-            // std::cout<<"e_p"<<e_p<<std::endl;
-            // std::cout<<"e_o"<<e_o<<std::endl;
-            // std::cout<<"e_v"<<e_v<<std::endl;
-
-            std::cout<<"vvv"<<this->robot_->vvvv.transpose()<<std::endl;
-
             // Final Fc ep. 11
             this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*this->e_v + Gbc*this->robot_->gc ;
             // solve eq. 1 with respect to Fa
             this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
-                        
+            std::cout<<this->robot_->F_c<<std::endl;
             // Torque control per leg 
             for(int l = 0; l < this->n_leg ; l++)
             {
@@ -367,10 +395,13 @@ namespace RCD
             int FOOT_IMU_ID = 0;
             this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
             
+            // Write a new line at csv
+            this->data_handler_->logNow();
+
             // send New Torque Command
             this->setNewCmd();
             sleep_dt_ROS.sleep();
-
+            
         }
     }
     void Controller::computeBeta_t()

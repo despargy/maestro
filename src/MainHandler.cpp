@@ -24,7 +24,11 @@ int main(int argc, char **argv)
     RCD::Robot* robot = new RCD::Robot();
     RCD::CommunicationHandler* cmh = new RCD::CommunicationHandler(robot, &nh);
     RCD::Controller* ctrl = new RCD::Controller(robot, cmh, data_handler);
-    
+
+    // Open csv file    
+    data_handler->open();
+
+
     // Info for user
     if (!nh.getParam(robot->robot_name_ + "/robot_name", robot->robot_name_)){
         ROS_ERROR("No robot name given in namespace: '%s')", nh.getNamespace().c_str());
@@ -79,6 +83,9 @@ int main(int argc, char **argv)
     ROS_INFO("Control loop(): starts");
     ctrl->loop();
     ROS_INFO("Control loop(): ends");
+
+    // Close csv file    
+    data_handler->close();
 
     ros::waitForShutdown();
 
