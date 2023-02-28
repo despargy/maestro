@@ -36,8 +36,8 @@ namespace RCD
         // std::cout<< robot_kin.getNrOfJoints() <<std::endl;
         // for orientation tracking
         this->b_coef = 0.1;
-        this->alpha = 150.0; //100.0 //1000.0
-        this->w_thres = 1000.0; //100
+        this->alpha = 1000.0; //100.0 //1000.0
+        this->w_thres = 40.0; //100 // 1000
 
         this->e_v.resize(6);
 
@@ -317,6 +317,7 @@ namespace RCD
 
         while(this->robot_->KEEP_CONTROL & ros::ok()) 
         {
+            std::cout<<"t_real  "<< t_real<<std::endl;
 
             /* ROS TIME not used */
             // time_real_ROS = ros::Time::now().toSec() - time_start_ROS; // whole time
@@ -432,7 +433,7 @@ namespace RCD
     }
     void Controller::computeBeta_t()
     {
-        double slope = 0.0001;
+        double slope = 0.0001; //0.0001
         this->d_tv = this->leg_mng[0].w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
         for(int l = 0 ; l < n_leg ; l++)
         {
@@ -452,7 +453,7 @@ namespace RCD
         
        
         std::cout<<"wwww  "<< this->robot_->vvvv.transpose() << " ------- "<<"d_tv  "<< d_tv<<std::endl;
-        std::cout<<"d_tv  "<< d_tv<<std::endl;
+
     }
     void Controller::updateControlLaw(Eigen::Vector3d w_com)
     {

@@ -95,8 +95,8 @@
         <!-- ==================== RVIZ ==================== -->
         <!-- <node pkg="rviz" type="rviz" name="rviz" respawn="false" output="screen"
             args="-d $(find maestro)/rviz/go1_maestro.rviz"
-            unless="$(arg real_experiment)"  /> 
-             -->
+            unless="$(arg real_experiment)"  />  -->
+           
         <node pkg="maestro"  name="maestro_gazebo_interpreter" type="maestro_gazebo_interpreter"  
             output="screen" unless="$(arg real_experiment)"/> 
 
