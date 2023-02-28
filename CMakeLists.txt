@@ -89,6 +89,3 @@ add_executable(maestro_gazebo_interpreter src/GazeboInterpreter.cpp ${rcd_cpp_sr
 add_dependencies(maestro_gazebo_interpreter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages unitree_legged_msgs_gencpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(maestro_gazebo_interpreter   ${catkin_LIBRARIES})
 
-catkin_install_python(PROGRAMS src/my_go1_body_track.py
-DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)

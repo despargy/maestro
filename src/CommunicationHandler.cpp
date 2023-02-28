@@ -53,6 +53,9 @@ namespace RCD
         if (!this->nh_main_->getParam( this->ns + "/slip_detection", this->SLIP_DETECTION)){
             ROS_ERROR("No SLIP_DETECTION given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
         }
+        if (!this->nh_main_->getParam( this->ns + "/adapt_b", this->ADAPT_B)){
+            ROS_ERROR("No ADAPT_B given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
         // Select topics if is real or simulation
         if (!this->real_experiment_)
         {

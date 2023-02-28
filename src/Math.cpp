@@ -31,8 +31,8 @@ namespace RCD
     Eigen::Vector3d Math::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double t_real)
     {
         Eigen::Vector3d p_d;
-        double freq = 0.7;
         // x,y axis
+        double freq = 0.7; // TODO 0.7 0.85
         // p_d(0) = p_d0_(0) - (0.01-0.01*cos(2*M_PI*freq*t_real)); 
         // p_d(1) = p_d0_(1) + 0.01*sin(2*M_PI*freq*t_real); 
         // p_d(2) = p_d0_(2) ;//+ 0.0;

@@ -33,7 +33,8 @@ namespace RCD
         tau.resize(3);
         // Leg Weights based on Slip Prob 
         prob_stab = 1.0; // init as stable contact
-        wv_leg = Eigen::Vector3d::Ones();  
+        w0=35.0;
+        wv_leg = w0*Eigen::Vector3d::Ones();  
     }
     void Leg::kdlSolver()
     {

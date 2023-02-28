@@ -55,7 +55,7 @@ namespace RCD
         std::string ns = "/";  // as in group of 'basic.launch'
         int MODELSTATE_ID, NUM_IMUs;
         bool IMU_OK_0, IMU_OK_1, IMU_OK_2, IMU_OK_3; 
-        bool SLIP_DETECTION;
+        bool SLIP_DETECTION, ADAPT_B;
 
         std_msgs::Float32MultiArray dat;
 

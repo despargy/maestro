@@ -36,10 +36,10 @@ namespace RCD
         this->Gq.block(0,9,3,3) =  Eigen::Matrix3d::Identity();
         // init W once
         vvvv.resize(12);
-        this->w0=1.0;
-        vvvv = w0*Eigen::VectorXd::Ones(12); //as Legs wv_leg init
+
+        // vvvv = w0*Eigen::VectorXd::Ones(12); //as Legs wv_leg init
         // vvvv << 1,1,1    ,1,1,1,     1000,1000,1,        1,1,1;
-        this->W_inv = (vvvv.asDiagonal()).inverse();
+        // this->W_inv = (vvvv.asDiagonal()).inverse();
 
         this->g_gravity = 9.80;
         // mass and grav vector are set from CMH

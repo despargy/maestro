@@ -36,8 +36,8 @@ namespace RCD
         // std::cout<< robot_kin.getNrOfJoints() <<std::endl;
         // for orientation tracking
         this->b_coef = 0.1;
-        this->alpha = 1000.0;
-        this->w_thres = 100.0;
+        this->alpha = 150.0; //100.0 //1000.0
+        this->w_thres = 1000.0; //100
 
         this->e_v.resize(6);
 
@@ -57,6 +57,14 @@ namespace RCD
         this->updateLegs();
         // set pointers to DataHandler
         this->initDataHandler();
+        // init vvvv
+        for(int l = 0; l < this->n_leg ; l++)
+        {
+            // update vvvv vector of robot                          // z stays 1.0 do not change
+            this->robot_->vvvv.block(l*3,0,3,1) = this->leg_mng[l].wv_leg;   
+        }
+        // save as matrix the inverse of diagonal vvvv vector
+        this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
     }
     void Controller::initDataHandler()
     {
@@ -122,8 +130,8 @@ namespace RCD
         std::string l_name[this->n_leg] = {"FR_foot","FL_foot","RR_foot","RL_foot"};
         for(int i = 0; i < this->n_leg ; i++)
             leg_mng[i].initLegs(i, l_name[i], robot_kin);
-        if (this->n_leg*leg_mng[0].n_superV_joints != robot_->num_joints)  //eq. joint distribution, 3 per leg 
-        ROS_ERROR("Robot Joints Number Not Matching");
+        // if (this->n_leg*leg_mng[0].n_superV_joints != robot_->num_joints)  //eq. joint distribution, 3 per leg this cannot be used becasue we add extra foot link for fake imu data
+        // ROS_ERROR("Robot Joints Number Not Matching");
     }
     void Controller::getLegQF()
     {
@@ -157,7 +165,8 @@ namespace RCD
 
         for(int l = 0; l < this->n_leg ; l++)
         {
-            this->leg_mng[l].prob_stab = this->cmh_->slip[l];
+          //  std::cout<<"prob: " << this->cmh_->slip[l]<<std::endl;
+            this->leg_mng[l].prob_stab = std::fmin(this->cmh_->slip[l],1.0)/1.0;
             this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
             this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
             
@@ -269,6 +278,8 @@ namespace RCD
         this->tv = 0.0;
         this->d_tv = 1.0;
         
+        double t_to_use = 0.0; // will take values from t_real or virtual time tv
+
         // Desired position variables
         Eigen::Vector3d ddp_d;
         Eigen::Vector3d p_d0(this->robot_->p_c);  // init pd0 from current state
@@ -311,22 +322,40 @@ namespace RCD
             // time_real_ROS = ros::Time::now().toSec() - time_start_ROS; // whole time
             // dt_ROS = time_real_ROS - time_real_ROS_previous;
             // time_real_ROS_previous = time_real_ROS; // update time_real_ROS_previous uing time_real_ROS for the nect cycle
+            // std::cout<<dt_ROS<<std::endl;
+        ////// TO HERE ////////
+            // updates Legs variables n' Jacobian Matrix
+            this->updateLegs();
+
+            if (this->cmh_->SLIP_DETECTION)
+            {
+                // compute Weights based on prob for slip detection
+                this->computeWeights(this->dt); 
+            }
+        /////////////////////
 
             // give dt or keep old time to compute ros dt?
             this->t_real += this->dt;
-            
-            // tv += d_tv*dt;
+            t_to_use = this->t_real;
 
-            this->computeBeta_t();
+            if(this->cmh_->ADAPT_B)
+            {
+                // std::cout<< "in ADAPT_B"<<std::endl;
+                this->computeBeta_t(); // updates d_tv in Controller
+                this->tv += this->d_tv*this->dt; 
+                t_to_use = this->tv;
+            }
+
+            // std::cout<<"virtual "<<this->tv<<"\t real "<<this->t_real<<std::endl;
 
             // tv affects only desired trajectory scaling 
             // get next DESIRED position
-            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->dt, this->t_real);
-            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, this->dt, this->t_real);
-            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, this->t_real);
+            ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->dt, t_to_use);
+            dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, this->dt, t_to_use);
+            p_d = this->math_lib.get_pDesiredTrajectory(p_d0, t_to_use);
             // get next DESIRED orientation
-            dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, this->dt, this->t_real);
-            R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, this->t_real);
+            dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, this->dt, t_to_use);
+            R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, t_to_use);
             // DESIRED angular velocity of Com
             w_d = this->math_lib.scewSymmetricInverse(dR_d*R_d.transpose());
             
@@ -335,6 +364,9 @@ namespace RCD
             dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, this->dt); 
             w_CoM = this->math_lib.scewSymmetricInverse(dR_CoM*this->robot_->R_c.transpose());
 
+            // update
+            com_p_prev = this->robot_->p_c;
+            R_CoM_prev = this->robot_->R_c;
 
             // compute position ERROR
             this->e_p = this->robot_->p_c - p_d;
@@ -348,15 +380,10 @@ namespace RCD
             this->e_v.block(3,0,3,1) = w_CoM - this->robot_->R_c*R_d.transpose()*w_d ;
             this->e_v.block(3,0,3,1) = 0.7*this->e_v.block(3,0,3,1) ;
 
-            // updates Legs variables n' Jacobian Matrix
-            this->updateLegs();
+        //// FROM HERE ////
+        //////////////////
 
-            if (this->cmh_->SLIP_DETECTION)
-            {
-                // compute Weights based on prob for slip detection
-                this->computeWeights(this->dt); 
-                std::cout<<"Compute weights"<<std::endl;
-            }
+
             // updates Coriolis/Inertia Matrix etc.
             this->updateControlLaw(w_CoM);
 
@@ -377,7 +404,6 @@ namespace RCD
             this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*this->e_v + Gbc*this->robot_->gc ;
             // solve eq. 1 with respect to Fa
             this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
-            std::cout<<this->robot_->F_c<<std::endl;
             // Torque control per leg 
             for(int l = 0; l < this->n_leg ; l++)
             {
@@ -406,23 +432,27 @@ namespace RCD
     }
     void Controller::computeBeta_t()
     {
-        double slope = 0.001;
-        this->d_tv = this->robot_->w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
+        double slope = 0.0001;
+        this->d_tv = this->leg_mng[0].w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
         for(int l = 0 ; l < n_leg ; l++)
         {
             if(this->leg_mng[l].wv_leg(0)>this->w_thres){
                 this->d_tv = this->d_tv * (1.0- slope*(this->leg_mng[l].wv_leg(0) -this->w_thres));
             }
-            
+
+
             if(this->d_tv<0){
                 this->d_tv = 0.0;
             }
+            
+            // std::cout<<"d tv after < 0 check"<<this->d_tv<<std::endl;
+
             //this->d_tv = this->d_tv * (this->w_thres/std::fmax(this->w_thres,this->leg_mng[l].wv_leg(0)));
         }
         
        
         std::cout<<"wwww  "<< this->robot_->vvvv.transpose() << " ------- "<<"d_tv  "<< d_tv<<std::endl;
-        //std::cout<<"d_tv  "<< d_tv<<std::endl;
+        std::cout<<"d_tv  "<< d_tv<<std::endl;
     }
     void Controller::updateControlLaw(Eigen::Vector3d w_com)
     {

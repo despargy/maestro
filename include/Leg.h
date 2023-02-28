@@ -35,7 +35,7 @@ namespace RCD
         int n_superV_joints;
         std::string base_frame;
         std::string tip_frame;
-        double prob_stab;
+        double prob_stab, w0;
         //KDL
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;

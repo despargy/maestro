@@ -46,6 +46,7 @@ namespace RCD
         KDL::Tree robot_kin;
         Math math_lib;
 
+
         // Error variables
         Eigen::Vector3d e_p, e_o;
         Eigen::VectorXd e_v;
