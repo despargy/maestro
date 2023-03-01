@@ -33,7 +33,6 @@ namespace RCD
         this->loadTree();
         // pas num of joints
         robot_->num_joints = 12;//robot_kin.getNrOfJoints();   // CHANGED AFTER EXTRA FOOT ADDED TO SIMULATED IMU
-        // std::cout<< robot_kin.getNrOfJoints() <<std::endl;
         // for orientation tracking
         this->b_coef = 0.1;
         this->alpha = 1000.0; //100.0 //1000.0
@@ -71,39 +70,16 @@ namespace RCD
                         /* Robot var. to be logged */
         // p_c pointer 
         this->data_handler_->log_data.p_c = &(this->robot_->p_c);             
-        // R_c pointer
-        this->data_handler_->log_data.R_c = &(this->robot_->R_c);
-        // this->data_handler_->log_data.R_c->resize(3,3);
-        // F_a pointer 
-        this->data_handler_->log_data.F_a = &(this->robot_->F_a);     
-        // this->data_handler_->log_data.F_a->resize(12);
-        // F_c pointer 
-        this->data_handler_->log_data.F_c = &(this->robot_->F_c);     
-        // this->data_handler_->log_data.F_c->resize(12);
         // Weight vector
         this->data_handler_->log_data.vvvv = &(this->robot_->vvvv);     
-        // this->data_handler_->log_data.vvvv->resize(12);
-
         // p_d pointer 
-        this->data_handler_->log_data.p_d = &(this->p_d);             
-        // R_d pointer
-        this->data_handler_->log_data.R_d = &(this->R_d);
+        this->data_handler_->log_data.p_d = &(this->p_d);    
+        // probs
+        this->data_handler_->log_data.leg_prob_0 = &(this->leg_mng[0].prob_stab)  ;       
+        this->data_handler_->log_data.leg_prob_1 = &(this->leg_mng[1].prob_stab)  ;       
+        this->data_handler_->log_data.leg_prob_2 = &(this->leg_mng[2].prob_stab)  ;       
+        this->data_handler_->log_data.leg_prob_3 = &(this->leg_mng[3].prob_stab)  ;       
 
-                        /* Legs var. to be logged */
-        for(int l = 0 ; l < n_leg ; l++)
-        {
-            // id pointer
-            this->data_handler_->log_data.LegsProfile[l].id = &(this->leg_mng[l].id);
-            // J pointer
-            this->data_handler_->log_data.LegsProfile[l].J = &(this->leg_mng[l].J);
-            // tau pointer
-            this->data_handler_->log_data.LegsProfile[l].tau = &(this->leg_mng[l].tau);
-            // prob_stab pointer
-            this->data_handler_->log_data.LegsProfile[l].prob_stab = &(this->leg_mng[l].prob_stab);
-            // q pointer
-            this->data_handler_->log_data.LegsProfile[l].q = &(this->leg_mng[l].q);
-                        
-        }
                         /* Controller var. to be logged */
         // e_p pointer 
         this->data_handler_->log_data.e_p = &(this->e_p); 
@@ -118,9 +94,8 @@ namespace RCD
         // d_tv pointer 
         this->data_handler_->log_data.d_tv = &(this->d_tv);       
 
-        // std::cout<<this->data_handler_->log_data.R_c<<std::endl;
-        // std::cout<<*(this->data_handler_->log_data.R_c)<<std::endl;
-        // std::cout<<this->robot_->R_c<<std::endl;
+        this->data_handler_->KEEP_CONTROL = &(this->robot_->KEEP_CONTROL);
+
     }
     void Controller::initLegsControl()
     {
@@ -165,8 +140,8 @@ namespace RCD
 
         for(int l = 0; l < this->n_leg ; l++)
         {
-          //  std::cout<<"prob: " << this->cmh_->slip[l]<<std::endl;
-            this->leg_mng[l].prob_stab = std::fmin(this->cmh_->slip[l],1.0)/1.0;
+            this->leg_mng[l].prob_stab = std::fmin(this->cmh_->slip[l],0.2)/0.2;
+            this->leg_mng[2].prob_stab = 0.5;
             this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
             this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
             
@@ -341,13 +316,10 @@ namespace RCD
 
             if(this->cmh_->ADAPT_B)
             {
-                // std::cout<< "in ADAPT_B"<<std::endl;
                 this->computeBeta_t(); // updates d_tv in Controller
                 this->tv += this->d_tv*this->dt; 
                 t_to_use = this->tv;
             }
-
-            // std::cout<<"virtual "<<this->tv<<"\t real "<<this->t_real<<std::endl;
 
             // tv affects only desired trajectory scaling 
             // get next DESIRED position
@@ -423,7 +395,7 @@ namespace RCD
             this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
             
             // Write a new line at csv
-            this->data_handler_->logNow();
+            this->data_handler_->logData();
 
             // send New Torque Command
             this->setNewCmd();
@@ -435,21 +407,17 @@ namespace RCD
     {
         double slope = 0.0001; //0.0001
         this->d_tv = this->leg_mng[0].w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
-        for(int l = 0 ; l < n_leg ; l++)
-        {
-            if(this->leg_mng[l].wv_leg(0)>this->w_thres){
-                this->d_tv = this->d_tv * (1.0- slope*(this->leg_mng[l].wv_leg(0) -this->w_thres));
-            }
+        // for(int l = 0 ; l < n_leg ; l++)
+        // {
+        //     if(this->leg_mng[l].wv_leg(0)>this->w_thres){
+        //         this->d_tv = this->d_tv * (1.0- slope*(this->leg_mng[l].wv_leg(0) -this->w_thres));
+        //     }
 
 
-            if(this->d_tv<0){
-                this->d_tv = 0.0;
-            }
-            
-            // std::cout<<"d tv after < 0 check"<<this->d_tv<<std::endl;
-
-            //this->d_tv = this->d_tv * (this->w_thres/std::fmax(this->w_thres,this->leg_mng[l].wv_leg(0)));
-        }
+        //     if(this->d_tv<0){
+        //         this->d_tv = 0.0;
+        //     }
+        // }
         
        
         std::cout<<"wwww  "<< this->robot_->vvvv.transpose() << " ------- "<<"d_tv  "<< d_tv<<std::endl;

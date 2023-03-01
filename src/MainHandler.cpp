@@ -11,6 +11,22 @@
 #include <ctime> 
 
 using namespace ros;
+
+// RCD::DataHandler* data_handler = new RCD::DataHandler();
+
+// void* keepWritting(void* args)
+// {
+//     usleep(2000);
+//     while(*(data_handler->KEEP_CONTROL))
+//     {
+//         data_handler->logData();
+//         usleep(1000);
+//     }
+//     data_handler->closeOnce();
+//     pthread_exit(NULL);
+// }
+
+
 int main(int argc, char **argv)
 {
     // Init ROS node
@@ -26,8 +42,7 @@ int main(int argc, char **argv)
     RCD::Controller* ctrl = new RCD::Controller(robot, cmh, data_handler);
 
     // Open csv file    
-    data_handler->open();
-
+    data_handler->openOnce();
 
     // Info for user
     if (!nh.getParam(robot->robot_name_ + "/robot_name", robot->robot_name_)){
@@ -45,23 +60,13 @@ int main(int argc, char **argv)
     // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
 
-    // std::cout << "MAESTRO CONTROL: " << std::endl
-    //           << "Make sure the robot is standing on the ground." << std::endl
-    //           << "Press Enter: Next Starting Pose..." << std::endl;
-    // std::cin.ignore();
-
     sleep(1); // sleep for 1 second
 
     // Initialize Controller
     ctrl->initControl();
-
-    // std::cout<<cmh->ALLIMUOK()<<std::endl;
-    ROS_INFO("IMU status %d", cmh->ALLIMUOK());
-
-    // std::cout << "MAESTRO CONTROL: " << std::endl
-    //           << "Make sure the robot is standing on the ground." << std::endl
-    //           << "Press Enter: Next StandUp..." << std::endl;
-    // std::cin.ignore();
+    
+    // // std::cout<<cmh->ALLIMUOK()<<std::endl;
+    // ROS_INFO("IMU status %d", cmh->ALLIMUOK());
 
     sleep(1); // sleep for 1 second
 
@@ -80,12 +85,16 @@ int main(int argc, char **argv)
 
     sleep(2); // sleep for 2 seconds
 
+    // pthread_t ptid;
+    // // Creating a new thread
+    // pthread_create(&ptid, NULL, &keepWritting, NULL);
+
     ROS_INFO("Control loop(): starts");
     ctrl->loop();
     ROS_INFO("Control loop(): ends");
 
     // Close csv file    
-    data_handler->close();
+    data_handler->closeOnce();
 
     ros::waitForShutdown();
 
