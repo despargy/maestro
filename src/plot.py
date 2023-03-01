@@ -101,37 +101,37 @@ plt.title("Virtual time")
 
 
 plt.figure()
-plt.plot(t_real,prob_0)
-plt.plot(t_real,prob_1)
-plt.plot(t_real,prob_2)
-plt.plot(t_real,prob_3)
+plt.scatter(t_real,prob_0, s=2)
+plt.scatter(t_real,prob_1, s=2)
+plt.scatter(t_real,prob_2, s=2)
+plt.scatter(t_real,prob_3, s=2)
 plt.xlabel("t_real")
 plt.ylabel("Probs")
 plt.title("Probs ALL")
 
 plt.figure()
-plt.plot(t_real,prob_0)
+plt.scatter(t_real,prob_0, s=2)
 plt.xlabel("t_real")
 plt.ylabel("Prob 0")
 plt.title("Probs O")
 
 
 plt.figure()
-plt.plot(t_real,prob_1)
+plt.scatter(t_real,prob_1, s=2)
 plt.xlabel("t_real")
 plt.ylabel("Prob 1")
 plt.title("Probs 1")
 
 
 plt.figure()
-plt.plot(t_real,prob_2)
+plt.scatter(t_real,prob_2, s=2)
 plt.xlabel("t_real")
 plt.ylabel("Prob 2")
 plt.title("Probs 2")
 
 
 plt.figure()
-plt.plot(t_real,prob_3)
+plt.scatter(t_real,prob_3, s=2)
 plt.xlabel("t_real")
 plt.ylabel("Prob 3")
 plt.title("Probs 3")

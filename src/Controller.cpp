@@ -35,7 +35,7 @@ namespace RCD
         robot_->num_joints = 12;//robot_kin.getNrOfJoints();   // CHANGED AFTER EXTRA FOOT ADDED TO SIMULATED IMU
         // for orientation tracking
         this->b_coef = 0.1;
-        this->alpha = 1000.0; //100.0 //1000.0
+        this->alpha = 150.0; //100.0 //1000.0
         this->w_thres = 40.0; //100 // 1000
 
         this->e_v.resize(6);
@@ -140,8 +140,7 @@ namespace RCD
 
         for(int l = 0; l < this->n_leg ; l++)
         {
-            this->leg_mng[l].prob_stab = std::fmin(this->cmh_->slip[l],0.2)/0.2;
-            this->leg_mng[2].prob_stab = 0.5;
+            this->leg_mng[l].prob_stab = std::fmin(this->cmh_->slip[l],1.0)/1.0;
             this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
             this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
             
