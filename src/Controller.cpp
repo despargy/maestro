@@ -35,9 +35,8 @@ namespace RCD
         robot_->num_joints = 12;//robot_kin.getNrOfJoints();   // CHANGED AFTER EXTRA FOOT ADDED TO SIMULATED IMU
         // for orientation tracking
         this->b_coef = 0.1;
-        this->alpha = 150.0; //100.0 //1000.0
-        this->w_thres = 40.0; //100 // 1000
-
+        this->alpha = 150.0;  // simulation     
+        this->alpha = 1000.0;   // real
         this->e_v.resize(6);
 
     }
@@ -50,6 +49,10 @@ namespace RCD
     {
         // Init Leg manager for each leg
         this->initLegsControl();
+
+        // std::cout<<"Now you have low state data"<<std::endl;
+        std::cout<<"BEFORE STARTING POSE"<<std::endl;
+
         // Set the starting pose before stands up
         this->startingPose(); 
         // get joint qs and solveKDL for initialization
@@ -93,9 +96,6 @@ namespace RCD
         this->data_handler_->log_data.tv = &(this->tv); 
         // d_tv pointer 
         this->data_handler_->log_data.d_tv = &(this->d_tv);       
-
-        this->data_handler_->KEEP_CONTROL = &(this->robot_->KEEP_CONTROL);
-
     }
     void Controller::initLegsControl()
     {
@@ -194,58 +194,59 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+0].Kp = 0;
                 this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.0;
                 this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+1].Kp = 0;
                 this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 8.0;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.0;
                 this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+2].Kp = 0;
                 this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 15.0;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.0;
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
         }
     }
     void Controller::startingPose()
     {
+        // For real robot to get the frst low state data
+        if(this->cmh_->real_experiment_)
+        {
+            std::cout<<"IS REAL firstCommandForRealRobot"<<std::endl;
+            this->firstCommandForRealRobot();
+        }
         // Motor Params
         this->initMotorParamsHard();
-        
-        // set tau
-        // gravity compensation change tau
+
+        // gravity compensation change tau // SIMULATION ONLY
         ROS_INFO("gravComp(): starts");
         this->gravComp(); // runs for 5 secs
         ROS_INFO("gravComp(): ends");
 
+        this->cmh_->sendLowCmd(this->next_LowCmd_); // LALA den xreiazetai genika
+        ros::Duration(0.002).sleep();
+        
         double start_pos[robot_->num_joints] = {0.2,  +1.5, -M_PI, 0.2,  +1.5, -M_PI, 
                                             0.2,  +1.5, -M_PI,0.2,  +1.5, -M_PI};
         moveDesiredQs(start_pos, 2*1000);
 
-        this->cmh_->sendLowCmd(this->next_LowCmd_);
-        ros::Duration(0.002).sleep();
+
     }
     void Controller::gravComp()
     {
         // gravity compensation
-        this->next_LowCmd_.motorCmd[0].tau = -1.65f; //FR_0
-        this->next_LowCmd_.motorCmd[3].tau = +1.65f; //FL_0
-        this->next_LowCmd_.motorCmd[6].tau = -1.65f;  //RR_0
-        this->next_LowCmd_.motorCmd[9].tau = +1.65f; //RL_0
+        this->next_LowCmd_.motorCmd[0].tau = -0.65f; //FR_0
+        this->next_LowCmd_.motorCmd[3].tau = +0.65f; //FL_0
+        this->next_LowCmd_.motorCmd[6].tau = -0.65f;  //RR_0
+        this->next_LowCmd_.motorCmd[9].tau = +0.65f; //RL_0
     }
     void Controller::loop()
     {   
         // set dt    
         this->dt = 0.002;
         this->t_real = 0.0;
-
-        /* ROS TIME not used */
-        // double time_start_ROS = ros::Time::now().toSec();
-        // double time_real_ROS = ros::Time::now().toSec();
-        // double time_real_ROS_previous = ros::Time::now().toSec();
-        // double dt_ROS = 0.0;
 
         ros::Duration sleep_dt_ROS = ros::Duration(0.002);
 
@@ -257,6 +258,17 @@ namespace RCD
         // Desired position variables
         Eigen::Vector3d ddp_d;
         Eigen::Vector3d p_d0(this->robot_->p_c);  // init pd0 from current state
+        
+ 
+        // Eigen::Vector3d init_off;
+        // init_off << 0.02, 0.01, -0.001;
+        // // for trajectory 2
+        // p_d0 = this->robot_->p_c + init_off;
+
+        // this->math_lib.p_T << 0.1, 0.05, -0.05;
+        // this->math_lib.p_T = this->math_lib.p_T + p_d0;
+
+        // PICK GENERAL TRAJ 
         this->p_d = this->math_lib.get_pDesiredTrajectory(p_d0, 0.0);
         dp_d = Eigen::Vector3d::Zero();
         ddp_d = Eigen::Vector3d::Zero();
@@ -282,7 +294,8 @@ namespace RCD
 
         Eigen::MatrixXd Gbc = Eigen::MatrixXd::Identity(6,6);
         Eigen::Vector3d pbc ;
-        pbc << 0.0025 , 0.001 , 0.0;
+        pbc << 0.0025 , 0.001 , 0.0; // sim     
+        // pbc << 0.001 , 0.001 , 0.0; // real
 
         com_p_prev = p_d0;
         R_CoM_prev = R_d_0;
@@ -293,12 +306,6 @@ namespace RCD
         {
             std::cout<<"t_real  "<< t_real<<std::endl;
 
-            /* ROS TIME not used */
-            // time_real_ROS = ros::Time::now().toSec() - time_start_ROS; // whole time
-            // dt_ROS = time_real_ROS - time_real_ROS_previous;
-            // time_real_ROS_previous = time_real_ROS; // update time_real_ROS_previous uing time_real_ROS for the nect cycle
-            // std::cout<<dt_ROS<<std::endl;
-        ////// TO HERE ////////
             // updates Legs variables n' Jacobian Matrix
             this->updateLegs();
 
@@ -307,7 +314,6 @@ namespace RCD
                 // compute Weights based on prob for slip detection
                 this->computeWeights(this->dt); 
             }
-        /////////////////////
 
             // give dt or keep old time to compute ros dt?
             this->t_real += this->dt;
@@ -325,6 +331,7 @@ namespace RCD
             ddp_d = this->math_lib.get_ddpDesiredTrajectory(p_d0, p_d, dp_d, this->dt, t_to_use);
             dp_d = this->math_lib.get_dpDesiredTrajectory(p_d0, p_d, this->dt, t_to_use);
             p_d = this->math_lib.get_pDesiredTrajectory(p_d0, t_to_use);
+            
             // get next DESIRED orientation
             dR_d = this->math_lib.get_dRDesiredRotationMatrix(Q_0, R_d, this->dt, t_to_use);
             R_d = this->math_lib.get_RDesiredRotationMatrix(Q_0, t_to_use);
@@ -343,8 +350,8 @@ namespace RCD
             // compute position ERROR
             this->e_p = this->robot_->p_c - p_d;
             // compute orientation ERROR
-            Re = this->robot_->R_c*R_d.transpose();
             ang.fromRotationMatrix(Re);
+            Re = this->robot_->R_c*R_d.transpose();
             this->e_o = ang.angle()*ang.axis();
 
             // compute velocity ERROR
@@ -352,9 +359,12 @@ namespace RCD
             this->e_v.block(3,0,3,1) = w_CoM - this->robot_->R_c*R_d.transpose()*w_d ;
             this->e_v.block(3,0,3,1) = 0.7*this->e_v.block(3,0,3,1) ;
 
-        //// FROM HERE ////
-        //////////////////
+            // std::cout<<"e_p  "<< e_p.transpose()<<std::endl;
+            // std::cout<<"e_o  "<< e_o.transpose()<<std::endl;
+            // std::cout<<"e_v  "<< e_v.transpose()<<std::endl;
 
+            std::cout<<"p_c  "<< this->robot_->p_c.transpose()<<std::endl;
+            // std::cout<<"e_o  "<< e_o.transpose()<<std::endl;
 
             // updates Coriolis/Inertia Matrix etc.
             this->updateControlLaw(w_CoM);
@@ -382,11 +392,11 @@ namespace RCD
                 this->leg_mng[l].f_cmd = -this->robot_->F_a.block(l*3,0,3,1); // slip Fa eq. 3
                 leg_mng[l].tau =  (this->robot_->R_c*(leg_mng[l].J.block<3,3>(0,0))).transpose()*leg_mng[l].f_cmd; // compute eq. 4
                 // if (leg_mng[l].tau(0) > 5.0 || leg_mng[l].tau(0) < -5.0) 
-                //     std::cout<< leg_mng[l].tau <<std::endl;
+                //     std::cout<<"TAU limit \t" <<leg_mng[l].tau.transpose() <<std::endl;
                 // if (leg_mng[l].tau(1) > 5.0 || leg_mng[l].tau(1) < -5.0) 
-                //     std::cout<< leg_mng[l].tau <<std::endl;
+                //     std::cout<<"TAU limit \t"<< leg_mng[l].tau.transpose() <<std::endl;
                 // if (leg_mng[l].tau(2) > 5.0 || leg_mng[l].tau(2) < -5.0) 
-                //     std::cout<< leg_mng[l].tau <<std::endl;
+                //     std::cout<<"TAU limit \t" << leg_mng[l].tau.transpose() <<std::endl;
             }
 
             // FOOT_IMU_ID IS FOOT to publish rotation
@@ -404,21 +414,8 @@ namespace RCD
     }
     void Controller::computeBeta_t()
     {
-        double slope = 0.0001; //0.0001
+        double slope = 0.0001;
         this->d_tv = this->leg_mng[0].w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
-        // for(int l = 0 ; l < n_leg ; l++)
-        // {
-        //     if(this->leg_mng[l].wv_leg(0)>this->w_thres){
-        //         this->d_tv = this->d_tv * (1.0- slope*(this->leg_mng[l].wv_leg(0) -this->w_thres));
-        //     }
-
-
-        //     if(this->d_tv<0){
-        //         this->d_tv = 0.0;
-        //     }
-        // }
-        
-       
         std::cout<<"wwww  "<< this->robot_->vvvv.transpose() << " ------- "<<"d_tv  "<< d_tv<<std::endl;
 
     }
@@ -496,24 +493,23 @@ namespace RCD
         }
         else
         {   
-            ROS_INFO("SOSOSOSOSOSOSSOSO tune");   //TODO 
             for(int i=0; i<n_leg; i++)
             {
                 // Init motor Parameter for Real
                 this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+0].Kp = 15.0;
+                this->next_LowCmd_.motorCmd[i*3+0].Kp = 10.0;
                 this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+1].Kp = 15.0;
+                this->next_LowCmd_.motorCmd[i*3+1].Kp = 50.0;
                 this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+2].Kp = 15.0;
+                this->next_LowCmd_.motorCmd[i*3+2].Kp = 70.0;
                 this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 3.0;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
             for(int i=0; i<robot_->num_joints; i++)
@@ -533,7 +529,11 @@ namespace RCD
     void Controller::moveDesiredQs(double* targetPos, double duration)
     {
         double pos[robot_->num_joints] ,lastPos[robot_->num_joints], percent;
-        for(int j=0; j<12; j++) lastPos[j] = robot_->low_state_.motorState[j].q;
+        for(int j=0; j<12; j++)
+        {
+            lastPos[j] = robot_->low_state_.motorState[j].q;
+        }   
+        // LALA
         for(int i=1; i<=duration; i++)
         {
             if(!ros::ok()) break;
@@ -547,6 +547,47 @@ namespace RCD
             ros::Duration(0.002).sleep();
         }
 
+    }
+    void Controller::firstCommandForRealRobot()
+    {
+        next_LowCmd_.head[0] = 0xFE;
+        next_LowCmd_.head[1] = 0xEF;
+        next_LowCmd_.levelFlag = 0xff; // LOWLEVEL
+        for(int i=0; i<n_leg; i++)
+        {
+            // Init motor Parameter for Real
+            this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
+            this->next_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
+            this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
+            this->next_LowCmd_.motorCmd[i*3+0].Kd = 0.0;
+            this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
+            this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
+            this->next_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
+            this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
+            this->next_LowCmd_.motorCmd[i*3+1].Kd = 0.0;
+            this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
+            this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
+            this->next_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
+            this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
+            this->next_LowCmd_.motorCmd[i*3+2].Kd = 0.0;
+            this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
+        }
+        // notice until now any low stat command is recieved
+        // do not set q, only tau with gains ->0
+        // gravity compensation TODO increase for real robot
+        this->next_LowCmd_.motorCmd[0].tau = -0.0f; //FR_0
+        this->next_LowCmd_.motorCmd[3].tau = +0.0f; //FL_0
+        this->next_LowCmd_.motorCmd[6].tau = -0.0f;  //RR_0
+        this->next_LowCmd_.motorCmd[9].tau = +0.0f; //RL_0
+        int motiontime = 0;
+        while(motiontime < 1500)
+        {
+            /* send nextMotorCmd through lowCmd*/ 
+            cmh_->sendLowCmd(this->next_LowCmd_);
+            ros::Duration(0.002).sleep();
+
+            motiontime++;
+        }
     }
 
 }

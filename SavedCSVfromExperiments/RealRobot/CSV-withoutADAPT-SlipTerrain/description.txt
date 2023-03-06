@@ -1,0 +1,15 @@
+        <param name="kp" value="2400.0"/>
+        <param name="kv" value="280.0"/>
+        <param name="ko" value="15.0"/>
+
+double freq = 0.4;
+        p_d(0) = p_d0_(0) - 0.04*(sin(2*M_PI*freq*t_real));  //0.07
+        p_d(1) = p_d0_(1) ;
+        p_d(2) = p_d0_(2) ;
+        
+                
+	w0 = 35
+	
+	kp motors = 1.0
+	
+	

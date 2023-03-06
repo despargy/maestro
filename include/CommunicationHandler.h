@@ -21,6 +21,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float32MultiArray.h>
+#include <nav_msgs/Odometry.h>
 
 #ifndef _COMMUNICATIONHANDLER_H_
 #define _COMMUNICATIONHANDLER_H_
@@ -37,7 +38,7 @@ namespace RCD
 
         const char* REAL_LOWCMD_TOPIC="/low_cmd";
         const char* REAL_LOWSTATE_TOPIC="/low_state";
-        const char* REAL_MODELSTATE_TOPIC="/maestro/com_state"; 
+        const char* REAL_MODELSTATE_TOPIC="/camera/odom/sample"; 
 
         const char* control_topic="/maestro/ctrl";
         const char* FOOTR_TOPIC="/maestro/foot/rotation";
@@ -48,10 +49,13 @@ namespace RCD
         const char* modelstate_topic;
 
         const char* slip_0_topic= "/fr_contact_state";
-        const char* slip_1_topic= "/fl_contact_state";
+        const char* slip_1_topic= "/fl_contact_state"; 
         const char* slip_2_topic= "/rr_contact_state";
         const char* slip_3_topic= "/rl_contact_state";
         
+        const char* IMU_REAL_EXP_topic= "/contact_probability";
+
+
         std::string ns = "/";  // as in group of 'basic.launch'
         int MODELSTATE_ID, NUM_IMUs;
         bool IMU_OK_0, IMU_OK_1, IMU_OK_2, IMU_OK_3; 
@@ -80,7 +84,7 @@ namespace RCD
         void updateRobotState(const unitree_legged_msgs::LowState& msg); // updates the robot's state from ROS UNITREE
         void lowStateCallback(const unitree_legged_msgs::LowState& msg);
         void CoMStateCallback(const gazebo_msgs::ModelStates& msg);
-        void RealCoMStateCallback(const gazebo_msgs::ModelStates& msg); // TODO SOSOSOSOSOSSO
+        void RealCoMStateCallback(const nav_msgs::Odometry& msg);
         void sendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd); 
         void controlCallback(const std_msgs::Bool& msg);
         void sendLowCmdSleep(unitree_legged_msgs::LowCmd& next_low_cmd);

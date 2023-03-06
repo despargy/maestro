@@ -29,12 +29,9 @@ namespace RCD
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         int n_leg;
         double kp,ko,kv,b_coef, alpha;
-        double w_thres, d_tv, tv, t_real, dt ;
+        double d_tv, tv, t_real, dt ;
 
     public:
-        // Chrono
-        // std::chrono::time_point<std::chrono::system_clock> time_start, time_end, time_cur;
-        // std::chrono::duration<double> time_elapsed;
 
         // Maestro obj.
         CommunicationHandler *cmh_;
@@ -78,6 +75,8 @@ namespace RCD
         void forceTrasform();
         void computeBeta_t();
         void initDataHandler();
+        void firstCommandForRealRobot();
+
   };
 
 }

@@ -24,10 +24,10 @@ for i in range(np.shape(t_real)[0]):
     e_o_norm[i] = math.sqrt( e_o[i,0]**2 + e_o[i,1]**2 + e_o[i,2]**2 )
 
 # # error linear vel
-# e_v_lin = data[:,9:12]
-# e_v_lin_norm = np.empty(shape=np.shape(t_real))
-# for i in range(np.shape(t_real)[0]):
-#     e_v_lin_norm[i] = math.sqrt( e_v_lin[i,0]**2 + e_v_lin[i,1]**2 + e_v_lin[i,2]**2 )
+e_v_lin = data[:,9:12]
+e_v_lin_norm = np.empty(shape=np.shape(t_real))
+for i in range(np.shape(t_real)[0]):
+    e_v_lin_norm[i] = math.sqrt( e_v_lin[i,0]**2 + e_v_lin[i,1]**2 + e_v_lin[i,2]**2 )
 
 # # error ang vel
 # e_v_ang = data[:,12:15]
@@ -66,15 +66,31 @@ plt.xlabel("t_real")
 plt.ylabel("Error Orientation Norm")
 plt.title("Error Orientation Norm")
 
-# plt.figure()
-# plt.plot(t_real,e_v_lin_norm)
-# plt.xlabel("t_real")
-# plt.ylabel("Error Linear Velocity Norm")
+plt.figure()
+plt.plot(t_real,e_v_lin_norm)
+plt.xlabel("t_real")
+plt.ylabel("Error Linear Velocity Norm")
 
 # plt.figure()
 # plt.plot(t_real,e_v_ang_norm)
 # plt.xlabel("t_real")
 # plt.ylabel("Error Angular Velocity Norm")
+plt.figure()
+plt.plot(t_real,e_v_lin[:,0])
+plt.plot(t_real,e_v_lin[:,1])
+plt.plot(t_real,e_v_lin[:,2])
+plt.xlabel("t_real")
+plt.ylabel("e_v_lin")
+plt.title("e_v_lin")
+
+plt.figure()
+plt.plot(t_real,e_p[:,0])
+plt.plot(t_real,e_p[:,1])
+plt.plot(t_real,e_p[:,2])
+plt.xlabel("t_real")
+plt.ylabel("e_p")
+plt.title("e_p")
+
 
 plt.figure()
 plt.plot(t_real,w0)

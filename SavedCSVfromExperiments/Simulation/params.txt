@@ -1,0 +1,7 @@
+        <param name="kp" value="100.0"/>
+        <param name="kv" value="45.0"/>
+        <param name="ko" value="17.0"/>
+        
+                p_d(0) = p_d0_(0) - 0.085*sin(2*M_PI*freq*t_real); 
+        p_d(1) = p_d0_(1) -(0.085- 0.085*cos(2*M_PI*freq*t_real));
+        p_d(2) = p_d0_(2) ;

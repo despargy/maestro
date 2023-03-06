@@ -31,21 +31,41 @@ namespace RCD
     Eigen::Vector3d Math::get_pDesiredTrajectory(Eigen::Vector3d p_d0_, double t_real)
     {
         Eigen::Vector3d p_d;
+
         // x,y axis
-        double freq = 0.7; // TODO 0.7 0.85
-        // p_d(0) = p_d0_(0) - (0.01-0.01*cos(2*M_PI*freq*t_real)); 
-        // p_d(1) = p_d0_(1) + 0.01*sin(2*M_PI*freq*t_real); 
+        double freq = 0.7; // sim
+        // double freq = 0.4; // real
+
+        // p_d(0) = p_d0_(0) + (0.07-0.07*cos(2*M_PI*freq*t_real)); 
+        // p_d(1) = p_d0_(1) - 0.07*sin(2*M_PI*freq*t_real); 
         // p_d(2) = p_d0_(2) ;//+ 0.0;
+
+        //  THIS WITH Q_0.x() + 0.2*cos(2*0.25*M_PI*t_real);
+        // p_d(0) = p_d0_(0) - 0.07*(sin(2*M_PI*freq*t_real)); 
+        // p_d(1) = p_d0_(1) - 0.07*cos(2*M_PI*freq*t_real); 
+        // p_d(2) = p_d0_(2) ;//+ 0.0;
+
+        // p_d(0) = p_d0_(0) - 0.04*(sin(2*M_PI*freq*t_real));  //0.07
+        // p_d(1) = p_d0_(1) ;//- 0.05*cos(2*M_PI*freq*t_real);  //0.07
+        // p_d(2) = p_d0_(2) + 0.0;
 
         // x, z axis 
         // p_d(0) = p_d0_(0) - 0.1*sin(2*M_PI*0.3*dt); 
         // p_d(1) = p_d0_(1) + 0.0; 
         // p_d(2) = p_d0_(2) + 0.1*cos(2*M_PI*0.25*dt) - 0.1;
 
+        // p_d = p_d0_ + (this->p_T - p_d0_)*(1- std::exp(-0.5*t_real));
+        // target 
+
         // x, z axis 
         p_d(0) = p_d0_(0) - 0.05*sin(2*M_PI*freq*t_real); 
         p_d(1) = p_d0_(1) + 0.0; 
         p_d(2) = p_d0_(2) -(0.05- 0.05*cos(2*M_PI*freq*t_real));
+
+        // // x, z axis 
+        // p_d(0) = p_d0_(0) - 0.03*sin(2*M_PI*freq*t_real); 
+        // p_d(1) = p_d0_(1) ;//+ 0.0; 
+        // p_d(2) = p_d0_(2) -(0.03- 0.03*cos(2*M_PI*freq*t_real));
         return p_d;
     }
     Eigen::Vector3d Math::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt, double t_real)
@@ -62,7 +82,7 @@ namespace RCD
     Eigen::Matrix3d Math::get_RDesiredRotationMatrix(Eigen::Quaterniond Q_0, double t_real)
     {
         Eigen::Quaterniond temp = Q_0;
-        temp.x() = Q_0.x() + 0.2*sin(2*0.2*M_PI*t_real);
+        temp.x() = Q_0.x() + 0.2*sin(2*0.2*M_PI*t_real); // 
         temp.normalize();
         return temp.toRotationMatrix(); 
     }

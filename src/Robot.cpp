@@ -8,6 +8,7 @@ namespace RCD
         ROS_INFO("Robot Constructor");
 
         this->p_c = Eigen::Vector3d::Zero();
+        this->p_c0 = Eigen::Vector3d::Zero(); // TODO add init values
 
         this->R_c.resize(3,3);
         this->F_a.resize(12);
@@ -88,6 +89,21 @@ namespace RCD
         this->R_c = cur_c.toRotationMatrix();
 
     }
+    void Robot::setCoMfromCamera(nav_msgs::Odometry camera_pose)
+    {
+        this->p_c(0) = camera_pose.pose.pose.position.x; // SOS dif. frame
+        this->p_c(1) = camera_pose.pose.pose.position.y;   // SOS dif frame
+        this->p_c(2) = camera_pose.pose.pose.position.z;
+
+        tf2::Quaternion myQuaternion;
+        myQuaternion.setRPY( low_state_.imu.rpy[0], low_state_.imu.rpy[1], low_state_.imu.rpy[2] );  
+        myQuaternion=myQuaternion.normalize();
+
+        Eigen::Quaterniond cur_c(myQuaternion.getW(), myQuaternion.getX(), myQuaternion.getY(), myQuaternion.getZ());
+        cur_c.normalize();
+        this->R_c = cur_c.toRotationMatrix();
+
+    } 
 
                 /* GET FUNCTIONS */
     // unitree_legged_msgs::IMU Robot::getImuBase()

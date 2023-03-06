@@ -40,7 +40,7 @@ namespace RCD
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;
         KDL::JntArray q;    // Joint pos qs
-        KDL::Frame p_frame;          // Tip pose with respect to CoM //ASK
+        KDL::Frame p_frame;          // Tip pose with respect to CoM 
         boost::scoped_ptr<KDL::ChainFkSolverPos> kdl_solver_pos;
         boost::scoped_ptr<KDL::ChainJntToJacSolver> kdl_solver;
         //Eigen

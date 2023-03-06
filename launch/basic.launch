@@ -10,15 +10,16 @@
 
     <group ns="/" unless="$(arg real_experiment)">
         <!-- ==================== GAZEBO WORLD ==================== -->
-        <arg name="wname" default="earth"/>
+        <arg name="wname" default="earth"/> <!-- 1leg slip-->
+        <arg name="wnameGlobal" default="earthGlobalSlip"/> <!-- 4leg slip-->
         <arg name="paused" default="true"/>
         <arg name="use_sim_time" default="true"/>
         <arg name="gui" default="true"/>
         <arg name="headless" default="false"/>
         <arg name="debug" default="false"/>
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
-            <!-- <arg name="world_name" value="$(find unitree_gazebo)/worlds/$(arg wname).world"/> -->
-            <arg name="world_name" value="$(find maestro)/worlds/$(arg wname).world"/>
+            <arg name="world_name" value="$(find maestro)/worlds/$(arg wname).world"/> <!-- 1leg slip-->
+            <!-- <arg name="world_name" value="$(find maestro)/worlds/$(arg wnameGlobal).world"/> --> <!-- 4leg slip-->
             <arg name="debug" value="$(arg debug)"/>
             <arg name="gui" value="$(arg gui)"/>
             <arg name="paused" value="$(arg paused)"/>
@@ -36,13 +37,15 @@
     <group ns="/" >
 
          <!-- ==================== PARAMETERS ==================== -->
+         <!-- REAL Experiment -->
+        <!-- <param name="kp" value="2400.0"/>
+        <param name="kv" value="280.0"/>
+        <param name="ko" value="15.0"/> -->
+
+         <!-- SIMULATION Experiment -->
         <param name="kp" value="3000.0"/>
         <param name="kv" value="550.0"/>
         <param name="ko" value="15.0"/>
-
-        <!-- <param name="kp" value="3000.0"/>
-        <param name="kv" value="350.0"/>
-        <param name="ko" value="5.0"/> -->
 
         <param name="slip_detection" value="$(arg slip_detection)"/>
         <param name="num_imus" value="$(arg num_imus)"/>
@@ -51,14 +54,11 @@
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>
         <param name="has_simulation" value="$(arg has_simulation)"/>
-        <!-- <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1_slip1.urdf"/> -->
         <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1_slip_stack.urdf"/>
 
         <!-- ==================== ROBOT XACRO ==================== -->
         <!-- Debug mode will hung up the robot, use "true" or "false" to switch it. -->
         <arg name="user_debug" default="false"/>
-       <!--  <param name="robot_description" command="$(find xacro)/xacro - -inorder '$(find maestro)/go1_description/xacro/robot.xacro' DEBUG:=$(arg user_debug)" />-->
-        <!-- <param name="robot_description" textfile="$(find maestro)/go1_description/urdf/go1_slip1.urdf"/> -->
         <param name="robot_description" textfile="$(find maestro)/go1_description/urdf/go1_slip_stack.urdf"/>
 
         <!-- ==================== GAZEBO ==================== -->

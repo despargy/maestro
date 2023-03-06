@@ -86,8 +86,16 @@ namespace RCD
             this->lowcmd_topic = this->REAL_LOWCMD_TOPIC; // Select the real topics
             this->lowstate_topic = this->REAL_LOWSTATE_TOPIC; // Select the real topics
             this->modelstate_topic = this->REAL_MODELSTATE_TOPIC; // Select the simulation topics // diff. Topic
+
             this->sub_CoMState_ = nh_cmh_->subscribe(this->modelstate_topic, 1, &RCD::CommunicationHandler::RealCoMStateCallback, this); // diff. Cb
-            std::cout<<"TODO set real connection with robot and CoM state topic"<<std::endl;
+            
+            if(this->SLIP_DETECTION)
+            {
+                this->sub_Slip0_ = nh_slip_->subscribe(this->slip_0_topic, 1, &RCD::CommunicationHandler::lowSlip0Callback, this);
+                this->sub_Slip1_ = nh_slip_->subscribe(this->IMU_REAL_EXP_topic, 1, &RCD::CommunicationHandler::lowSlip1Callback, this);
+                this->sub_Slip2_ = nh_slip_->subscribe(this->slip_2_topic, 1, &RCD::CommunicationHandler::lowSlip2Callback, this);
+                this->sub_Slip3_ = nh_slip_->subscribe(this->slip_3_topic, 1, &RCD::CommunicationHandler::lowSlip3Callback, this);
+            }
         }
         // General sub-pus to /LowCmds and /LowState
         sub_LowState_ = nh_cmh_->subscribe(this->lowstate_topic, 1, &RCD::CommunicationHandler::lowStateCallback, this);
@@ -140,12 +148,11 @@ namespace RCD
         // Cb CoM State 
         this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID]); 
     }
-    // TODO real com pos vel
-    void CommunicationHandler::RealCoMStateCallback(const gazebo_msgs::ModelStates& msg)
+    // real com pos vel
+    void CommunicationHandler::RealCoMStateCallback(const nav_msgs::Odometry& msg)
     {
-        // Cb CoM State REAL
-        // this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID], msg.twist[MODELSTATE_ID]); 
-        std::cout<<"SOSOSOS COM msg state REAL TODO\n"<<msg<<std::endl;
+        // std::cout<< "RealCoMStateCallback"<<std::endl;
+        this->robot_->setCoMfromCamera(msg);  
     }
     void CommunicationHandler::lowStateCallback(const unitree_legged_msgs::LowState& msg)
     {
@@ -159,6 +166,7 @@ namespace RCD
     }
     void CommunicationHandler::sendLowCmd(unitree_legged_msgs::LowCmd& next_low_cmd)
     {
+        // std::cout<<"In sendLowCmd" <<std::endl;
         pub_LowCmd_.publish(next_low_cmd);
         ros::spinOnce();
         // loop_rate->sleep();

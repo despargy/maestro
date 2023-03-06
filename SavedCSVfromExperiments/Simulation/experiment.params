@@ -1,0 +1,31 @@
+b_coef = 0.1
+alpha = 150.0
+w_thres = 40.0
+dt = 0.002
+
+pbc << 0.0025 , 0.001 , 0.0
+
+slope = 0.0001
+
+ w0=35.0
+
+
+// desired trajectory
+    // position
+        freq = 0.7
+        // x, z axis 
+        p_d(0) = p_d0_(0) - 0.05*sin(2*M_PI*freq*t_real); 
+        p_d(1) = p_d0_(1) + 0.0; 
+        p_d(2) = p_d0_(2) -(0.05- 0.05*cos(2*M_PI*freq*t_real));
+    // orientation
+        temp.x() = Q_0.x() + 0.2*sin(2*0.2*M_PI*t_real);
+
+
+// when slip 1 (only RR == id 2 leg)
+<mu>0.35</mu> slip
+<mu>01.35</mu> static
+// when slip 4 (all legs slip)
+<mu>0.35</mu> slip all
+
+// only this was used in computeBeta_t()
+d_tv = this->leg_mng[0].w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  )

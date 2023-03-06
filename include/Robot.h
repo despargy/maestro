@@ -11,7 +11,8 @@
 #include <geometry_msgs/Twist.h>
 #include <Eigen/Dense>
 #include <ros/ros.h>
-
+#include <tf2/LinearMath/Quaternion.h>
+#include <nav_msgs/Odometry.h>
 // #include <model.h>
 
 #ifndef _ROBOT_H_
@@ -35,7 +36,7 @@ namespace RCD
         bool KEEP_CONTROL;
         // unitree_legged_msgs::MotorCmd *motor_cmd_; // list of 20 motors
         unitree_legged_msgs::LowState low_state_; 
-        Eigen::Vector3d p_c;// com_vel_linear, com_vel_ang;
+        Eigen::Vector3d p_c, p_c0;// com_vel_linear, com_vel_ang;
         // Eigen::Quaterniond com_q;
         Eigen::VectorXd F_a, F_c, gc;
         Eigen::MatrixXd R_c, Gq, Gq_sudo, H_c, C_c;
@@ -53,6 +54,7 @@ namespace RCD
         // void setMotorCmd(unitree_legged_msgs::MotorCmd* motor_cmd);
         void setLowState(unitree_legged_msgs::LowState low_state);
         void setCoMfromMState(geometry_msgs::Pose com_state);
+        void setCoMfromCamera(nav_msgs::Odometry camera_pose);
 
         // maestro::Foot getFoot();
         // unitree_legged_msgs::IMU getImuBase();

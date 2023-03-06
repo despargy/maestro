@@ -5,7 +5,6 @@
 #include <fstream>
 #include<vector>
 #include <string>
-#include <pthread.h>
 
 #ifndef _DATAHANDLER_H_
 #define _DATAHANDLER_H_
@@ -18,7 +17,6 @@ namespace RCD
 
         std::ofstream logfile;
         std::string main_path; 
-        bool *KEEP_CONTROL;
         struct LogStructure
         {
             /* data */

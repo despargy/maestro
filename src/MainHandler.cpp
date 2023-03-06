@@ -12,21 +12,6 @@
 
 using namespace ros;
 
-// RCD::DataHandler* data_handler = new RCD::DataHandler();
-
-// void* keepWritting(void* args)
-// {
-//     usleep(2000);
-//     while(*(data_handler->KEEP_CONTROL))
-//     {
-//         data_handler->logData();
-//         usleep(1000);
-//     }
-//     data_handler->closeOnce();
-//     pthread_exit(NULL);
-// }
-
-
 int main(int argc, char **argv)
 {
     // Init ROS node
@@ -54,19 +39,21 @@ int main(int argc, char **argv)
     }
 
     // Async Ros
-    ros::AsyncSpinner spinner(0); // 0 means as many threads my machine gives EXTRA gibve callback queue
+    ros::AsyncSpinner spinner(1); // 0 means as many threads my machine gives EXTRA gibve callback queue
     spinner.start();
 
     // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
 
-    sleep(1); // sleep for 1 second
+    sleep(2); // sleep for 2 second
+
+    std::cout << "WARNING: Control level is set to LOW-level." << std::endl
+              << "Make sure the robot is hung up." << std::endl
+              << "Press Enter to continue..." << std::endl;
+    std::cin.ignore();
 
     // Initialize Controller
     ctrl->initControl();
-    
-    // // std::cout<<cmh->ALLIMUOK()<<std::endl;
-    // ROS_INFO("IMU status %d", cmh->ALLIMUOK());
 
     sleep(1); // sleep for 1 second
 
@@ -82,12 +69,18 @@ int main(int argc, char **argv)
             ROS_INFO("Wait for IMUs");
         }
     }
+    std::cout << "WARNING: Control level is set to LOW-level." << std::endl
+              << "Make sure the robot is hung up." << std::endl
+              << "Press Enter to continue..." << std::endl;
+    std::cin.ignore();
 
-    sleep(2); // sleep for 2 seconds
+    // std::cout<<robot->p_c<<std::endl;
+    // std::cout<<robot->p_c0<<std::endl;
+    // std::cout<<robot->R_c<<std::endl;
 
-    // pthread_t ptid;
-    // // Creating a new thread
-    // pthread_create(&ptid, NULL, &keepWritting, NULL);
+    ROS_INFO("Control loop(): will start in 5sec");
+
+    sleep(5); // sleep for 2 seconds
 
     ROS_INFO("Control loop(): starts");
     ctrl->loop();
