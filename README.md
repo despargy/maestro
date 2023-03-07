@@ -55,6 +55,11 @@ Drosakis Drosakis and Panos Trahanias.  -->
    ```sh
    git clone https://github.com/despargy/maestro
    ```
+2. Catkin make
+   ```sh
+   cd ~/catkin_ws 
+   catkin_make
+   ```
 
 ## Parameters
 
