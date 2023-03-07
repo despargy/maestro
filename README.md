@@ -37,16 +37,20 @@ Drosakis Drosakis and Panos Trahanias.  -->
 ## Getting Started
 
 ### Dependencies
-- [x] [Gazebo](https://gazebosim.org/home)
+
 #### Unitree's Go1 legged robot:
 
-- [x] [unitree_ros_to_real](https://github.com/unitreerobotics/unitree_ros_to_real)
-- [x] [unitree_ros](https://github.com/unitreerobotics/unitree_ros)
-- [x] [unitree_legged_sdk](https://github.com/unitreerobotics/unitree_legged_sdk)
+* [unitree_ros_to_real](https://github.com/unitreerobotics/unitree_ros_to_real)
+* [unitree_ros](https://github.com/unitreerobotics/unitree_ros)
+* [unitree_legged_sdk](https://github.com/unitreerobotics/unitree_legged_sdk)
 
 
 #### Probabilistic Contact Estimation
-- [x]  [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation)
+*  [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation)
+
+### Gazebo
+* [Gazebo](https://gazebosim.org/home)
+* [Rviz](http://wiki.ros.org/rviz)
 
 ####  System 
 * Ubuntu 20.04
@@ -70,7 +74,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
 | :exclamation:  This is very important   |
 |-----------------------------------------|
 
-> **Warning**  Before run real robot experiments, first hung up/secure Unitree's Go1 EDU. 
+> **Warning**  Before run experiments with the real robot Go1, first hung up/secure Unitree's Go1 EDU. 
 
 ### Run the package ( Simulation - without Adaptation ) (Default)
 1. Default launch for simulation
@@ -137,17 +141,31 @@ Drosakis Drosakis and Panos Trahanias.  -->
    rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
 
-*Note: For Real Robot first follow the steps setting the connection with Real Robot(ip: 192.168.123.161). Instruction at /maestro/go1_description/connection/Go1Config.txt  
+**Note** *: For Real Robot first follow the steps setting the connection with Real Robot(ip: 192.168.123.161). Instruction at /maestro/go1_description/connection/Go1Config.txt  
 
 
-**Note: ProbabilisticContactEstimation for real experiment needs a 6DOF IMU sensor to publish at /imu topic.
+**Note** **: ProbabilisticContactEstimation for real experiment needs a 6DOF IMU sensor to publish at /imu topic.
 
 
 ## Launch Parameters 
+TODO
+
 
 ## Experiment setup
+<div align="center">
+<br />
+
+
+  
+  <a href="https://github.com/despargy/maestro">
+    <img src="go1_description/figures/adapt-imu-photo.png" alt="Go1" width="408" height="430">
+  </a>
+  <h3 align="left">Control with two-layer Adaptation, uses slip probabilbity from ProbabilisticContactEstimation package. At least one IMU sensor is required, attached to robot's leg.</h3>
+</div>
+
+
 
 ## Test your experiments!
 
-
+> Set your desired trajectory and avoid slipage! 
 
