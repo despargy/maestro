@@ -17,6 +17,8 @@
 
 README.md file will be updated no later than Wednesday 8th March 2023.
 
+<br />
+
 ## About the project
 
 We propose an adaptive trajectory tracking controller
@@ -28,31 +30,32 @@ This package is developed for the simulated and the real robot experiments of th
 
 <!-- by Despina-Ekaterini Argiropoulos, Dimitrios Papageorgiou, Michael Maravgakis,
 Drosakis Drosakis and Panos Trahanias.  -->
-### Development and Implementation using <a href="https://www.unitree.com/en/go1">Unitree's Go1 EDU</a> legged robot.
+### Development and Implementation using <a href="https://www.unitree.com/en/go1">Unitree's Go1 EDU</a> legged robot, real and simulated.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
 ## Getting Started
 
 ### Dependencies
-
+- [x] [Gazebo](https://gazebosim.org/home)
 #### Unitree's Go1 legged robot:
 
-*  [unitree_ros_to_real](https://github.com/unitreerobotics/unitree_ros_to_real)
-* [unitree_ros](https://github.com/unitreerobotics/unitree_ros)
-* [unitree_legged_sdk](https://github.com/unitreerobotics/unitree_legged_sdk)
+- [x] [unitree_ros_to_real](https://github.com/unitreerobotics/unitree_ros_to_real)
+- [x] [unitree_ros](https://github.com/unitreerobotics/unitree_ros)
+- [x] [unitree_legged_sdk](https://github.com/unitreerobotics/unitree_legged_sdk)
+
 
 #### Probabilistic Contact Estimation
-*  [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation)
+- [x]  [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation)
 
 ####  System 
 * Ubuntu 20.04
-* [ROS Noetic]
-* [Gazebo](https://gazebosim.org/home)
+* ROS Noetic (tested), ROS Melodic (possibly, not-tested)
+
 
 ### Installation
 1. Get the above package dependencies: 
-<br /> `unitree_ros_to_real`,  `unitree_ros`, `unitree_legged_sdk`, `ProbabilisticContactEstimation` .
+<br /> `unitree_ros_to_real`,  ` unitree_ros`, ` unitree_legged_sdk`, ` ProbabilisticContactEstimation` .
 1. Clone the repo
    ```sh
    git clone https://github.com/despargy/maestro
@@ -62,6 +65,12 @@ Drosakis Drosakis and Panos Trahanias.  -->
    cd ~/catkin_ws 
    catkin_make
    ```
+## Run the package 
+
+| :exclamation:  This is very important   |
+|-----------------------------------------|
+
+> **Warning**  Before run real robot experiments, first hung up/secure Unitree's Go1 EDU. 
 
 ### Run the package ( Simulation - without Adaptation ) (Default)
 1. Default launch for simulation
@@ -128,14 +137,17 @@ Drosakis Drosakis and Panos Trahanias.  -->
    rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
 
-*Note: For Real Robot first follow the steps bellow to ping connection to 192.168.123.161 
-(more details will be added - TODO)
-
-**Note: ProbabilisticContactEstimation for real experiment needs an IMU sensor to publish at /imu topic (more details will be added - TODO)
+*Note: For Real Robot first follow the steps setting the connection with Real Robot(ip: 192.168.123.161). Instruction at /maestro/go1_description/connection/Go1Config.txt  
 
 
-## Parameters
+**Note: ProbabilisticContactEstimation for real experiment needs a 6DOF IMU sensor to publish at /imu topic.
+
+
+## Launch Parameters 
 
 ## Experiment setup
+
+## Test your experiments!
+
 
 
