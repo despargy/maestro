@@ -1,0 +1,12 @@
+Step 0:
+	Turn on Unitree's Go1 EDU
+	After it stands up, press (a) L2+A, then again (b) L2+A, (c) L2+B
+	Now the robots sits down
+Step 1:			
+	Turn of your's laptop/pc wifi. 
+	Set ethernet connection and run the maestro./go1_description/connection/ipconfig_simple.sh
+	ping 192.168.123.161 (robot's ip) to check that everything is ok.
+	Keep ping 192.168.123.161 as far as you need to communicate with the Go1.
+	
+
+
