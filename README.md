@@ -39,19 +39,21 @@ Drosakis Drosakis and Panos Trahanias.  -->
 #### Unitree's Go1 legged robot:
 
 *  [unitree_ros_to_real](https://github.com/unitreerobotics/unitree_ros_to_real)
-* [unitree\_ros](https://github.com/unitreerobotics/unitree_ros)
+* [unitree_ros](https://github.com/unitreerobotics/unitree_ros)
 * [unitree_legged_sdk](https://github.com/unitreerobotics/unitree_legged_sdk)
 
 #### Probabilistic Contact Estimation
 *  [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation)
 
 ####  System 
-*  Ubuntu 20.04
-* ROS Noetic
+* Ubuntu 20.04
+* [ROS Noetic]
+* [Gazebo](https://gazebosim.org/home)
 
 ### Installation
-1. Get the above dependencies 
-2. Clone the repo
+1. Get the above package dependencies: 
+<br /> `unitree_ros_to_real`,  `unitree_ros`, `unitree_legged_sdk`, `ProbabilisticContactEstimation` .
+1. Clone the repo
    ```sh
    git clone https://github.com/despargy/maestro
    ```
@@ -60,6 +62,77 @@ Drosakis Drosakis and Panos Trahanias.  -->
    cd ~/catkin_ws 
    catkin_make
    ```
+
+### Run the package ( Simulation - without Adaptation ) (Default)
+1. Default launch for simulation
+   ```sh
+   roslaunch maestro basic.launch
+   ```
+2. Run the controller / main_handler
+    ```sh
+   rosrun maestro main_handler
+   ```
+3. Terminate the controller / main_handler
+    ```sh
+   rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
+   ```
+    
+    
+### Run the package (Simulation - Adaptation) 
+1. Launch for simulation with adaptation parameters
+   ```sh
+   roslaunch maestro basic.launch slip_detection:=true adapt_b:=true
+   ```
+2. Launch ProbabilisticContactEstimation
+   ```sh
+   roslaunch contact_estimation contact.launch
+   ```
+3. Run the controller / main_handler
+    ```sh
+   rosrun maestro main_handler
+   ```
+4. Terminate the controller / main_handler
+    ```sh
+   rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
+   ```
+
+### Run the package ( Real Robot* - without Adaptation ) 
+1. Default launch for simulation
+   ```sh
+   roslaunch maestro basic.launch real_experiment:=true
+   ```
+2. Run the controller / main_handler
+    ```sh
+   rosrun maestro main_handler
+   ```
+3. Terminate the controller / main_handler
+    ```sh
+   rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
+   ```
+    
+### Run the package (Real Robot*  - Adaptation) 
+1. Launch for simulation with adaptation parameters
+   ```sh
+   roslaunch maestro basic.launch real_experiment:=true slip_detection:=true adapt_b:=true
+   ```
+2. Launch ProbabilisticContactEstimation**
+   ```sh
+   roslaunch contact_estimation contact.launch
+   ```
+3. Run the controller / main_handler
+    ```sh
+   rosrun maestro main_handler
+   ```
+4. Terminate the controller / main_handler
+    ```sh
+   rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
+   ```
+
+*Note: For Real Robot first follow the steps bellow to ping connection to 192.168.123.161 
+(more details will be added - TODO)
+
+**Note: ProbabilisticContactEstimation for real experiment needs an IMU sensor to publish at /imu topic (more details will be added - TODO)
+
 
 ## Parameters
 
