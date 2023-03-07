@@ -32,13 +32,13 @@ find_package(Boost REQUIRED COMPONENTS system)
 # DEPENDS unitree_legged_msgs unitree_legged_msgs_generate_messages_cpp unitree_legged_msgs_gencpp)
 # include_directories(${unitree_legged_msgs_INCLUDE_DIRS})
 
-add_message_files(
-  DIRECTORY msg
-  FILES
-  LowStateRos.msg
-  LowCmdRos.msg
-  Foot.msg
-)
+# add_message_files(
+#   DIRECTORY msg
+#   FILES
+#   LowStateRos.msg
+#   LowCmdRos.msg
+#   Foot.msg
+# )
 
 generate_messages(
   DEPENDENCIES 

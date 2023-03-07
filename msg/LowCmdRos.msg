@@ -1,2 +1,0 @@
-Header header
-unitree_legged_msgs/LowCmd lowcmd
