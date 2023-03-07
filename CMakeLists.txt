@@ -63,7 +63,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include   ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR}
-  /home/despargy/go1_ws/src/unitree_legged_sdk/include
   ${unitree_legged_msgs_INCLUDE_DIRS}
   )
 link_directories($(catkin_LIB_DIRS) lib)
