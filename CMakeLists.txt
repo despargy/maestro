@@ -5,8 +5,6 @@ project(maestro)
 add_compile_options(-std=c++11 -lorocos-kdl)
 
 ## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -27,18 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 # System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
-
-# add_custom_target(${PROJECT_NAME}
-# DEPENDS unitree_legged_msgs unitree_legged_msgs_generate_messages_cpp unitree_legged_msgs_gencpp)
-# include_directories(${unitree_legged_msgs_INCLUDE_DIRS})
-
-# add_message_files(
-#   DIRECTORY msg
-#   FILES
-#   LowStateRos.msg
-#   LowCmdRos.msg
-#   Foot.msg
-# )
 
 generate_messages(
   DEPENDENCIES 
@@ -66,11 +52,6 @@ include_directories(
   ${unitree_legged_msgs_INCLUDE_DIRS}
   )
 link_directories($(catkin_LIB_DIRS) lib)
-
-# # Declare a C++ library
-# add_library(${PROJECT_NAME}_library
-#   src/${PROJECT_NAME}/MainHandler.cpp
-# )
 
 SET( rcd_cpp_src
   src/Robot.cpp
