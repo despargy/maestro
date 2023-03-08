@@ -148,8 +148,15 @@ Drosakis Drosakis and Panos Trahanias.  -->
 
 
 ## Launch Parameters 
-TODO
 
+| Parameter name        | Default Value           | Description  |
+| -------------         |:-------------:           | -----:|
+| `real_experiment`       | `false`           | `false`: robot in Gazebo simulator,  `true`: real robot connection |
+| slip_detection        | false                 |   Slip terrain perception disabled, if `true`: use ProbabilisticContactEstimation  |
+| adapt_b               | false                | Adaptation disabled, if `true` slip_detection should be true. |
+| kp                    | 3000.0                |   Position gain of controller |
+| kv                    | 550.0                 |   Velocity gain of controller |
+| ko                    | 15.0                  |   Orientation gain of controller |
 
 ## Experiment setup
 <div align="center">
@@ -158,7 +165,7 @@ TODO
 
   
   <a href="https://github.com/despargy/maestro">
-    <img src="go1_description/figures/adapt-imu-photo.png" alt="Go1" width="408" height="430">
+    <img src="go1_description/figures/adapt-imu-photo.png" alt="Go1" width="308" height="330">
   </a>
   <h3 align="left">Control with two-layer Adaptation, uses slip probabilbity from ProbabilisticContactEstimation package. At least one IMU sensor is required, attached to robot's leg.</h3>
 </div>
