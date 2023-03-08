@@ -1,7 +1,6 @@
 <a name="readme-top"></a>
 
 
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 
 <div align="center">
@@ -195,6 +194,12 @@ Control of two-layer adaptation uses slip probabilbity from ProbabilisticContact
    - decreasing, smoother-slower adaptation
 2.  `w0` line 36, maestro/src/Leg.cpp file
 
+
+## Contact
+
+
+
+Despina-Ekaterini Argiropoulos - [![LinkedIn][linkedin-shield]][linkedin-url] - despinar@ics.forth.gr
 
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
