@@ -36,7 +36,7 @@ namespace RCD
         // for orientation tracking
         this->b_coef = 0.1;
         this->alpha = 150.0;  // simulation     
-        this->alpha = 1000.0;   // real
+        // this->alpha = 1000.0;   // real
         this->e_v.resize(6);
 
     }
