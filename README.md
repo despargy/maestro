@@ -1,6 +1,9 @@
 <a name="readme-top"></a>
 
 
+[![LinkedIn][linkedin-shield]][linkedin-url]
+
+
 <div align="center">
 <br />
   <h1 align="center">Two-layer adaptive trajectory tracking controller for quadruped robots on slippery terrains.</h1>
@@ -185,10 +188,15 @@ Control of two-layer adaptation uses slip probabilbity from ProbabilisticContact
 > Desired position trajectory is given from get_pDesiredTrajectory() at maestro/src/Math.cpp file.
 > Desired orientation trajectory is given from get_RDesiredRotationMatrix() c.
 
-**Note** Tuning of controller's gains (launch parameters) is possibly needed, after trajectory has been modified.
-**Note** Tuning of adaptation can be achived for different robot's behavior, by changing the values of
+> **Note** Tuning of controller's gains (launch parameters) is possibly needed, after trajectory has been modified.
+> **Note** Tuning of adaptation can be achived for different robot's behavior, by changing the values of
 1. `alpha`, line 38-39, maestro/src/Controller.cpp file
    - increasing, sharper-quiqer adaptation
    - decreasing, smoother-slower adaptation
 2.  `w0` line 36, maestro/src/Leg.cpp file
+
+
+
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]:https://www.linkedin.com/in/despar/
 
