@@ -163,6 +163,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
 | `slip_detection`        | `false`                 |   Slip terrain perception disabled, if `true`: use **ProbabilisticContactEstimation**  |
 | `adapt_b`               | `false`                | Adaptation disabled, if `true` slip_detection should be true. |
 | `num_imus`       | `0`           | Optional parameter waiting for msg from a specific num of IMUs, before start tracking. Slip detection needs also to be `true` |
+| `world_name`               | `wname`                 | Affects only simulation world. `wname`:  1 leg slippage, `wnameGlobal`: 4 legs slippage (global slip)  |
 | `kp`               | `3000.0`                |   Position gain of controller (tuning parameters) |
 | `kv`               | `550.0`                 |   Velocity gain of controller (tuning parameters)  |
 | `ko`               | `15.0 `                 |   Orientation gain of controller (tuning parameters) |
