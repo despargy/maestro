@@ -48,9 +48,10 @@ Drosakis Drosakis and Panos Trahanias.  -->
 #### Probabilistic Contact Estimation
 *  [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation)
 
-### Gazebo
+### Simulator
 * [Gazebo](https://gazebosim.org/home)
-* [Rviz](http://wiki.ros.org/rviz)
+
+* [Rviz](http://wiki.ros.org/rviz) (Optional)
 
 ####  System 
 * **Ubuntu 20.04**
@@ -64,6 +65,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
    ```sh
    $ git clone https://github.com/despargy/maestro
    ```
+
 2. Catkin make
    ```sh
    $ cd ~/catkin_ws 
@@ -172,10 +174,10 @@ Drosakis Drosakis and Panos Trahanias.  -->
   <a href="https://github.com/despargy/maestro">
     <img src="go1_description/figures/adapt-imu-photo.png" alt="Go1" width="308" height="330">
   </a>
-  <h3 align="left">Control with two-layer Adaptation, uses slip probabilbity from ProbabilisticContactEstimation package. At least one IMU sensor is required, attached to robot's leg.</h3>
+  <!-- <h3 align="left">Control with two-layer adaptation, uses slip probabilbity from ProbabilisticContactEstimation package. At least one IMU sensor is required, attached to robot's leg.</h3> -->
 </div>
 
-
+Control of two-layer adaptation uses slip probabilbity from ProbabilisticContactEstimation package. At least one IMU sensor is required, attached to robot's leg in order to detect the slipage at this foot tip.
 
 ## Test your experiments!
 
