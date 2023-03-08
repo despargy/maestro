@@ -69,6 +69,8 @@ Drosakis Drosakis and Panos Trahanias.  -->
    cd ~/catkin_ws 
    catkin_make
    ```
+<p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Run the package 
 
 | :exclamation:  This is very important   |
@@ -146,17 +148,20 @@ Drosakis Drosakis and Panos Trahanias.  -->
 
 **Note** **: ProbabilisticContactEstimation for real experiment needs a 6DOF IMU sensor to publish at /imu topic.
 
+<p align="right"><a href="#readme-top">Back to top</a></p>
+
 
 ## Launch Parameters 
 
 | Parameter name        | Default Value           | Description  |
 | -------------         |:-------------:           | -----:|
 | `real_experiment`       | `false`           | `false`: robot in Gazebo simulator,  `true`: real robot connection |
-| slip_detection        | false                 |   Slip terrain perception disabled, if `true`: use ProbabilisticContactEstimation  |
-| adapt_b               | false                | Adaptation disabled, if `true` slip_detection should be true. |
-| kp                    | 3000.0                |   Position gain of controller |
-| kv                    | 550.0                 |   Velocity gain of controller |
-| ko                    | 15.0                  |   Orientation gain of controller |
+| `slip_detection`        | `false`                 |   Slip terrain perception disabled, if `true`: use **ProbabilisticContactEstimation**  |
+| `adapt_b`               | `false`                | Adaptation disabled, if `true` slip_detection should be true. |
+| `num_imus`       | `0`           | Optional parameter waiting for msg from a specific num of IMUs, before start tracking. Slip detection needs also to be `true` |
+| `kp`               | `3000.0`                |   Position gain of controller (tuning parameters) |
+| `kv`               | `550.0`                 |   Velocity gain of controller (tuning parameters)  |
+| `ko`               | `15.0 `                 |   Orientation gain of controller (tuning parameters) |
 
 ## Experiment setup
 <div align="center">
