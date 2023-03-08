@@ -80,7 +80,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
 | :exclamation:  This is very important   |
 |-----------------------------------------|
 
- **Warning**  Before run experiments with the real robot Go1, first secure Unitree's Go1 EDU, ex. photo below. 
+> **Warning**  Before run experiments with the real robot Go1, first secure Unitree's Go1 EDU, ex. photo below. 
 
 ### Run the package ( Simulation - without Adaptation ) (Default)
 1. Default launch for simulation
@@ -188,7 +188,9 @@ Control of two-layer adaptation uses slip probabilbity from ProbabilisticContact
 > Desired orientation trajectory is given from get_RDesiredRotationMatrix() c.
 
 > **Note** Tuning of controller's gains (launch parameters) is possibly needed, after trajectory has been modified.
+
 > **Note** Tuning of adaptation can be achived for different robot's behavior, by changing the values of
+
 1. `alpha`, line 38-39, maestro/src/Controller.cpp file
    - increasing, sharper-quiqer adaptation
    - decreasing, smoother-slower adaptation
@@ -199,7 +201,9 @@ Control of two-layer adaptation uses slip probabilbity from ProbabilisticContact
 
 
 
-Despina-Ekaterini Argiropoulos - [![LinkedIn][linkedin-shield]][linkedin-url] - despinar@ics.forth.gr
+Despina-Ekaterini Argiropoulos - despinar@ics.forth.gr         
+
+[![LinkedIn][linkedin-shield]][linkedin-url] 
 
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
