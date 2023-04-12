@@ -11,8 +11,6 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Imu.h>
-#include <maestro/LowCmdRos.h>
-#include <maestro/LowStateRos.h>
 #include <gazebo_msgs/LinkState.h>
 #include <gazebo_msgs/ModelStates.h>
 #include <geometry_msgs/WrenchStamped.h>

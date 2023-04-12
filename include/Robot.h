@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include <iostream>
-#include <maestro/Foot.h>
 #include <unitree_legged_msgs/IMU.h>
 #include <unitree_legged_msgs/MotorState.h>
 #include <unitree_legged_msgs/MotorCmd.h>
