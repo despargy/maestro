@@ -20,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   gazebo_msgs
   eigen_conversions
-  fusion
 )
 
 # System dependencies are found with CMake's conventions

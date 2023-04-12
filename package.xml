@@ -86,7 +86,6 @@
   <exec_depend>gazebo_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>eigen_conversions</exec_depend>
-  <depend>fusion</depend>
   <depend>unitree_legged_msgs</depend>
   <!-- <depend>package="pr2_controller_interface"</depend>
   <depend>package="pluginlib"</depend> -->
