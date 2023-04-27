@@ -60,6 +60,7 @@
         <param name="real_experiment" value="$(arg real_experiment)"/>
         <param name="has_simulation" value="$(arg has_simulation)"/>
         <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1_slip_stack.urdf"/>
+        <param name="main_path" value="$(find maestro)/CSV/"/>
 
         <!-- ==================== ROBOT XACRO ==================== -->
         <!-- Debug mode will hung up the robot, use "true" or "false" to switch it. -->

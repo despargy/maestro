@@ -33,7 +33,7 @@ namespace RCD
         Eigen::Vector3d p_d;
 
         // x,y axis
-        double freq = 0.7; // sim
+        double freq = 0.65; // sim
         // double freq = 0.4; // real
 
         // p_d(0) = p_d0_(0) + (0.07-0.07*cos(2*M_PI*freq*t_real)); 

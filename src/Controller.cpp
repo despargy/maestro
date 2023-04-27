@@ -32,6 +32,9 @@ namespace RCD
         if (!this->cmh_->nh_main_->getParam( this->ns + "/alpha", this->alpha)){
             ROS_ERROR("No alpha given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
+        if (!this->cmh_->nh_main_->getParam( this->ns + "/main_path", this->data_handler_->main_path)){
+            ROS_ERROR("No main_path given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
+        }
         // Pass Tree form URDF
         this->loadTree();
         // pas num of joints

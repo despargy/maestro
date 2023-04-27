@@ -5,7 +5,7 @@ namespace RCD
     DataHandler::DataHandler()
     {
         std::cout<<"DataHandler Constructor"<<std::endl;
-        this->main_path = "/home/despargy/go1_ws/src/maestro/CSV/";
+        // this->main_path = "/home/despargy/go1_ws/src/maestro/CSV/";
     }
     DataHandler::~DataHandler()
     {
