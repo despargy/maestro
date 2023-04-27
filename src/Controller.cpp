@@ -29,14 +29,15 @@ namespace RCD
         if (!this->cmh_->nh_main_->getParam( this->ns + "/kv", this->kp)){
             ROS_ERROR("No kv given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
+        if (!this->cmh_->nh_main_->getParam( this->ns + "/alpha", this->alpha)){
+            ROS_ERROR("No alpha given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
+        }
         // Pass Tree form URDF
         this->loadTree();
         // pas num of joints
         robot_->num_joints = 12;//robot_kin.getNrOfJoints();   // CHANGED AFTER EXTRA FOOT ADDED TO SIMULATED IMU
         // for orientation tracking
         this->b_coef = 0.1;
-        this->alpha = 150.0;  // simulation     
-        // this->alpha = 1000.0;   // real
         this->e_v.resize(6);
 
     }
@@ -294,8 +295,7 @@ namespace RCD
 
         Eigen::MatrixXd Gbc = Eigen::MatrixXd::Identity(6,6);
         Eigen::Vector3d pbc ;
-        pbc << 0.0025 , 0.001 , 0.0; // sim     
-        // pbc << 0.001 , 0.001 , 0.0; // real
+        pbc << this->robot_->pbc_x , 0.001 , 0.0; // center of mass offset 
 
         com_p_prev = p_d0;
         R_CoM_prev = R_d_0;

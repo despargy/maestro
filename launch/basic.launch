@@ -18,8 +18,10 @@
         <arg name="headless" default="false"/>
         <arg name="debug" default="false"/>
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
-            <arg name="world_name" value="$(find maestro)/worlds/$(arg wname).world"/> <!-- 1leg slip-->
-            <!-- <arg name="world_name" value="$(find maestro)/worlds/$(arg wnameGlobal).world"/> --> <!-- 4leg slip-->
+            <!-- 1leg slip-->
+            <arg name="world_name" value="$(find maestro)/worlds/$(arg wname).world"/> 
+            <!-- 4leg slip-->
+            <!-- <arg name="world_name" value="$(find maestro)/worlds/$(arg wnameGlobal).world"/>  -->
             <arg name="debug" value="$(arg debug)"/>
             <arg name="gui" value="$(arg gui)"/>
             <arg name="paused" value="$(arg paused)"/>
@@ -41,11 +43,14 @@
         <!-- <param name="kp" value="2400.0"/>
         <param name="kv" value="280.0"/>
         <param name="ko" value="15.0"/> -->
+        <!-- <param name="alpha" value="1000.0"/> -->
 
          <!-- SIMULATION Experiment -->
         <param name="kp" value="3000.0"/>
         <param name="kv" value="550.0"/>
         <param name="ko" value="15.0"/>
+        <param name="alpha" value="150.0"/>
+
 
         <param name="slip_detection" value="$(arg slip_detection)"/>
         <param name="num_imus" value="$(arg num_imus)"/>

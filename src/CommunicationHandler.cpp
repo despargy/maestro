@@ -62,6 +62,8 @@ namespace RCD
             // select robot mass and grav. vector
             this->robot_->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 
             this->robot_->gc << 0,0,this->robot_->mass*this->robot_->g_gravity,0,0,0;
+            // pbc offset
+            this->robot_->pbc_x = 0.0025;
             // select topics
             this->lowcmd_topic = this->SIM_LOWCMD_TOPIC; // Select the simulation topics
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
@@ -82,6 +84,8 @@ namespace RCD
             // select robot mass and grav. vector
             this->robot_->mass = 12.0; 
             this->robot_->gc << 0,0,this->robot_->mass*this->robot_->g_gravity,0,0,0;
+            // pbc offset
+            this->robot_->pbc_x = 0.001;
             // select topics
             this->lowcmd_topic = this->REAL_LOWCMD_TOPIC; // Select the real topics
             this->lowstate_topic = this->REAL_LOWSTATE_TOPIC; // Select the real topics
