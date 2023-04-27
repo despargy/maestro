@@ -164,7 +164,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
  ```
  Run `kill_ros.sh`, everytime to terminate ROS processes from background.
  ```
-   chmod +x kill_ros.sh 
+   ./kill_ros.sh 
  ```
 
 ## Launch Parameters 
