@@ -156,6 +156,17 @@ Drosakis Drosakis and Panos Trahanias.  -->
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
 
+## Terminate ROS Background process
+
+ Make `kill_ros.sh` executable, once:
+ ```
+   chmod +x kill_ros.sh 
+ ```
+ Run `kill_ros.sh`, everytime to terminate ROS processes from background.
+ ```
+   chmod +x kill_ros.sh 
+ ```
+
 ## Launch Parameters 
 
 | Parameter name        | Default Value           | Description  |
