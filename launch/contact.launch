@@ -1,0 +1,9 @@
+<launch>
+  
+  <node name="virtual_imu" pkg="maestro" type="virtual_imu"></node>
+  <node name="fl_pce" pkg="maestro" type="fl_pce.py"></node>
+  <node name="fr_pce" pkg="maestro" type="fr_pce.py"></node>
+  <node name="rl_pce" pkg="maestro" type="rl_pce.py"></node>
+  <node name="rr_pce" pkg="maestro" type="rr_pce.py"></node>
+
+</launch>

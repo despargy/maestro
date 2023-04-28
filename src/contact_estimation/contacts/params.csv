@@ -1,0 +1,2 @@
+ax_thresh ,ay_thresh ,az_thresh,batch_size
+0.03,0.02,1.5,50

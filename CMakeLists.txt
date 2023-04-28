@@ -69,3 +69,10 @@ add_executable(maestro_gazebo_interpreter src/GazeboInterpreter.cpp ${rcd_cpp_sr
 add_dependencies(maestro_gazebo_interpreter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages unitree_legged_msgs_gencpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(maestro_gazebo_interpreter   ${catkin_LIBRARIES})
 
+add_executable(virtual_imu src/contact_estimation/virtual_imu.cpp)
+target_link_libraries(virtual_imu ${catkin_LIBRARIES})
+add_dependencies(virtual_imu ${catkin_EXPORTED_TARGETS})
+
+catkin_install_python(PROGRAMS src/contact_estimation/contacts/fl_pce.py src/contact_estimation/contacts/fr_pce.py src/contact_estimation/contacts/rl_pce.py src/contact_estimation/contacts/rr_pce.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
