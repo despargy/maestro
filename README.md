@@ -92,9 +92,8 @@ Drosakis Drosakis and Panos Trahanias.  -->
  ```diff  
  - Before run experiments with the real robot Go1, first secure Unitree's Go1 EDU, ex. photo below. 
  ```
-```diff 
-+ ## Case A:  Simulation - without Adaptation 
-```
+
+## Case A:  Simulation - without Adaptation 
 ### Run the package ( Simulation - without Adaptation ) (Default)
 1. Default launch for simulation
    ```sh
@@ -109,9 +108,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
     
-```diff 
-+ ## Case B:  Simulation - Adaptation 
-```
+## Case B:  Simulation - Adaptation 
 ### Run the package (Simulation - Adaptation) 
 1. Launch for simulation with adaptation parameters.
    ```sh
@@ -129,9 +126,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
     ```sh
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
-```diff 
-+ ## Case C: Real Robot* - without Adaptation 
-```
+## Case C: Real Robot* - without Adaptation 
 ### Run the package ( Real Robot* - without Adaptation ) 
 1. Default launch for simulation.
    ```sh
@@ -145,9 +140,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
     ```sh
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
-```diff 
-+ ## Case D:   Real Robot*  - Adaptation
-```
+ ## Case D:   Real Robot*  - Adaptation
 ### Run the package (Real Robot*  - Adaptation) 
 1. Launch for simulation with adaptation parameters.
    ```sh
