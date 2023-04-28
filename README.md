@@ -34,7 +34,7 @@ This package is developed for the simulated and the real robot experiments of th
 Drosakis Drosakis and Panos Trahanias.  -->
 ### Development and Implementation using <a href="https://www.unitree.com/en/go1">Unitree's Go1 EDU</a> legged robot, real and simulated.
 
-### Slippage detection ia achieved by [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation).
+### Slippage detection is achieved by [ProbabilisticContactEstimation](https://github.com/MichaelMarav/ProbabilisticContactEstimation).
 
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
@@ -84,13 +84,17 @@ Drosakis Drosakis and Panos Trahanias.  -->
 
 # Run the package 
 
- | :exclamation: - This is very important   |
+ | :exclamation: This is very important   |
  |-----------------------------------------|
 
 > **Warning** 
-> ```diff 
-> - Before run experiments with the real robot Go1, first secure Unitree's Go1 EDU, ex. photo below. ```
-## Case A:  Simulation - without Adaptation 
+ 
+ ```diff  
+ - Before run experiments with the real robot Go1, first secure Unitree's Go1 EDU, ex. photo below. 
+ ```
+```diff 
++ ## Case A:  Simulation - without Adaptation 
+```
 ### Run the package ( Simulation - without Adaptation ) (Default)
 1. Default launch for simulation
    ```sh
@@ -105,7 +109,9 @@ Drosakis Drosakis and Panos Trahanias.  -->
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
     
-## Case B:  Simulation - Adaptation 
+```diff 
++ ## Case B:  Simulation - Adaptation 
+```
 ### Run the package (Simulation - Adaptation) 
 1. Launch for simulation with adaptation parameters.
    ```sh
@@ -123,7 +129,9 @@ Drosakis Drosakis and Panos Trahanias.  -->
     ```sh
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
-## Case C: Real Robot* - without Adaptation 
+```diff 
++ ## Case C: Real Robot* - without Adaptation 
+```
 ### Run the package ( Real Robot* - without Adaptation ) 
 1. Default launch for simulation.
    ```sh
@@ -137,7 +145,9 @@ Drosakis Drosakis and Panos Trahanias.  -->
     ```sh
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
- ## Case D:   Real Robot*  - Adaptation
+```diff 
++ ## Case D:   Real Robot*  - Adaptation
+```
 ### Run the package (Real Robot*  - Adaptation) 
 1. Launch for simulation with adaptation parameters.
    ```sh
