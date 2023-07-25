@@ -29,7 +29,11 @@ namespace RCD
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         int n_leg;
         double kp,ko,kv,b_coef, alpha;
-        double d_tv, tv, t_real, dt ;
+        double d_tv, tv, t_real, dt, t_swing ;
+        // double start_swing[3], target_swing[3];
+        double start_swing[3] = {0.0, 0.67, -1.5};
+        // double target_swing[3] = {0.0,  +1.5 - 0.3 , -M_PI + 0.4};
+        double target_swing[3] = {0.0,  0.67 + 0.80 , -M_PI + 0.4};
 
     public:
 
@@ -76,6 +80,10 @@ namespace RCD
         void computeBeta_t();
         void initDataHandler();
         void firstCommandForRealRobot();
+        void updateCoM();
+        void updateVelocityCoM();
+        void computeWeightsInfinity(double dt, double time_now);
+        void setNewCmdSwing(double time_now);
 
   };
 

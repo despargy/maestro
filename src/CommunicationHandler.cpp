@@ -15,7 +15,6 @@ namespace RCD
         this->nh_cmh_= new ros::NodeHandle;
         this->nh_slip_= new ros::NodeHandle;
         this->loop_rate = new ros::Rate(500);
-        this->MODELSTATE_ID = 4; //do not cure unless is simulation = not real+experiment
         
         this->IMU_OK_0 = false;
         this->IMU_OK_1 = false;
@@ -56,14 +55,36 @@ namespace RCD
         if (!this->nh_main_->getParam( this->ns + "/adapt_b", this->ADAPT_B)){
             ROS_ERROR("No ADAPT_B given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
         }
+        if (!this->nh_main_->getParam( this->ns + "/inf", this->INF)){
+            ROS_ERROR("No INF given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
+        if (!this->nh_main_->getParam( this->ns + "/tips", this->TIPS)){
+            ROS_ERROR("No TIPS given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
+        if (!this->nh_main_->getParam( this->ns + "/pbc_x", this->robot_->pbc_x)){
+            ROS_ERROR("No pbc_x given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
+        if (!this->nh_main_->getParam( this->ns + "/pbc_y", this->robot_->pbc_y)){
+            ROS_ERROR("No pbc_y given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
+        if (!this->nh_main_->getParam( this->ns + "/pbc_z", this->robot_->pbc_z)){
+            ROS_ERROR("No pbc_z given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }
+        if (!nh_main_->getParam(this->ns + "/modelstate_id", this->MODELSTATE_ID)) // depends of sim world
+        {
+            ROS_ERROR("Param /modelstate_id missing from namespace: '%s'", nh_main_->getNamespace().c_str());
+        }
+        if (!nh_main_->getParam(this->ns + "/swingL_id", this->robot_->swingL_id)) // depends of sim world
+        {
+            ROS_ERROR("Param /swingL_id missing from namespace: '%s'", nh_main_->getNamespace().c_str());
+        }
+        
         // Select topics if is real or simulation
         if (!this->real_experiment_)
         {
             // select robot mass and grav. vector
             this->robot_->mass = 13.1; // if is real exp. cmh changes it to 12.0kg 
             this->robot_->gc << 0,0,this->robot_->mass*this->robot_->g_gravity,0,0,0;
-            // pbc offset
-            this->robot_->pbc_x = 0.0025;
             // select topics
             this->lowcmd_topic = this->SIM_LOWCMD_TOPIC; // Select the simulation topics
             this->lowstate_topic = this->SIM_LOWSTATE_TOPIC; // Select the simulation topics
@@ -84,8 +105,6 @@ namespace RCD
             // select robot mass and grav. vector
             this->robot_->mass = 12.0; 
             this->robot_->gc << 0,0,this->robot_->mass*this->robot_->g_gravity,0,0,0;
-            // pbc offset
-            this->robot_->pbc_x = 0.001;
             // select topics
             this->lowcmd_topic = this->REAL_LOWCMD_TOPIC; // Select the real topics
             this->lowstate_topic = this->REAL_LOWSTATE_TOPIC; // Select the real topics
@@ -150,12 +169,14 @@ namespace RCD
     void CommunicationHandler::CoMStateCallback(const gazebo_msgs::ModelStates& msg)
     {
         // Cb CoM State 
+        // ROS_INFO("CoMStateCallback");
         this->robot_->setCoMfromMState(msg.pose[MODELSTATE_ID]); 
+        this->robot_->setCoMVelocityfromMState(msg.twist[MODELSTATE_ID]); 
+
     }
     // real com pos vel
     void CommunicationHandler::RealCoMStateCallback(const nav_msgs::Odometry& msg)
     {
-        // std::cout<< "RealCoMStateCallback"<<std::endl;
         this->robot_->setCoMfromCamera(msg);  
     }
     void CommunicationHandler::lowStateCallback(const unitree_legged_msgs::LowState& msg)

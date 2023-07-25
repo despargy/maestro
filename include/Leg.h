@@ -49,6 +49,9 @@ namespace RCD
         Eigen::Vector3d f, f_cmd, tau; //applyied force to the tip
         Eigen::Vector3d f_tf_toBase;
 
+        Eigen::Matrix4d g_o;
+        Eigen::Matrix4f g_o_world;
+
         // init W once
         Eigen::Vector3d wv_leg;
         Leg();

@@ -71,14 +71,80 @@
             </link>
         </model>
 
-        <model name="normal_plate_fl">
+        <model name="normal_plate_rl">
             <static>true</static>
-            <link name="normal_plate_fl">
+            <link name="normal_plate_rl">
                 <pose>-0.2 0.3 0 0 0 0</pose>
-                <collision name="normal_plate_fl">
+                <collision name="normal_plate_rl">
                     <geometry>
                         <box>
                             <size>0.4 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <surface>
+                        <friction>
+                        <ode>
+                            <mu>01.35</mu>
+                            <mu2>01.35</mu2>
+                        </ode>
+                        </friction>
+                    </surface>
+                </collision>
+                <visual name="static_normal_plate_rl_visual">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.2 0.2 0.2 1.0</ambient>
+                        <diffuse>.421 0.225 0.0 1.0</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+        <model name="normal_plate_fr">
+            <static>true</static>
+            <link name="normal_plate_fr">
+                <pose>0.3 -0.3 0 0 0 0</pose>
+                <collision name="normal_plate_fr">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <surface>
+                        <friction>
+                        <ode>
+                            <mu>01.35</mu>
+                            <mu2>01.35</mu2>
+                        </ode>
+                        </friction>
+                    </surface>
+                </collision>
+                <visual name="static_normal_plate_fr_visual">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.2 0.2 0.2 1.0</ambient>
+                        <diffuse>.421 0.225 0.0 1.0</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+        <model name="normal_plate_fl">
+            <static>true</static>
+            <link name="normal_plate_fl">
+                <pose>0.3 0.3 0 0 0 0</pose>
+                <collision name="normal_plate_fl">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
                         </box>
                     </geometry>
                     <surface>
@@ -93,7 +159,7 @@
                 <visual name="static_normal_plate_fl_visual">
                     <geometry>
                         <box>
-                            <size>0.4 0.6 0.005</size>
+                            <size>0.6 0.6 0.005</size>
                         </box>
                     </geometry>
                     <material>
@@ -103,40 +169,6 @@
                 </visual>
             </link>
         </model>
-
-        <model name="normal_plate_rr_rl">
-            <static>true</static>
-            <link name="normal_plate_rr_rl">
-                <pose>0.3 0 0 0 0 0</pose>
-                <collision name="normal_plate_rr_rl">
-                    <geometry>
-                        <box>
-                            <size>0.6 1.2 0.005</size>
-                        </box>
-                    </geometry>
-                    <surface>
-                        <friction>
-                        <ode>
-                            <mu>01.35</mu>
-                            <mu2>01.35</mu2>
-                        </ode>
-                        </friction>
-                    </surface>
-                </collision>
-                <visual name="static_normal_plate_rr_rl_visual">
-                    <geometry>
-                        <box>
-                            <size>0.6 1.2 0.005</size>
-                        </box>
-                    </geometry>
-                    <material>
-                        <ambient>0.2 0.2 0.2 1.0</ambient>
-                        <diffuse>.421 0.225 0.0 1.0</diffuse>
-                    </material>
-                </visual>
-            </link>
-        </model>
-
 
     </world>
 

@@ -1,0 +1,178 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+    <world name="default">
+
+        <physics type="ode">
+        <max_step_size>0.0002</max_step_size>
+        <real_time_factor>1</real_time_factor>
+        <real_time_update_rate>5000</real_time_update_rate>
+        <gravity>0 0 -9.81</gravity>
+            <ode>
+                <solver>
+                <type>quick</type>  
+                <iters>50</iters> 
+                <sor>1.3</sor>
+                </solver>  
+                <constraints>
+                <cfm>0.0</cfm>
+                <erp>0.2</erp>
+                <contact_max_correcting_vel>10.0</contact_max_correcting_vel>
+                <contact_surface_layer>0.001</contact_surface_layer>
+                </constraints>  
+            </ode>
+        </physics>
+
+        <scene>
+        <sky>
+            <clouds>
+                <speed>12</speed>
+            </clouds>
+        </sky>
+        </scene>
+        <!-- A global light source -->
+        <include>
+            <uri>model://sun</uri>
+        </include>
+        <!-- A ground plane -->
+        <include>
+            <uri>model://ground_plane</uri>
+        </include>
+
+        <model name="normal_plate_rr">
+            <static>true</static>
+            <link name="slip_plate">
+                <pose>-0.3 -0.3 0 0 0 0</pose>
+                <collision name="normal_plate_rr">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <surface>
+                        <friction>
+                        <ode>
+                            <mu>0.35</mu>
+                            <mu2>0.35</mu2>
+                        </ode>
+                        </friction>
+                    </surface>
+                </collision>
+                <visual name="static_normal_plate_rr_visual">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.4 0.4 0.4 1.0</ambient>
+                        <diffuse>1 1 0.5 1.0</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+        <model name="normal_plate_rl">
+            <static>true</static>
+            <link name="normal_plate_rl">
+                <pose>-0.2 0.3 0 0 0 0</pose>
+                <collision name="normal_plate_rl">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <surface>
+                        <friction>
+                        <ode>
+                            <mu>0.35</mu>
+                            <mu2>0.35</mu2>
+                        </ode>
+                        </friction>
+                    </surface>
+                </collision>
+                <visual name="static_normal_plate_rl_visual">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.4 0.4 0.4 1.0</ambient>
+                        <diffuse>1 1 0.5 1.0</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+        
+        <model name="slip_plate_fr">
+            <static>true</static>
+            <link name="slip_plate_fr">
+                <pose>0.3 -0.3 0 0 0 0</pose>
+                <collision name="slip_plate_fr">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <surface>
+                        <friction>
+                        <ode>
+                            <mu>0.35</mu>
+                            <mu2>0.35</mu2>
+                        </ode>
+                        </friction>
+                    </surface>
+                </collision>
+                <visual name="static_slip_plate_fr_visual">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.4 0.4 0.4 1.0</ambient>
+                        <diffuse>1 1 0.5 1.0</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+        <model name="slip_plate_fl">
+            <static>true</static>
+            <link name="slip_plate_fl">
+                <pose>0.3 0.3 0 0 0 0</pose>
+                <collision name="slip_plate_fl">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <surface>
+                        <friction>
+                        <ode>
+                            <mu>01.35</mu>
+                            <mu2>01.35</mu2>
+                        </ode>
+                        </friction>
+                    </surface>
+                </collision>
+                <visual name="static_slip_plate_fl_visual">
+                    <geometry>
+                        <box>
+                            <size>0.6 0.6 0.005</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.2 0.2 0.2 1.0</ambient>
+                        <diffuse>.421 0.225 0.0 1.0</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+
+    </world>
+
+
+    
+</sdf>

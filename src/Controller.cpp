@@ -35,6 +35,7 @@ namespace RCD
         if (!this->cmh_->nh_main_->getParam( this->ns + "/main_path", this->data_handler_->main_path)){
             ROS_ERROR("No main_path given in namespace: '%s')", this->cmh_->nh_main_->getNamespace().c_str());
         }
+        
         // Pass Tree form URDF
         this->loadTree();
         // pas num of joints
@@ -42,6 +43,10 @@ namespace RCD
         // for orientation tracking
         this->b_coef = 0.1;
         this->e_v.resize(6);
+
+        /* swing leg control */
+        t_swing = 3.0;
+
 
     }
     Controller::~Controller()
@@ -61,6 +66,9 @@ namespace RCD
         this->startingPose(); 
         // get joint qs and solveKDL for initialization
         this->updateLegs();
+        // update CoM state
+        this->updateCoM();
+
         // set pointers to DataHandler
         this->initDataHandler();
         // init vvvv
@@ -76,11 +84,11 @@ namespace RCD
     {
                         /* Robot var. to be logged */
         // p_c pointer 
-        this->data_handler_->log_data.p_c = &(this->robot_->p_c);             
+        this->data_handler_->log_data.p_c = &(this->robot_->p_c);              
         // Weight vector
         this->data_handler_->log_data.vvvv = &(this->robot_->vvvv);     
         // p_d pointer 
-        this->data_handler_->log_data.p_d = &(this->p_d);    
+        this->data_handler_->log_data.p_d = &(this->p_d);   
         // probs
         this->data_handler_->log_data.leg_prob_0 = &(this->leg_mng[0].prob_stab)  ;       
         this->data_handler_->log_data.leg_prob_1 = &(this->leg_mng[1].prob_stab)  ;       
@@ -100,6 +108,25 @@ namespace RCD
         this->data_handler_->log_data.tv = &(this->tv); 
         // d_tv pointer 
         this->data_handler_->log_data.d_tv = &(this->d_tv);       
+
+        // x leg world
+        this->data_handler_->log_data.leg_0_x = &(this->leg_mng[0].g_o_world(0,3))  ;       
+        this->data_handler_->log_data.leg_1_x = &(this->leg_mng[1].g_o_world(0,3))  ;       
+        this->data_handler_->log_data.leg_2_x = &(this->leg_mng[2].g_o_world(0,3))  ;       
+        this->data_handler_->log_data.leg_3_x = &(this->leg_mng[3].g_o_world(0,3))  ;   
+
+        // y leg world
+        this->data_handler_->log_data.leg_0_y = &(this->leg_mng[0].g_o_world(1,3))  ;       
+        this->data_handler_->log_data.leg_1_y = &(this->leg_mng[1].g_o_world(1,3))  ;       
+        this->data_handler_->log_data.leg_2_y = &(this->leg_mng[2].g_o_world(1,3))  ;       
+        this->data_handler_->log_data.leg_3_y = &(this->leg_mng[3].g_o_world(1,3))  ; 
+
+        // z leg world
+        this->data_handler_->log_data.leg_0_z = &(this->leg_mng[0].g_o_world(2,3))  ;       
+        this->data_handler_->log_data.leg_1_z = &(this->leg_mng[1].g_o_world(2,3))  ;       
+        this->data_handler_->log_data.leg_2_z = &(this->leg_mng[2].g_o_world(2,3))  ;       
+        this->data_handler_->log_data.leg_3_z = &(this->leg_mng[3].g_o_world(2,3))  ; 
+
     }
     void Controller::initLegsControl()
     {
@@ -154,6 +181,7 @@ namespace RCD
         // save as matrix the inverse of diagonal vvvv vector
         this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
     }
+
     void Controller::computeSudoGq()
     {
         // compute Gq eq. 2
@@ -251,8 +279,11 @@ namespace RCD
         // set dt    
         this->dt = 0.002;
         this->t_real = 0.0;
+        
+        // update CoM state
+        this->updateCoM();
 
-        ros::Duration sleep_dt_ROS = ros::Duration(0.002);
+        ros::Duration sleep_dt_ROS = ros::Duration(this->dt);
 
         this->tv = 0.0;
         this->d_tv = 1.0;
@@ -292,13 +323,12 @@ namespace RCD
         fcontrol2.resize(6);
         fcontrol3.resize(6);
 
-        Eigen::Vector3d com_p_prev, dCoM_p;
-        Eigen::Vector3d w_CoM;
+        Eigen::Vector3d com_p_prev;
         Eigen::Matrix3d R_CoM_prev, dR_CoM;
 
         Eigen::MatrixXd Gbc = Eigen::MatrixXd::Identity(6,6);
         Eigen::Vector3d pbc ;
-        pbc << this->robot_->pbc_x , 0.001 , 0.0; // center of mass offset 
+        pbc << this->robot_->pbc_x ,this->robot_->pbc_y , this->robot_->pbc_z ; // center of mass offset 
 
         com_p_prev = p_d0;
         R_CoM_prev = R_d_0;
@@ -307,17 +337,21 @@ namespace RCD
 
         while(this->robot_->KEEP_CONTROL & ros::ok()) 
         {
-            std::cout<<"t_real  "<< t_real<<std::endl;
+            // std::cout<<"t_real  "<< t_real<<std::endl;
 
             // updates Legs variables n' Jacobian Matrix
             this->updateLegs();
 
-            if (this->cmh_->SLIP_DETECTION)
+            if (this->cmh_->INF)
+            {
+                // compute Weights based on prob for slip detection
+                this->computeWeightsInfinity(this->dt, t_to_use ); 
+            }
+            else if (this->cmh_->SLIP_DETECTION)
             {
                 // compute Weights based on prob for slip detection
                 this->computeWeights(this->dt); 
             }
-
             // give dt or keep old time to compute ros dt?
             this->t_real += this->dt;
             t_to_use = this->t_real;
@@ -341,36 +375,47 @@ namespace RCD
             // DESIRED angular velocity of Com
             w_d = this->math_lib.scewSymmetricInverse(dR_d*R_d.transpose());
             
-            // compute CoM velocity
-            dCoM_p = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, this->dt);  
-            dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, this->dt); 
-            w_CoM = this->math_lib.scewSymmetricInverse(dR_CoM*this->robot_->R_c.transpose());
-
-            // update
-            com_p_prev = this->robot_->p_c;
-            R_CoM_prev = this->robot_->R_c;
-
+            // update CoM state
+            this->updateCoM();
+            // updat CoM velocity
+            if(cmh_->real_experiment_)
+            {
+                // compute CoM velocity
+                robot_->dp_c = this->math_lib.get_dp_CoM(com_p_prev, this->robot_->p_c, this->dt);  
+                dR_CoM = this->math_lib.get_dR_CoM(R_CoM_prev, this->robot_->R_c, this->dt); 
+                robot_->w_c = this->math_lib.scewSymmetricInverse(dR_CoM*this->robot_->R_c.transpose());
+                
+                // update
+                com_p_prev = this->robot_->p_c;
+                R_CoM_prev = this->robot_->R_c;
+            }
+            else
+            {
+                this->updateVelocityCoM(); // TODO uncomment this, remove the next lines
+            }
+            
+            
             // compute position ERROR
             this->e_p = this->robot_->p_c - p_d;
             // compute orientation ERROR
-            ang.fromRotationMatrix(Re);
             Re = this->robot_->R_c*R_d.transpose();
+            ang.fromRotationMatrix(Re);
             this->e_o = ang.angle()*ang.axis();
 
             // compute velocity ERROR
-            this->e_v.block(0,0,3,1) = dCoM_p - dp_d;
-            this->e_v.block(3,0,3,1) = w_CoM - this->robot_->R_c*R_d.transpose()*w_d ;
+            this->e_v.block(0,0,3,1) = robot_->dp_c - dp_d;
+            this->e_v.block(3,0,3,1) = robot_->w_c - this->robot_->R_c*R_d.transpose()*w_d ;
             this->e_v.block(3,0,3,1) = 0.7*this->e_v.block(3,0,3,1) ;
 
             // std::cout<<"e_p  "<< e_p.transpose()<<std::endl;
             // std::cout<<"e_o  "<< e_o.transpose()<<std::endl;
             // std::cout<<"e_v  "<< e_v.transpose()<<std::endl;
 
-            std::cout<<"p_c  "<< this->robot_->p_c.transpose()<<std::endl;
+            // std::cout<<"p_c  "<< this->robot_->p_c.transpose()<<std::endl;
             // std::cout<<"e_o  "<< e_o.transpose()<<std::endl;
 
             // updates Coriolis/Inertia Matrix etc.
-            this->updateControlLaw(w_CoM);
+            this->updateControlLaw(robot_->w_c);
 
             // first term of Fc eq. 11
             fcontrol1.block(0,0,3,1) = ddp_d;
@@ -386,8 +431,8 @@ namespace RCD
             Gbc.block(3,0,3,3) = this->math_lib.scewSymmetric(this->robot_->R_c*pbc);
 
             // Final Fc ep. 11
-            this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*this->e_v + Gbc*this->robot_->gc ;
-            // solve eq. 1 with respect to Fa
+            this->robot_->F_c = this->robot_->H_c*fcontrol1 + this->robot_->C_c*fcontrol2  + fcontrol3 - this->kv*this->e_v + Gbc*this->robot_->gc ;            // solve eq. 1 with respect to Fa
+
             this->robot_->F_a = this->robot_->Gq_sudo*this->robot_->F_c ;
             // Torque control per leg 
             for(int l = 0; l < this->n_leg ; l++)
@@ -406,18 +451,28 @@ namespace RCD
             int FOOT_IMU_ID = 0;
             this->cmh_->publishRotation(this->robot_->R_c*this->leg_mng[FOOT_IMU_ID].p.matrix().block(0,0,3,3));
             
+            // tip world frame pos
+            robot_->g_com.block(0,0,3,3) = robot_->R_c;
+            robot_->g_com.block(0,3,3,1) = robot_->p_c;
+            for(int l = 0; l < n_leg ; l++)
+            {
+                leg_mng[l].g_o_world = (robot_->g_com*leg_mng[l].g_o).cast <float> ();
+                // std::cout<< "g_o_world"<< leg_mng[l].g_o_world<<std::endl;
+            }
+
+
             // Write a new line at csv
-            this->data_handler_->logData();
+            this->cmh_->TIPS ? this->data_handler_->logDataTips() : this->data_handler_->logData();
 
             // send New Torque Command
-            this->setNewCmd();
+            this->cmh_->INF & t_to_use>3 ? this->setNewCmdSwing(t_to_use) : this->setNewCmd();
             sleep_dt_ROS.sleep();
             
         }
     }
     void Controller::computeBeta_t()
     {
-        double slope = 0.0001;
+        // double slope = 0.0001;
         this->d_tv = this->leg_mng[0].w0 / std::fmin( std::fmin( this->leg_mng[0].wv_leg(0), this->leg_mng[1].wv_leg(0)) , std::fmin( this->leg_mng[2].wv_leg(0),this->leg_mng[3].wv_leg(0)  ));
         std::cout<<"wwww  "<< this->robot_->vvvv.transpose() << " ------- "<<"d_tv  "<< d_tv<<std::endl;
 
@@ -446,6 +501,37 @@ namespace RCD
             next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
             next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
         }
+        cmh_->sendLowCmd(this->next_LowCmd_);
+    }
+    void Controller::setNewCmdSwing(double time_now)
+    {
+        for(int l = 0; l < this->n_leg ; l++)
+        {
+            next_LowCmd_.motorCmd[l*3+0].tau = (float) leg_mng[l].tau(0);
+            next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
+            next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
+        }
+        
+        double percent = (time_now-t_swing)/t_swing > 1 ? 1: (time_now-t_swing)/t_swing ;
+        for(int j=robot_->swingL_id*3; j<robot_->swingL_id*3 + 3; j++){
+            next_LowCmd_.motorCmd[j].q = start_swing[j]*(1-percent) + target_swing[j]*percent; 
+            // ROS_INFO("q =  %f", next_LowCmd_.motorCmd[j].q);
+        }
+
+        if(cmh_->real_experiment_)
+        {
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 10;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 50;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 70;
+
+        }
+        else
+        {
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 70;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 180;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 300;           
+        }
+
         cmh_->sendLowCmd(this->next_LowCmd_);
     }
     void Controller::updateLegs()
@@ -524,8 +610,8 @@ namespace RCD
     }
     void Controller::standUp()
     {   
-        double pos[robot_->num_joints] = {0.0, 0.67, -1.3, -0.0, 0.67, -1.3, 
-                                            0.0, 0.67, -1.3, -0.0, 0.67, -1.3};
+        double pos[robot_->num_joints] = {0.0, 0.67, -1.5, -0.0, 0.67, -1.5, 
+                                            0.0, 0.67, -1.5, -0.0, 0.67, -1.5};
         moveDesiredQs(pos, 2*1000);
 
     }
@@ -543,7 +629,7 @@ namespace RCD
             percent = (double)i/duration;
             for(int j=0; j<robot_->num_joints; j++){
                 next_LowCmd_.motorCmd[j].q = lastPos[j]*(1-percent) + targetPos[j]*percent; 
-                ROS_INFO("q =  %f", next_LowCmd_.motorCmd[j].q);
+                // ROS_INFO("q =  %f", next_LowCmd_.motorCmd[j].q);
             }
             /* send nextMotorCmd through lowCmd*/ 
             cmh_->sendLowCmd(this->next_LowCmd_);
@@ -592,5 +678,41 @@ namespace RCD
             motiontime++;
         }
     }
+    void Controller::updateCoM()
+    {
+        this->robot_->p_c = this->robot_->p_c_update;
+        this->robot_->R_c = this->robot_->R_c_update;
+    }
+    void Controller::updateVelocityCoM()
+    {
+        this->robot_->dp_c = this->robot_->dp_c_update;
+        this->robot_->w_c = this->robot_->w_c_update;
+    }
+    void Controller::computeWeightsInfinity(double dt, double time_now)
+    {
+        
+        for(int l = 0; l < this->n_leg ; l++)
+        {
+            // TODO SOS
 
+            this->leg_mng[l].prob_stab = std::fmin(this->cmh_->slip[l],1.0)/1.0;
+            this->leg_mng[l].wv_leg(1) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(1) ; // y
+            this->leg_mng[l].wv_leg(0) = this->alpha*(1.0 - this->leg_mng[l].prob_stab)*dt + this->leg_mng[l].wv_leg(0); // x
+            
+            
+            /* Added to simuate swing leg weights t inf */
+            if( l == robot_->swingL_id)
+                
+                if (time_now>t_swing-dt)
+                    this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + std::numeric_limits<double>::infinity()*Eigen::Vector3d::Ones(); 
+                else
+                    this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + atanh(time_now/t_swing)*Eigen::Vector3d::Ones(); 
+                // this->leg_mng[l].wv_leg = this->leg_mng[0].w0*exp(time_now)*Eigen::Vector3d::Ones(); //tanh(time_now/7*M_PI/2)
+            
+            // update vvvv vector of robot                          // z stays 1.0 do not change
+            this->robot_->vvvv.block(l*3,0,3,1) = this->leg_mng[l].wv_leg;   
+        }
+        // save as matrix the inverse of diagonal vvvv vector
+        this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
+    }
 }

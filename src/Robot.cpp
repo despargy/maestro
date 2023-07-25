@@ -7,10 +7,22 @@ namespace RCD
     {
         ROS_INFO("Robot Constructor");
 
-        this->p_c = Eigen::Vector3d::Zero();
         this->p_c0 = Eigen::Vector3d::Zero(); // TODO add init values
+        // position CoM
+        this->p_c = Eigen::Vector3d::Zero();
+        this->p_c_update = Eigen::Vector3d::Zero();
+        // linear vel CoM
+        this->dp_c = Eigen::Vector3d::Zero();
+        this->dp_c_update = Eigen::Vector3d::Zero();
 
+        // ori CoM
         this->R_c.resize(3,3);
+        this->R_c_update.resize(3,3);
+        // ang. vel CoM
+        this->w_c = Eigen::Vector3d::Zero();
+        this->w_c_update = Eigen::Vector3d::Zero();
+
+
         this->F_a.resize(12);
         this->F_c.resize(6);
         this->Gq.resize(6,12);
@@ -50,6 +62,9 @@ namespace RCD
         LegR_frame[2] = Eigen::Matrix3d::Identity();
         LegR_frame[3] = Eigen::Matrix3d::Identity();
 
+        g_com = Eigen::Matrix4d::Zero();
+        g_com(3,3) = 1;
+        
     }
 
     Robot::~Robot()
@@ -80,20 +95,31 @@ namespace RCD
     }
     void Robot::setCoMfromMState(geometry_msgs::Pose com_state)
     {
-        this->p_c(0) = com_state.position.x;
-        this->p_c(1) = com_state.position.y;
-        this->p_c(2) = com_state.position.z;
+        this->p_c_update(0) = com_state.position.x ;
+        this->p_c_update(1) = com_state.position.y ;
+        this->p_c_update(2) = com_state.position.z ;
 
         Eigen::Quaterniond cur_c(com_state.orientation.w, com_state.orientation.x, com_state.orientation.y, com_state.orientation.z);
         cur_c.normalize();
-        this->R_c = cur_c.toRotationMatrix();
+        this->R_c_update = cur_c.toRotationMatrix();
 
+    }
+    void Robot::setCoMVelocityfromMState(geometry_msgs::Twist com_vel)
+    {
+
+        this->dp_c_update(0) = com_vel.linear.x;
+        this->dp_c_update(1) = com_vel.linear.y;
+        this->dp_c_update(2) = com_vel.linear.z;
+
+        this->w_c_update(0) = com_vel.angular.x;
+        this->w_c_update(1) = com_vel.angular.y;
+        this->w_c_update(2) = com_vel.angular.z;
     }
     void Robot::setCoMfromCamera(nav_msgs::Odometry camera_pose)
     {
-        this->p_c(0) = camera_pose.pose.pose.position.x; // SOS dif. frame
-        this->p_c(1) = camera_pose.pose.pose.position.y;   // SOS dif frame
-        this->p_c(2) = camera_pose.pose.pose.position.z;
+        this->p_c_update(0) = camera_pose.pose.pose.position.x; // SOS dif. frame
+        this->p_c_update(1) = camera_pose.pose.pose.position.y;   // SOS dif frame
+        this->p_c_update(2) = camera_pose.pose.pose.position.z;
 
         tf2::Quaternion myQuaternion;
         myQuaternion.setRPY( low_state_.imu.rpy[0], low_state_.imu.rpy[1], low_state_.imu.rpy[2] );  
@@ -101,9 +127,10 @@ namespace RCD
 
         Eigen::Quaterniond cur_c(myQuaternion.getW(), myQuaternion.getX(), myQuaternion.getY(), myQuaternion.getZ());
         cur_c.normalize();
-        this->R_c = cur_c.toRotationMatrix();
+        this->R_c_update = cur_c.toRotationMatrix();
 
     } 
+
 
                 /* GET FUNCTIONS */
     // unitree_legged_msgs::IMU Robot::getImuBase()

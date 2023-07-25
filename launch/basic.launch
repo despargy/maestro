@@ -6,22 +6,20 @@
     <arg name="slip_detection" default="false"/>
     <arg name="num_imus" default="0"/>
     <arg name="adapt_b" default="false"/>
-
+    <arg name="inf" default="false"/>
+    <arg name="wname" default="earth"/>
+    <arg name="tips" default="false"/>
 
     <group ns="/" unless="$(arg real_experiment)">
         <!-- ==================== GAZEBO WORLD ==================== -->
-        <arg name="wname" default="earth"/> <!-- 1leg slip-->
-        <arg name="wnameGlobal" default="earthGlobalSlip"/> <!-- 4leg slip-->
         <arg name="paused" default="true"/>
         <arg name="use_sim_time" default="true"/>
         <arg name="gui" default="true"/>
         <arg name="headless" default="false"/>
         <arg name="debug" default="false"/>
+        
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
-            <!-- 1leg slip-->
             <arg name="world_name" value="$(find maestro)/worlds/$(arg wname).world"/> 
-            <!-- 4leg slip-->
-            <!-- <arg name="world_name" value="$(find maestro)/worlds/$(arg wnameGlobal).world"/>  -->
             <arg name="debug" value="$(arg debug)"/>
             <arg name="gui" value="$(arg gui)"/>
             <arg name="paused" value="$(arg paused)"/>
@@ -42,19 +40,31 @@
          <!-- REAL Experiment -->
         <!-- <param name="kp" value="2400.0"/>
         <param name="kv" value="280.0"/>
-        <param name="ko" value="15.0"/> -->
-        <!-- <param name="alpha" value="1000.0"/> -->
+        <param name="ko" value="15.0"/>
+        <param name="alpha" value="1000.0"/> -->
+<!-- 
+        <param name="pbc_x" value="0.001">
+        <param name="pbc_y" value="0.001">
+        <param name="pbc_z" value="0.0"> -->
 
          <!-- SIMULATION Experiment -->
-        <param name="kp" value="3000.0"/>
-        <param name="kv" value="550.0"/>
+        <param name="kp" value="3000.0"/> <!-- 3000-->
+        <param name="kv" value="550.0"/> <!-- 550-->
         <param name="ko" value="15.0"/>
-        <param name="alpha" value="150.0"/>
+        <param name="alpha" value="150.0"/>  <!-- 150-->
 
+        <param name="pbc_x" value="0.0025"/>
+        <param name="pbc_y" value="0.001"/>
+        <param name="pbc_z" value="0.0"/>
+
+        <param name="modelstate_id" value="5"/>
+        <param name="swingL_id" value="0"/>
 
         <param name="slip_detection" value="$(arg slip_detection)"/>
         <param name="num_imus" value="$(arg num_imus)"/>
         <param name="adapt_b" value="$(arg adapt_b)"/>
+        <param name="inf" value="$(arg inf)"/>
+        <param name="tips" value="$(arg tips)"/>
 
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>

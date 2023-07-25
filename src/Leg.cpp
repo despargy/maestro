@@ -35,6 +35,10 @@ namespace RCD
         prob_stab = 1.0; // init as stable contact
         w0=35.0;
         wv_leg = w0*Eigen::Vector3d::Ones();  
+
+        g_o = Eigen::Matrix4d::Zero();
+        g_o(3,3) = 1;
+        g_o_world = Eigen::Matrix4f::Zero();
     }
     void Leg::kdlSolver()
     {
@@ -43,6 +47,10 @@ namespace RCD
         kdl_solver_pos->JntToCart(q,p_frame);
         J = jacobian_kdl.data; // jac KDL to Eigen  
         tf::transformKDLToEigen(p_frame, p); // p to eigen Affine
+
+        g_o.block(0,0,3,3) = p.rotation();
+        g_o.block(0,3,3,1) = p.translation();
+
     }
 
 

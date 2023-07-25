@@ -6,6 +6,7 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <eigen_conversions/eigen_kdl.h>
 #include <Eigen/Dense>
+#include <limits>
 
 #ifndef _MATH_H_
 #define _MATH_H_
@@ -28,7 +29,8 @@ namespace RCD
         Eigen::Vector3d get_dp_CoM(Eigen::Vector3d com_p_prev,Eigen::Vector3d com_p_cur, double dt);
         Eigen::Matrix3d get_dR_CoM(Eigen::Matrix3d R_CoM_prev,Eigen::Matrix3d R_CoM_cur, double dt);
         Eigen::Vector3d p_T;
-    
+        double exp_inf();
+
     };
 }
 #endif

@@ -30,20 +30,22 @@ namespace RCD
         std::string robot_name_ ;
         std::vector<std::string> joint_names{}; // init by communication handler
         int num_joints;  // init by communication handler
-        // int num_motors = 20;
-        double mass, g_gravity, pbc_x;
+        double swingL_id;
+        double mass, g_gravity, pbc_x, pbc_y, pbc_z;
         bool KEEP_CONTROL;
         // unitree_legged_msgs::MotorCmd *motor_cmd_; // list of 20 motors
         unitree_legged_msgs::LowState low_state_; 
-        Eigen::Vector3d p_c, p_c0;// com_vel_linear, com_vel_ang;
+        Eigen::Vector3d p_c, p_c0, p_c_update, w_c, w_c_update, dp_c, dp_c_update;// com_vel_linear, com_vel_ang;
         // Eigen::Quaterniond com_q;
         Eigen::VectorXd F_a, F_c, gc;
-        Eigen::MatrixXd R_c, Gq, Gq_sudo, H_c, C_c;
+        Eigen::MatrixXd R_c, R_c_update, Gq, Gq_sudo, H_c, C_c;
         Eigen::Matrix3d I, I_c;
         Eigen::VectorXd vvvv;
         Eigen::DiagonalMatrix<double,12> W_inv;
         Eigen::Matrix3d LegR_frame[4];
 
+        Eigen::Matrix4d g_com;
+        
         Robot(/* args */);
         ~Robot();
 
@@ -53,7 +55,11 @@ namespace RCD
         // void setMotorCmd(unitree_legged_msgs::MotorCmd* motor_cmd);
         void setLowState(unitree_legged_msgs::LowState low_state);
         void setCoMfromMState(geometry_msgs::Pose com_state);
+        void setCoMVelocityfromMState(geometry_msgs::Twist com_vel);
+        
         void setCoMfromCamera(nav_msgs::Odometry camera_pose);
+        void updateCoM();
+        void updateVelocityCoM();
 
         // maestro::Foot getFoot();
         // unitree_legged_msgs::IMU getImuBase();

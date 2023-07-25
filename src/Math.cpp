@@ -33,7 +33,7 @@ namespace RCD
         Eigen::Vector3d p_d;
 
         // x,y axis
-        double freq = 0.65; // sim
+        double freq = 0.5; // sim 0.65
         // double freq = 0.4; // real
 
         // p_d(0) = p_d0_(0) + (0.07-0.07*cos(2*M_PI*freq*t_real)); 
@@ -57,15 +57,19 @@ namespace RCD
         // p_d = p_d0_ + (this->p_T - p_d0_)*(1- std::exp(-0.5*t_real));
         // target 
 
-        // x, z axis 
-        p_d(0) = p_d0_(0) - 0.05*sin(2*M_PI*freq*t_real); 
-        p_d(1) = p_d0_(1) + 0.0; 
-        p_d(2) = p_d0_(2) -(0.05- 0.05*cos(2*M_PI*freq*t_real));
+ 
 
-        // // x, z axis 
-        // p_d(0) = p_d0_(0) - 0.03*sin(2*M_PI*freq*t_real); 
-        // p_d(1) = p_d0_(1) ;//+ 0.0; 
-        // p_d(2) = p_d0_(2) -(0.03- 0.03*cos(2*M_PI*freq*t_real));
+        // INF. w0 
+        p_d(0) = p_d0_(0) + 0.02*sin(2*M_PI*freq*t_real);  // freq 0.5
+        p_d(1) = p_d0_(1) ; 
+        p_d(2) = p_d0_(2) ;
+
+        // // 2 front slip , with and without ori Q_0.x();// + 0.2*sin(2*0.55*M_PI*t_real); // ori
+        // p_d(0) = p_d0_(0) + 0.05*sin(2*M_PI*freq*t_real);  // freq=0.65
+        // p_d(1) = p_d0_(1) ; 
+        // p_d(2) = p_d0_(2) - (0.02 - 0.02*cos(2*M_PI*freq*t_real));
+
+
         return p_d;
     }
     Eigen::Vector3d Math::get_dpDesiredTrajectory(Eigen::Vector3d p_d0_,Eigen::Vector3d p_d_cur, double dt, double t_real)
@@ -82,7 +86,11 @@ namespace RCD
     Eigen::Matrix3d Math::get_RDesiredRotationMatrix(Eigen::Quaterniond Q_0, double t_real)
     {
         Eigen::Quaterniond temp = Q_0;
-        temp.x() = Q_0.x() + 0.2*sin(2*0.2*M_PI*t_real); // 
+        // temp.x() = Q_0.x() - 0.15*sin(2*0.55*M_PI*t_real); // ori
+
+        // temp.y() = Q_0.y() ;//+ 0.1*sin(2*0.7*M_PI*t_real); // test
+        // temp.z() = Q_0.z()  ;//- 0.1*cos(2*0.3*M_PI*t_real); // test
+
         temp.normalize();
         return temp.toRotationMatrix(); 
     }
@@ -99,5 +107,8 @@ namespace RCD
     {
         return (R_CoM_cur - R_CoM_prev)/dt;
     }
-
+    double Math::exp_inf()
+    {
+        return exp(std::numeric_limits<double>::infinity());
+    }
 }

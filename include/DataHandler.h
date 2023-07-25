@@ -31,6 +31,11 @@ namespace RCD
 
             // ------ Logging Leg class ------ //
             double *leg_prob_0, *leg_prob_1, *leg_prob_2, *leg_prob_3;
+            float *leg_0_x, *leg_0_y, *leg_0_z;
+            float *leg_1_x, *leg_1_y, *leg_1_z;
+            float *leg_2_x, *leg_2_y, *leg_2_z;
+            float *leg_3_x, *leg_3_y, *leg_3_z;
+
             // ------                       ------ //
 
             // ------ Logging Controller class ------ //
@@ -47,7 +52,9 @@ namespace RCD
         // void* keepWritting(void* args);
 
         void logData();
+        void logDataTips();
         void openOnce();
+        void openOnceTips();
         void closeOnce();
     };
 }

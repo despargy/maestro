@@ -1,0 +1,59 @@
+# Expieriment Case -> 0 Leg Swing 
+    weights [0] to inf, 
+        <param name="kp" value="3000.0"/> <!-- 3000-->
+        <param name="kv" value="350.0"/> <!-- 550-->
+        <param name="ko" value="15.0"/>
+        <param name="alpha" value="150.0"/> 
+        
+        double freq = 0.25; // sim
+        p_d(0) = p_d0_(0) + 0.02*sin(2*M_PI*freq*t_real); 
+        temp.x() = Q_0.x()
+
+        $ roslaunch maestro basic.launch slip_detection:=true adapt_b:=true inf:=true
+        Case (a): default (b): normal
+    Comments: this experiment shows how the system reacts when weights go to inf and a leg can be swing without invoke trajectory error
+
+# Experiment CaseXY -> 2 Front Legs slipage
+ 
+        wname:=earth2front
+        double freq = 0.75;
+
+        // 2 front slip WORK
+        p_d(0) = p_d0_(0) + 0.05*sin(2*M_PI*freq*t_real); 
+        p_d(1) = p_d0_(1) ; 
+        p_d(2) = p_d0_(2) - (0.02 - 0.02*cos(2*M_PI*freq*t_real));
+
+        <param name="kp" value="3000.0"/> <!-- 3000-->
+        <param name="kv" value="350.0"/> <!-- 550-->
+        <param name="ko" value="15.0"/>
+        <param name="alpha" value="150.0"/>  <!-- 150-->
+
+# Experiment CaseXYORI -> 2 Front Legs slipage
+
+
+        wname:=earth2front
+        double freq = 0.75;
+
+        // 2 front slip WORK, with ori 
+        p_d(0) = p_d0_(0) + 0.05*sin(2*M_PI*freq*t_real); 
+        p_d(1) = p_d0_(1) ; 
+        p_d(2) = p_d0_(2) - (0.02 - 0.02*cos(2*M_PI*freq*t_real));
+
+        Q_0.x();// + 0.2*sin(2*0.55*M_PI*t_real); // ori
+
+        <param name="kp" value="3000.0"/> <!-- 3000-->
+        <param name="kv" value="350.0"/> <!-- 550-->
+        <param name="ko" value="15.0"/>
+        <param name="alpha" value="150.0"/>  <!-- 150-->
+
+# Experiment Case 4 diff -> less friction right SIM_MODELSTATE_TOPIC
+
+        name:=earth4diff
+        double freq = 0.65;
+
+        // 2 sym slip test
+        p_d(0) = p_d0_(0) + 0.05*sin(2*M_PI*freq*t_real); 
+        p_d(1) = p_d0_(1) ;
+        p_d(2) = p_d0_(2) ;
+
+        

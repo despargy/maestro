@@ -192,7 +192,7 @@ void GazeboInterpreter::LowCmdsCallback(const unitree_legged_msgs::LowCmd& msg)
     for(int m=0; m<12; m++){
         servo_pub[m].publish(msg.motorCmd[m]);
         // motor_cmd[m] = msg.motorCmd[m] ;
-        ROS_INFO("msg.motorCmd[m] =, %f", msg.motorCmd[m].q);
+        // ROS_INFO("msg.motorCmd[m] =, %f", msg.motorCmd[m].q);
     }
 }
 int main(int argc, char **argv)
