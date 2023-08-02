@@ -42,8 +42,14 @@ int main(int argc, char **argv)
     // Initialize Communication Handler either simulated or real experiment
     cmh->initCommunicationHandler(); 
 
-    // Open csv file    
-    cmh->TIPS ? data_handler->openOnceTips() : data_handler->openOnce();
+    // Open csv file 
+    if(cmh->WALK)
+        data_handler->openOnceWalk();
+    else if(cmh->TIPS)
+        data_handler->openOnceTips()  ;
+    else
+        data_handler->openOnce();
+    // cmh->TIPS ? data_handler->openOnceTips() : data_handler->openOnce();
     
     sleep(2); // sleep for 2 second
 
@@ -82,9 +88,19 @@ int main(int argc, char **argv)
 
     sleep(5); // sleep for 2 seconds
 
-    ROS_INFO("Control loop(): starts");
-    ctrl->loop();
-    ROS_INFO("Control loop(): ends");
+    if(cmh->WALK)
+    {
+        ROS_INFO("Locomotion control loop(): starts");
+        ctrl->locomotion_loop();
+        ROS_INFO("Locomotion control loop(): ends");
+    }
+    else
+    {
+        ROS_INFO("Control loop(): starts");
+        ctrl->loop();
+        ROS_INFO("Control loop(): ends");
+    }
+
 
     // Close csv file    
     data_handler->closeOnce();

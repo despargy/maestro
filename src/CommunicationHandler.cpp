@@ -78,7 +78,9 @@ namespace RCD
         {
             ROS_ERROR("Param /swingL_id missing from namespace: '%s'", nh_main_->getNamespace().c_str());
         }
-        
+        if (!this->nh_main_->getParam( this->ns + "/walk", this->WALK)){
+            ROS_ERROR("No WALK given in namespace: '%s')", this->nh_main_->getNamespace().c_str());
+        }        
         // Select topics if is real or simulation
         if (!this->real_experiment_)
         {

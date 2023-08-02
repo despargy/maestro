@@ -1,0 +1,35 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/despargy/go1_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/despargy/go1_ws/src/champ/champ/include/**",
+        "/home/despargy/go1_ws/src/champ/champ_base/include/**",
+        "/home/despargy/go1_ws/src/champ/champ_config/include/**",
+        "/home/despargy/go1_ws/src/fusion/include/**",
+        "/home/despargy/go1_ws/src/go1_motion/include/**",
+        "/home/despargy/go1_ws/src/maestro/include/**",
+        "/home/despargy/go1_ws/src/probabilistic_contact_estimation/include/**",
+        "/home/despargy/go1_ws/src/rosserial/rosserial_server/include/**",
+        "/home/despargy/go1_ws/src/rosserial/rosserial_test/include/**",
+        "/home/despargy/go1_ws/src/slam_go1_real/include/**",
+        "/home/despargy/go1_ws/src/unitree_ros/unitree_controller/include/**",
+        "/home/despargy/go1_ws/src/unitree_ros/unitree_legged_control/include/**",
+        "/home/despargy/go1_ws/src/unitree_ros_to_real/unitree_legged_real/include/**",
+        "/home/despargy/go1_ws/src/yocs_velocity_smoother/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

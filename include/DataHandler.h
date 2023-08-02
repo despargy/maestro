@@ -26,11 +26,14 @@ namespace RCD
             // ------                       ------ //
             
             // ------ Logging Desired ------ //
-            Eigen::Vector3d *p_d;
+            Eigen::Vector3d *p_d, *p_T;
             // ------                       ------ //
 
             // ------ Logging Leg class ------ //
             double *leg_prob_0, *leg_prob_1, *leg_prob_2, *leg_prob_3;
+            double *swing_d_x, *swing_d_y, *swing_d_z;
+            double *swing_now_x, *swing_now_y, *swing_now_z;
+
             float *leg_0_x, *leg_0_y, *leg_0_z;
             float *leg_1_x, *leg_1_y, *leg_1_z;
             float *leg_2_x, *leg_2_y, *leg_2_z;
@@ -53,8 +56,10 @@ namespace RCD
 
         void logData();
         void logDataTips();
+        void logDataWalk();
         void openOnce();
         void openOnceTips();
+        void openOnceWalk();
         void closeOnce();
     };
 }

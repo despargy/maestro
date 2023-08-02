@@ -9,6 +9,7 @@
     <arg name="inf" default="false"/>
     <arg name="wname" default="earth"/>
     <arg name="tips" default="false"/>
+    <arg name="walk" default="false"/>
 
     <group ns="/" unless="$(arg real_experiment)">
         <!-- ==================== GAZEBO WORLD ==================== -->
@@ -48,9 +49,16 @@
         <param name="pbc_z" value="0.0"> -->
 
          <!-- SIMULATION Experiment -->
-        <param name="kp" value="3000.0"/> <!-- 3000-->
-        <param name="kv" value="550.0"/> <!-- 550-->
-        <param name="ko" value="15.0"/>
+        <!-- <param name="kp" value="3000.0"/>
+        <param name="kv" value="550.0"/> 
+        <param name="ko" value="15.0"/> -->
+
+         <!-- SIMULATION Experiment Walk-->
+        <param name="kp" value="2400.0"/>
+        <param name="kv" value="200.0"/> 
+        <param name="ko" value="150.0"/>
+        <param name="ki" value="350.0"/>
+
         <param name="alpha" value="150.0"/>  <!-- 150-->
 
         <param name="pbc_x" value="0.0025"/>
@@ -65,6 +73,7 @@
         <param name="adapt_b" value="$(arg adapt_b)"/>
         <param name="inf" value="$(arg inf)"/>
         <param name="tips" value="$(arg tips)"/>
+        <param name="walk" value="$(arg walk)"/>
 
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>

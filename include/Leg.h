@@ -22,6 +22,10 @@
 #include <ros/ros.h>
 #include <unsupported/Eigen/MatrixFunctions>
 
+#include <kdl/chainiksolvervel_pinv.hpp>
+#include <kdl/chain.hpp>
+#include <kdl/frames_io.hpp>
+#include <kdl/chainiksolverpos_nr.hpp>
 #ifndef _LEG_H_
 #define _LEG_H_
 
@@ -39,13 +43,13 @@ namespace RCD
         //KDL
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;
-        KDL::JntArray q;    // Joint pos qs
+        KDL::JntArray q, q_out;    // Joint pos qs
         KDL::Frame p_frame;          // Tip pose with respect to CoM 
         boost::scoped_ptr<KDL::ChainFkSolverPos> kdl_solver_pos;
         boost::scoped_ptr<KDL::ChainJntToJacSolver> kdl_solver;
         //Eigen
         Eigen::MatrixXd J;            // Jacobian Eigen
-        Eigen::Affine3d p;
+        Eigen::Affine3d p, p_out;
         Eigen::Vector3d f, f_cmd, tau; //applyied force to the tip
         Eigen::Vector3d f_tf_toBase;
 
@@ -59,6 +63,7 @@ namespace RCD
 
         void initLegs(int i, std::string name, KDL::Tree robot_kin);
         void kdlSolver();
+        void IKkdlSolver(Eigen::Matrix4d M);
 
     
     };

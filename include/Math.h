@@ -7,6 +7,10 @@
 #include <eigen_conversions/eigen_kdl.h>
 #include <Eigen/Dense>
 #include <limits>
+#include <iostream>
+#include <cmath>
+#include <bits/stdc++.h>
+
 
 #ifndef _MATH_H_
 #define _MATH_H_
@@ -16,6 +20,12 @@ namespace RCD
     class Math
     {
     public:
+            // vector for target position, inside locomotion mode
+        Eigen::Vector3d p_T, p0_ofphase; 
+        Eigen::Matrix3d R_T; Eigen::Quaterniond Q0_ofphase; 
+        double standardDeviation, t_shift;
+        double A,b,d,r;
+ 
         Math();
         ~Math();
         Eigen::Matrix3d scewSymmetric(Eigen::Vector3d t);
@@ -28,8 +38,11 @@ namespace RCD
         Eigen::Vector3d deriv_RcRdTwd(Eigen::Vector3d RcRdTwd_prev,Eigen::Vector3d RcRdTwd_cur, double dt);
         Eigen::Vector3d get_dp_CoM(Eigen::Vector3d com_p_prev,Eigen::Vector3d com_p_cur, double dt);
         Eigen::Matrix3d get_dR_CoM(Eigen::Matrix3d R_CoM_prev,Eigen::Matrix3d R_CoM_cur, double dt);
-        Eigen::Vector3d p_T;
         double exp_inf();
+        void updateTarget(Eigen::Vector3d p_T_, Eigen::Vector3d p0_ofphase_, Eigen::Matrix3d R_T_);
+        std::pair<double, double> find_Centroid(std::vector<std::pair<double, double> >& v);
+        double normalDistribution(double t);
+        double superGaussian(double A,double b,double r,double d);
 
     };
 }

@@ -20,6 +20,11 @@
 
 #define PosStopF (2.146E+9f)
 #define VelStopF (16000.f)
+
+
+const int PH_TARGET = 0;
+const int PH_SWING = 1;
+
 namespace RCD
 {
     class Controller
@@ -28,13 +33,26 @@ namespace RCD
         std::string ns;
         unitree_legged_msgs::LowCmd next_LowCmd_; 
         int n_leg;
-        double kp,ko,kv,b_coef, alpha;
-        double d_tv, tv, t_real, dt, t_swing ;
-        // double start_swing[3], target_swing[3];
-        double start_swing[3] = {0.0, 0.67, -1.5};
-        // double target_swing[3] = {0.0,  +1.5 - 0.3 , -M_PI + 0.4};
-        double target_swing[3] = {0.0,  0.67 + 0.80 , -M_PI + 0.4};
+        int* vp_order;
+        int* free_gait;
+        double kp, ko, kv, ki, b_coef, alpha;
+        double d_tv, tv, t_real, dt, t_swing, t0_phase, t_phase, t_to_use, swing_t_slot ;
+        double A,b, t0_superG, t0_swing;
+        double q_start_swing[3] = {0.0, 0.67, -1.5};
+        double q_target_swing[3] = {0.0,  0.67 + 0.80 , -M_PI + 0.4};
+        Eigen::Vector3d d_tip_pos;
 
+        
+        Eigen::Vector3d e_p_int, e_o_int;
+        Eigen::VectorXd pid_out;
+        Eigen::Vector3d p_d0, ddp_d, RcRdTwd, pbc;
+        Eigen::Matrix3d R_d_0, dR_d, Re;
+        Eigen::Quaterniond Q_0;
+        Eigen::MatrixXd Gbc;
+        Eigen::AngleAxisd ang;
+        // vector to help with eq. 11
+        Eigen::VectorXd fcontrol1,fcontrol2,fcontrol3; 
+        int LOC_STATE;
     public:
 
         // Maestro obj.
@@ -55,7 +73,8 @@ namespace RCD
         Eigen::Matrix3d R_d;
         Eigen::Vector3d w_d;
         Eigen::Vector3d dp_d;
-        
+        Eigen::Matrix4d g_d; // for locomotion only
+
         Controller();
         Controller( Robot* robot, CommunicationHandler* cmh, DataHandler* data_handler);
         ~Controller();
@@ -75,15 +94,29 @@ namespace RCD
         void setMaestroMotorGains();
         void gravComp();
         void startingPose();
-        void computeWeights(double dt);
+        void computeWeights();
         void forceTrasform();
         void computeBeta_t();
         void initDataHandler();
         void firstCommandForRealRobot();
         void updateCoM();
         void updateVelocityCoM();
-        void computeWeightsInfinity(double dt, double time_now);
-        void setNewCmdSwing(double time_now);
+        void computeWeightsInfinity();
+        void setNewCmdRise();
+        void locomotion_loop();
+        void initTarget();
+        void setPhaseTarget();
+        void updateCoMTipsWorld();
+        void setMaestroMotorGainsWalk();
+        void computeWeightsSwing();
+        void initLocomotion();
+        void positionError(), positionErrorTarget();
+        void velocityError(), velocityErrorTarget();
+        void PIDwithSat();
+        void fComputations(), fComputationsTarget();
+        void getTrajD();
+        void setNewCmdSwing();
+        void inverseTip();
 
   };
 
