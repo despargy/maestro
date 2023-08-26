@@ -28,7 +28,7 @@ for quadruped robots, which involves two prioritized layers of
 adaptation for avoiding possible slippage of one or multiple
 legs.
 ### Description
-This package is developed for the simulated and the real robot experiments of the submitted paper to IROS 2023 with title ["Two-layer adaptive trajectory tracking controller for quadruped robots on slippery terrains"][paper] .
+This package is developed for the simulated and the real robot experiments of the submitted paper to Humanoids 2023 with title ["Two-layer adaptive trajectory tracking controller for quadruped robots on slippery terrains"][paper] .
 
 <!-- by Despina-Ekaterini Argiropoulos, Dimitrios Papageorgiou, Michael Maravgakis,
 Drosakis Drosakis and Panos Trahanias.  -->
@@ -158,6 +158,39 @@ Drosakis Drosakis and Panos Trahanias.  -->
     ```sh
    $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
    ```
+## Case E:  Simulation - Swing without Adaptation 
+### Run the package ( Simulation - Swing without Adaptation )
+1. Default launch for simulation
+   ```sh
+   $ roslaunch maestro basic.launch inf:=true
+   ```
+2. Run the controller.
+    ```sh
+   $ rosrun maestro main_handler
+   ```
+3. Terminate the controller.
+    ```sh
+   $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
+   ```
+
+## Case F:  Simulation - Swing Adaptation
+### Run the package (Simulation - Swing Adaptation) 
+1. Launch for simulation with swing adaptation parameters.
+   ```sh
+   $ roslaunch maestro basic.launch slip_detection:=true adapt_b:=true inf:=true
+   ```
+2. Launch Probabilistic Contact Estimation.
+   ```sh
+   $ roslaunch maestro contact.launch
+   ```
+3. Run the controller.
+    ```sh
+   $ rosrun maestro main_handler
+   ```
+4. Terminate the controller.
+    ```sh
+   $ rostopic pub /maestro/ctrl std_msgs/Bool "data: false"
+   ```
 ## Important Notes
 ```diff
 - ### Secure the real robot before the experiment.
@@ -192,6 +225,7 @@ Drosakis Drosakis and Panos Trahanias.  -->
 | `real_experiment`       | `false`           | `false`: robot in Gazebo simulator,  `true`: real robot connection |
 | `slip_detection`        | `false`                 |   Slip terrain perception disabled, if `true`: use **ProbabilisticContactEstimation**  |
 | `adapt_b`               | `false`                | Adaptation disabled, if `true` slip_detection should be true. |
+|`inf`| `false` | Swinging leg's weights to infinity.
 | `num_imus`       | `0`           | Optional parameter waiting for msg from a specific num of IMUs, before start tracking. Slip detection needs also to be `true` |
 | `world_name`               | `wname`                 | Affects only simulation world. `wname`:  1 leg slippage, `wnameGlobal`: 4 legs slippage (global slip)  Select line-22 or line-24 from 'basic.launch' |
 | `kp`               | `3000.0`                |   Position gain of controller (tuning parameters) |
