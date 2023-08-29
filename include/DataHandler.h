@@ -33,11 +33,14 @@ namespace RCD
             double *leg_prob_0, *leg_prob_1, *leg_prob_2, *leg_prob_3;
             double *swing_d_x, *swing_d_y, *swing_d_z;
             double *swing_now_x, *swing_now_y, *swing_now_z;
+            float *d_traj_Oframe_x, *d_traj_Oframe_y, *d_traj_Oframe_z;
 
             float *leg_0_x, *leg_0_y, *leg_0_z;
             float *leg_1_x, *leg_1_y, *leg_1_z;
             float *leg_2_x, *leg_2_y, *leg_2_z;
             float *leg_3_x, *leg_3_y, *leg_3_z;
+
+            double *q_out_0, *q_out_1, *q_out_2;
 
             // ------                       ------ //
 

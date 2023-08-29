@@ -148,9 +148,14 @@ namespace RCD
         this->data_handler_->log_data.swing_now_z = &(this->leg_mng[0].p.translation()(2))  ;  
 
         // desired pose for locomotion swing 
-        this->data_handler_->log_data.swing_d_x = &(this->d_tip_pos(0))  ;       
-        this->data_handler_->log_data.swing_d_y = &(this->d_tip_pos(1))  ;       
-        this->data_handler_->log_data.swing_d_z = &(this->d_tip_pos(2))  ; 
+        this->data_handler_->log_data.d_traj_Oframe_x = &(this->d_traj_0frame(0))  ;       
+        this->data_handler_->log_data.d_traj_Oframe_y = &(this->d_traj_0frame(1))  ;       
+        this->data_handler_->log_data.d_traj_Oframe_z = &(this->d_traj_0frame(2))  ; 
+
+        this->data_handler_->log_data.q_out_0 = &(this->leg_mng[0].q_out(0));              
+        this->data_handler_->log_data.q_out_1 = &(this->leg_mng[0].q_out(1));              
+        this->data_handler_->log_data.q_out_2 = &(this->leg_mng[0].q_out(2));              
+
     }
     void Controller::initLegsControl()
     {
@@ -690,7 +695,7 @@ namespace RCD
             
             /* Added to simuate swing leg weights t inf */
             if( l == robot_->swingL_id)
-                this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + 35000*math_lib.superGaussian(A,b,t_swing-t0_superG,t_phase - t_swing)*Eigen::Vector3d::Ones(); 
+                this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + 3500*math_lib.superGaussian(A,b,t_half_swing-t0_superG,t_phase - t_half_swing)*Eigen::Vector3d::Ones(); 
                 // this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + 35000*math_lib.normalDistribution(t_phase)*Eigen::Vector3d::Ones(); 
             
             // update vvvv vector of robot                          // z stays 1.0 do not change
@@ -727,39 +732,43 @@ namespace RCD
     void Controller::inverseTip()
     {
 
-
-        double r1 = 0.5, r2=0.5, freq = 0.5;
-
-        // d_tip_pos << r1*(2*M_PI*freq*t_phase-sin(2*M_PI*freq*t_phase)),0,r2*(1-cos(2*M_PI*freq*t_phase));
-        // d_tip_pos<< 0.0*t_phase,0,0.0*t_phase;
-        
-        if(t_phase>t0_swing)
+        float r1 = 0.02, r2=0.03;     
+        Eigen::Vector4f d_tip_pos;
+        if(t_phase>=t0_swing & t_phase<(t0_swing + 1/freq_swing+0.5))
         {
-            // d_tip_pos<< 0.2*(t_phase-t0_swing),0,0.2*(t_phase-t0_swing);
+            d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))),0.0,r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 1.0;
 
-            d_tip_pos << r1*(2*M_PI*freq*(t_phase-t0_swing)-sin(2*M_PI*freq*(t_phase-t0_swing))),0,r2*(1-cos(2*M_PI*freq*(t_phase-t0_swing)));
-            d_tip_pos/=-10;
         }
-        else
-            d_tip_pos<< 0.0,0,0.0;
-        
-        // d_tip_pos<<0.03,0,0.05;
-        // std::cout<<"d_tip (x,y,z)"<<d_tip_pos.transpose()<<std::endl;
-        // std::cout<<"com (x,y,z)"<<robot_->p_c.transpose()<<std::endl;
+        else   
+            d_tip_pos<< 0.0, 0.0, 0.0, 1.0;   
 
-        g_d.block(0,0,3,3) = Eigen::Matrix3d::Identity();//robot_->g_com.block(0,0,3,3).inverse();//
-        g_d.block(0,3,3,1) = d_tip_pos;
-        // std::cout<<"g_d\n"<<g_d<<std::endl;
 
-        Eigen::Matrix4d g_d_com = g_d*leg_mng[(int)robot_->swingL_id].g_o;//*robot_->g_com;
-        // std::cout<<"g_d_com \n"<<g_d_com<<std::endl;
-        // std::cout<<"g_d_com x,y,z"<<g_d_com(0,3)<<" "<<g_d_com(1,3)<<" "<<g_d_com(2,3)<<std::endl;
-        // 0.217174,-0.13,-0.30;
+        // Eigen::Matrix4f BO_T = Eigen::Matrix4f::Zero(); // let B be system B at tip, then BO_T is the transformation from B to world frmae {0}, with:
+        // BO_T(3,3) = 1;
+        // BO_T.block(0,0,3,3) = Eigen::Matrix3f::Identity(); // same orientation as the world frame {0}
+        // BO_T.block(0,3,3,1) = leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1);  // translation like tip from {0}
+        // // desired swinging-tip trajectory represented from {0} is:
+        // Eigen::Vector4f d_O_pos =  BO_T*d_tip_pos;
+        // d_traj_0frame = d_O_pos.block(0,0,3,1); // cut last 1
+        // // represent traj by 4x4 Matrix
+        // Eigen::Matrix4f g_O_d = Eigen::Matrix4f::Zero();
+        // g_O_d(3,3) = 1;
+        // g_O_d.block(0,0,3,3) = Eigen::Matrix3f::Identity();
+        // g_O_d.block(0,3,3,1) = d_traj_0frame;
+        // Eigen::Matrix4d g_d_com = robot_->g_com.transpose()*g_O_d.cast <double> ();
 
-        leg_mng[(int)robot_->swingL_id].IKkdlSolver(g_d_com);
+        // leg_mng[(int)robot_->swingL_id].IKkdlSolver(g_d_com);
 
-        // d_tip_vel << r*(1-a*2*M_PI*cos(2*M_PI*1*t_phase)),0,2*M_PI*a*r*sin(2*M_PI*1*t_phase );
-        // Eigen::Vector3d dq_tip = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0)*d_tip_vel;
+        Eigen::Matrix4f BC_T = Eigen::Matrix4f::Zero(); // let B be system B at tip, then BO_T is the transformation from B to world frmae {0}, with:
+        BC_T(3,3) = 1.0;
+        BC_T.block(0,0,3,3) = robot_->g_com.block(0,0,3,3).inverse().cast<float>(); // B from C is inv. the robot R_c orientation as the robot frame {0}
+        BC_T.block(0,3,3,1) = leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>();  // translation like tip from {0}
+        // desired swinging-tip trajectory represented from {0} is:
+        Eigen::Vector4f d_CoM_pos =  BC_T*d_tip_pos;
+        d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
+
+        leg_mng[(int)robot_->swingL_id].IkKDL(d_traj_0frame.cast<double>());
+    
     }
     void Controller::setNewCmdSwing()
     {
@@ -769,9 +778,9 @@ namespace RCD
             next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
             next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
         }
-        for(int j=0; j<3; j++){
+        for(int j=0; j<3; j++)
             next_LowCmd_.motorCmd[robot_->swingL_id*3+j].q = leg_mng[(int)(robot_->swingL_id)].q_out(j);//leg_mng[(int)(robot_->swingL_id)].q(j) + dq_tip(j)*dt ; 
-        }
+        
 
         cmh_->sendLowCmd(this->next_LowCmd_);
     }
@@ -793,7 +802,6 @@ namespace RCD
             
         std::pair<double, double> C = math_lib.find_Centroid(vp);
         Eigen::Vector3d target(C.first,C.second,robot_->p_c(2));
-        // std::cout<< "target "<<target<<std::endl;
 
         // set target goal position target, starting position, rotation target
         math_lib.updateTarget(target, robot_->p_c, robot_->R_c); 
@@ -813,13 +821,14 @@ namespace RCD
         this->tv = 0.0;
         this->d_tv = 1.0;
         this->t_to_use = -dt;//0.0; // will take values from t_real or virtual time tv
-        this->t0_superG = 1.0;
+        this->t0_superG = 0.25;
         this->A = 1.0;
-        this->b = 2.0;
-        this->t0_swing = 1.0;
-
-        this->swing_t_slot = 7.0; // 4 sec per leg for free gait locomotion
-
+        this->b = 10.0;
+        this->freq_swing = 0.7; // 2 sec duration, from (0.5s to 2.5s)
+        this->t0_swing = 0.5;
+        this->t_half_swing = 3.5;//1.5; TODO
+        // t0_swing + 1/freq_swing = 2*t_half_swing
+        this->swing_t_slot = 2*t_half_swing; // 4 sec per leg for free gait locomotion
         // update CoM state
         this->updateCoM();
 
@@ -962,17 +971,36 @@ namespace RCD
             fComputationsTarget();
 
             inverseTip();
+            // setQTips();
+
             // Log data - csv format 
             data_handler_->logDataWalk();
 
-            // setMaestroMotorGainsWalk();
-            // setNewCmdSwing(); 
+            setMaestroMotorGainsWalk();
+            setNewCmdSwing(); 
 
             sleep_dt_ROS.sleep();
         }
 
     }
+    void Controller::setQTips()
+    {
+        double percent;
+        if (t_phase<=t0_swing)
+            percent = 0.0;
+        
+        else if (t_phase>t0_swing & t_phase<=(t0_swing + 1/(2*freq_swing) ))
+            percent = (t_phase-t0_swing)/(1/(2*freq_swing));
 
+        else if (t_phase>(t0_swing + 1/(2*freq_swing)) & t_phase<=(t0_swing+1/freq_swing))
+            percent = (t0_swing + 1/(freq_swing) - t_phase)/(1/(2*freq_swing));
+        else
+            percent = 0.0;
+
+        std::cout<<percent<<std::endl;
+        for(int j=0; j<3; j++)
+            leg_mng[(int)robot_->swingL_id].q_out(j) = q_start_swing[j]*(1-percent) + q_target_swing[j]*percent; 
+    }
     void Controller::updateCoMTipsWorld()
     {
         // tip world frame pos
@@ -1008,13 +1036,10 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
 
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 70;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 180;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 300;           
-        
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 4;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 4;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 7.5;           
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 10;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 10;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 10;           
+          
         }
         // else
         // {

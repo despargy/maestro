@@ -38,6 +38,8 @@ namespace RCD
         this->I = ii.asDiagonal();
         // init H_c
         this->H_c.block(0,0,3,3) = this->mass*Eigen::Matrix3d::Identity();
+        this->H_c.block(0,3,3,3) = Eigen::Matrix3d::Zero();
+        this->H_c.block(3,0,3,3) = Eigen::Matrix3d::Zero();
         this->H_c.block(3,3,3,3) = Eigen::Matrix3d::Zero(); // will later be set based on Rc*Ic*Rc.t() 
         // init C_c
         this->C_c.block(0,0,3,3) = Eigen::Matrix3d::Zero();

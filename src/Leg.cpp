@@ -52,7 +52,25 @@ namespace RCD
         g_o.block(0,3,3,1) = p.translation();
 
     }
+    void Leg::IkKDL(Eigen::Vector3d pos_dest)
+    {
 
+        //Creation of the solvers:
+        KDL::ChainFkSolverPos_recursive fksolver1(kdl_chain);//Forward position solver
+        KDL::ChainIkSolverVel_pinv iksolver1v(kdl_chain);//Inverse velocity solver
+        KDL::ChainIkSolverPos_NR iksolver1(kdl_chain,fksolver1,iksolver1v,1000,1e-4);//Maximum 100 iterations, stop at accuracy 1e-6
+        KDL::JntArray q_init;
+        q_init.resize(n_superV_joints);  
+        //Set destination frame
+        KDL::Frame F_dest(KDL::Vector(pos_dest(0),pos_dest(1),pos_dest(2)));
+        int ret = iksolver1.CartToJnt(q_init,F_dest,q_out);
+        if(ret>=0){
+
+        }else{
+            printf("%s \n","Error: could not calculate IK");
+        }
+
+    }
     void Leg::IKkdlSolver(Eigen::Matrix4d M)
     {
 

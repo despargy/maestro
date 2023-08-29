@@ -37,10 +37,11 @@ namespace RCD
         int* free_gait;
         double kp, ko, kv, ki, b_coef, alpha;
         double d_tv, tv, t_real, dt, t_swing, t0_phase, t_phase, t_to_use, swing_t_slot ;
-        double A,b, t0_superG, t0_swing;
+        double A,b, t0_superG, t0_swing, t_half_swing;
+        float freq_swing;
         double q_start_swing[3] = {0.0, 0.67, -1.5};
         double q_target_swing[3] = {0.0,  0.67 + 0.80 , -M_PI + 0.4};
-        Eigen::Vector3d d_tip_pos;
+        Eigen::Vector3f d_traj_0frame;
 
         
         Eigen::Vector3d e_p_int, e_o_int;
@@ -117,6 +118,7 @@ namespace RCD
         void getTrajD();
         void setNewCmdSwing();
         void inverseTip();
+        void setQTips();
 
   };
 

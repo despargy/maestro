@@ -8,6 +8,7 @@ namespace RCD
         std::cout<<"MathLibrary Constructor"<<std::endl;
         t_shift = 2.0;
         standardDeviation = 0.6;
+        n=3;
         // t_shift = 1.0;
         // standardDeviation = 0.25;
     }
@@ -160,6 +161,6 @@ namespace RCD
     double Math::superGaussian(double A,double b,double r,double d)
     {
 
-        return A*pow( b, -pow(pow(d,2)/pow(r,2),r) );
+        return A*pow( b, -pow(pow(d,2)/pow(r,2),n*r) );
     }
 }

@@ -24,7 +24,7 @@ namespace RCD
         Eigen::Vector3d p_T, p0_ofphase; 
         Eigen::Matrix3d R_T; Eigen::Quaterniond Q0_ofphase; 
         double standardDeviation, t_shift;
-        double A,b,d,r;
+        double A,b,d,r, n;
  
         Math();
         ~Math();

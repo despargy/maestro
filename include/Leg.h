@@ -64,6 +64,7 @@ namespace RCD
         void initLegs(int i, std::string name, KDL::Tree robot_kin);
         void kdlSolver();
         void IKkdlSolver(Eigen::Matrix4d M);
+        void IkKDL(Eigen::Vector3d pos_dest);
 
     
     };

@@ -4,6 +4,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 # Import math Library
 import math 
+from mpl_toolkits import mplot3d
+import numpy as np
 
 # data = np.genfromtxt("/home/despargy/go1_ws/src/maestro/CSV/Inf/Log-3000-350-normal.csv", delimiter=",", skip_header=1) #TODO
 # data = np.genfromtxt("/home/despargy/go1_ws/src/maestro/SavedCSVfromExperiments/NewExperiments/Simulation/Log-Inf-3000-350-normal.csv", delimiter=",", skip_header=1) #TODO
@@ -79,6 +81,33 @@ plt.xlabel("t_real")
 plt.ylabel("Weights")
 plt.legend()
 plt.title("Weights")
+
+d_traj_0frame = data[:,29:32] #x,y,z
+# plt.figure()
+# plt.plot(t_real,d_traj_0frame[:,0], label="x")
+# plt.plot(t_real,d_traj_0frame[:,1], label="y")
+# plt.plot(t_real,d_traj_0frame[:,2], label="z")
+
+# plt.xlabel("t_real")
+# plt.ylabel("Traj Oframe")
+# plt.legend()
+# plt.title("Traj tip Oframe")
+
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.plot3D(t_real, d_traj_0frame[:,0], d_traj_0frame[:,2], 'gray')
+
+
+q_out = data[:,32:35]
+plt.figure()
+plt.plot(t_real,q_out[:,0], label="q0")
+plt.plot(t_real,q_out[:,1], label="q1")
+plt.plot(t_real,q_out[:,2], label="q2")
+plt.xlabel("t_real")
+plt.ylabel("e_o")
+plt.legend()
+plt.title("e_o")
+
 
 # old log data walk
 # prob_0 = data[:,15]
