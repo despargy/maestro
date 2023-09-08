@@ -41,8 +41,10 @@ namespace RCD
         float freq_swing;
         double q_start_swing[3] = {0.0, 0.67, -1.5};
         double q_target_swing[3] = {0.0,  0.67 + 0.80 , -M_PI + 0.4};
-        Eigen::Vector3f d_traj_0frame;
+        Eigen::Vector3f d_traj_0frame, d_traj_0frame_old, d_vel_0frame;
 
+        Eigen::Vector4f d_tip_pos;
+        Eigen::Vector3f d_tip_vel;
         
         Eigen::Vector3d e_p_int, e_o_int;
         Eigen::VectorXd pid_out;
@@ -119,6 +121,8 @@ namespace RCD
         void setNewCmdSwing();
         void inverseTip();
         void setQTips();
+        void CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_);
+        void setMaestroMotorGainsWalk_0(), setMaestroMotorGainsWalk_1(), setMaestroMotorGainsWalk_2();
 
   };
 

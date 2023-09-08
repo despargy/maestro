@@ -8,7 +8,7 @@ namespace RCD
         std::cout<<"MathLibrary Constructor"<<std::endl;
         t_shift = 2.0;
         standardDeviation = 0.6;
-        n=3;
+        n=13;
         // t_shift = 1.0;
         // standardDeviation = 0.25;
     }

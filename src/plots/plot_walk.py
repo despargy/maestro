@@ -96,17 +96,28 @@ d_traj_0frame = data[:,29:32] #x,y,z
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 ax.plot3D(t_real, d_traj_0frame[:,0], d_traj_0frame[:,2], 'gray')
+ax.set_xlabel('time')
+ax.set_ylabel('x')
+ax.set_zlabel('z')
 
-
-q_out = data[:,32:35]
 plt.figure()
-plt.plot(t_real,q_out[:,0], label="q0")
-plt.plot(t_real,q_out[:,1], label="q1")
-plt.plot(t_real,q_out[:,2], label="q2")
+plt.plot(t_real,d_traj_0frame[:,2], label="z")
+plt.plot(t_real,d_traj_0frame[:,0], label="x")
 plt.xlabel("t_real")
-plt.ylabel("e_o")
+plt.ylabel("tip desired swing xz")
 plt.legend()
-plt.title("e_o")
+plt.title("Weights")
+
+
+# q_out = data[:,32:35]
+# plt.figure()
+# plt.plot(t_real,q_out[:,0], label="q0")
+# plt.plot(t_real,q_out[:,1], label="q1")
+# plt.plot(t_real,q_out[:,2], label="q2")
+# plt.xlabel("t_real")
+# plt.ylabel("e_o")
+# plt.legend()
+# plt.title("e_o")
 
 
 # old log data walk

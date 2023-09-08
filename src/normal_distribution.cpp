@@ -13,7 +13,7 @@ double normalDistribution(double t, double t0, double sigma) {
 double superGaussian(double A,double b,double r,double d)
 {
 
-    return A*pow( b, -pow(pow(d,2)/pow(r,2),3*r) );//A*b^(-(d^2)/(r^2)^r);
+    return A*pow( b, -pow(pow(d,2)/pow(r,2),13*r) );//A*b^(-(d^2)/(r^2)^r);
 }
 int main() {
     // Parameters for the normal distribution function
@@ -24,32 +24,37 @@ int main() {
     double t;
     double tip_x, tip_z;
     double r1 = 0.008, r2=0.05;
-    double freq = 0.25;
+    double freq = 0.5;
     // for (t = t0 - 4.0 * sigma; t <= t0 + 4.0 * sigma; t += 0.002) {
     //     double y = normalDistribution(t, t0, sigma);
     //     std::cout << t << "," << y << std::endl;
     // }q
     
     double A=1,b=10;//A=1,b=10;
-    double t_half_swing = 3.5, t0_swing = 0.5, t0_super=0.25;
-
+    double t0_swing = 0.25, t0_super=0.25; // DO NOT CHANGE
+    double t_half_swing = (1/freq)/2+t0_swing ;
     double t0_tip = 1;
-    for (t = 0; t <= 9; t += 0.002) {
+    for (t = 0; t < 2*2*t_half_swing; t += 0.002) {
         double y = normalDistribution(t, t0, sigma);
 
         // tip_x = r1*(2*M_PI*freq*(t-t0_swing)-sin(2*M_PI*freq*(t-t0_swing)));
         // tip_z = r2*(1-cos(2*M_PI*freq*(t-t0_swing)));
+        
         if(t<t0_swing)
         {
             tip_x= 0.0;
             tip_z= 0.0;
-
         }
         else if(t>=t0_swing & t<(t0_swing + 1/freq))
         {
             tip_x= r1*(2*M_PI*freq*(t-t0_swing)-sin(2*M_PI*freq*(t-t0_swing)));
             tip_z= r2*(1-cos(2*M_PI*freq*(t-t0_swing)));
         } 
+        // else
+        // {
+        //     tip_x= tip_x;
+        //     tip_z= tip_z;
+        // }
         // tip_x = r1*(1-sin(2*M_PI*freq*t));
         // tip_z = sqrt( pow(r2*(1-cos(2*M_PI*freq*t)),2) );
 
