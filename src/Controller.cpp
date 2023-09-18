@@ -793,7 +793,7 @@ namespace RCD
         // std::cout<<"g_o"<< leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1)<<std::endl;
         // std::cout<<"error"<<(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_)<<std::endl;
         
-        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 4*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
+        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 8*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
         leg_mng[(int)robot_->swingL_id].q_out(0) = d_q_(0)*dt + leg_mng[(int)robot_->swingL_id].q_out(0);
         leg_mng[(int)robot_->swingL_id].q_out(1) = d_q_(1)*dt + leg_mng[(int)robot_->swingL_id].q_out(1);
         leg_mng[(int)robot_->swingL_id].q_out(2) = d_q_(2)*dt + leg_mng[(int)robot_->swingL_id].q_out(2);
@@ -1066,9 +1066,9 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
 
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 1.0;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 2.0;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 3.0;           
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 3.0;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 5.0;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 8.0;           
 
             // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3;
             // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 3;
