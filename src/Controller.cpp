@@ -793,7 +793,7 @@ namespace RCD
         // std::cout<<"g_o"<< leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1)<<std::endl;
         // std::cout<<"error"<<(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_)<<std::endl;
         
-        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 8*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
+        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 4*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
         leg_mng[(int)robot_->swingL_id].q_out(0) = d_q_(0)*dt + leg_mng[(int)robot_->swingL_id].q_out(0);
         leg_mng[(int)robot_->swingL_id].q_out(1) = d_q_(1)*dt + leg_mng[(int)robot_->swingL_id].q_out(1);
         leg_mng[(int)robot_->swingL_id].q_out(2) = d_q_(2)*dt + leg_mng[(int)robot_->swingL_id].q_out(2);
@@ -1042,99 +1042,6 @@ namespace RCD
         }
     }
 
-    void Controller::setMaestroMotorGainsWalk_0()
-    {
-        if(!cmh_->real_experiment_)
-        {
-            for(int i=0; i<this->n_leg; i++)
-            {
-                // Init motor Parameter for Gazebo
-                this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+0].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
-                this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
-                this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+1].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 3.5;
-                this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
-                this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+2].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 7.5;
-                this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
-            }
-                 
-        }
-    }
-    void Controller::setMaestroMotorGainsWalk_1()
-    {
-        if(!cmh_->real_experiment_)
-        {
-            for(int i=0; i<this->n_leg; i++)
-            {
-                // Init motor Parameter for Gazebo
-                this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+0].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
-                this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
-                this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+1].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 3.5;
-                this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
-                this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+2].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 7.5;
-                this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
-            }
-
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 3;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 5;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 8;       
-
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 8;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 13;   
-        }
-    }
-    void Controller::setMaestroMotorGainsWalk_2()
-    {
-        if(!cmh_->real_experiment_)
-        {
-            for(int i=0; i<this->n_leg; i++)
-            {
-                // Init motor Parameter for Gazebo
-                this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+0].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
-                this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
-                this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+1].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 3.5;
-                this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
-                this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+2].Kp = 1.0;
-                this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 7.5;
-                this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
-            }
-
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 1;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 1;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 1;       
- 
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 8;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 13;   
- 
-        }
-    }
     void Controller::setMaestroMotorGainsWalk()
     {
         if(!cmh_->real_experiment_)
@@ -1143,29 +1050,29 @@ namespace RCD
             {
                 // Init motor Parameter for Gazebo
                 this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+0].Kp = 1.0;
+                this->next_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
                 this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+1].Kp = 1.0;
+                this->next_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 3.5;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-                this->next_LowCmd_.motorCmd[i*3+2].Kp = 1.0;
+                this->next_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 7.5;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.5;
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
 
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 3;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 5;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 8;           
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 1.0;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 2.0;
+            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 3.0;           
 
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 5;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 10;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 15;  
+            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3;
+            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 3;
+            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 3;  
 
         }
         // else

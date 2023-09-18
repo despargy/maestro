@@ -122,7 +122,6 @@ namespace RCD
         void inverseTip();
         void setQTips();
         void CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_);
-        void setMaestroMotorGainsWalk_0(), setMaestroMotorGainsWalk_1(), setMaestroMotorGainsWalk_2();
 
   };
 
