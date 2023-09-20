@@ -55,7 +55,7 @@ namespace RCD
 
         Eigen::Matrix4d g_o;
         Eigen::Matrix4f g_o_world;
-
+        double y_tip;
         // init W once
         Eigen::Vector3d wv_leg;
         Leg();

@@ -137,21 +137,23 @@ namespace RCD
         this->data_handler_->log_data.leg_2_z = &(this->leg_mng[2].g_o_world(2,3))  ;       
         this->data_handler_->log_data.leg_3_z = &(this->leg_mng[3].g_o_world(2,3))  ; 
 
-        // locomotion swing 0 TODO
-        this->data_handler_->log_data.swing_d_x = &(this->leg_mng[0].p_out.translation()(0))  ;       
-        this->data_handler_->log_data.swing_d_y = &(this->leg_mng[0].p_out.translation()(1))  ;       
-        this->data_handler_->log_data.swing_d_z = &(this->leg_mng[0].p_out.translation()(2))  ;       
-
-        // locomotion swing 0 TODO
-        this->data_handler_->log_data.swing_now_x = &(this->leg_mng[0].p.translation()(0))  ;       
-        this->data_handler_->log_data.swing_now_y = &(this->leg_mng[0].p.translation()(1))  ;       
-        this->data_handler_->log_data.swing_now_z = &(this->leg_mng[0].p.translation()(2))  ;  
+        // locomotion swing
+        this->data_handler_->log_data.d_traj_tip_x = &(this->d_traj_tipframe(0))  ;       
+        this->data_handler_->log_data.d_traj_tip_y = &(this->d_traj_tipframe(1))  ;       
+        this->data_handler_->log_data.d_traj_tip_z = &(this->d_traj_tipframe(2))  ;       
 
         // desired pose for locomotion swing 
         this->data_handler_->log_data.d_traj_Oframe_x = &(this->d_traj_0frame(0))  ;       
         this->data_handler_->log_data.d_traj_Oframe_y = &(this->d_traj_0frame(1))  ;       
         this->data_handler_->log_data.d_traj_Oframe_z = &(this->d_traj_0frame(2))  ; 
 
+
+        // locomotion swing 0 TODO change id
+        this->data_handler_->log_data.swing_now_x = &(this->leg_mng[0].p.translation()(0))  ;       
+        this->data_handler_->log_data.swing_now_y = &(this->leg_mng[0].p.translation()(1))  ;       
+        this->data_handler_->log_data.swing_now_z = &(this->leg_mng[0].p.translation()(2))  ;  
+
+        // locomotion swing 0 TODO change id
         this->data_handler_->log_data.q_out_0 = &(this->leg_mng[0].q_out(0));              
         this->data_handler_->log_data.q_out_1 = &(this->leg_mng[0].q_out(1));              
         this->data_handler_->log_data.q_out_2 = &(this->leg_mng[0].q_out(2));              
@@ -165,6 +167,11 @@ namespace RCD
         std::string l_name[this->n_leg] = {"FR_foot","FL_foot","RR_foot","RL_foot"};
         for(int i = 0; i < this->n_leg ; i++)
             leg_mng[i].initLegs(i, l_name[i], robot_kin);
+        leg_mng[0].y_tip = -0.08;
+        leg_mng[1].y_tip = +0.08;
+        leg_mng[2].y_tip = -0.08;
+        leg_mng[3].y_tip = +0.08;
+
         // if (this->n_leg*leg_mng[0].n_superV_joints != robot_->num_joints)  //eq. joint distribution, 3 per leg this cannot be used becasue we add extra foot link for fake imu data
         // ROS_ERROR("Robot Joints Number Not Matching");
     }
@@ -181,7 +188,8 @@ namespace RCD
             // get foot Force on tip  
             leg_mng[i].f(0) = this->robot_->low_state_.eeForce[leg_mng[i].id].x;
             leg_mng[i].f(1) = this->robot_->low_state_.eeForce[leg_mng[i].id].y;
-            leg_mng[i].f(2) = this->robot_->low_state_.eeForce[leg_mng[i].id].z;          
+            leg_mng[i].f(2) = this->robot_->low_state_.eeForce[leg_mng[i].id].z;     
+
         }
     }
     void Controller::solveJacP()
@@ -731,61 +739,53 @@ namespace RCD
     void Controller::inverseTip()
     {
 
-        float r1 = 0.02, r2=0.05;     
+        float r1 = 0.01, r2=0.02;     
 
         if(t_phase<t0_swing)
         {
             // setMaestroMotorGainsWalk_0();
-            std::cout<<"zeros"<<std::endl;
+            // std::cout<<"zeros"<<std::endl;
             d_tip_pos<< 0.0, 0.0, 0.0, 1.0; 
             d_tip_vel<< 0.0, 0.0, 0.0;
         }
-        if( t_phase>=t0_swing & t_phase<=(t0_swing + 1/freq_swing) ) 
+        else if( t_phase>=t0_swing & t_phase<=(t0_swing + 1/freq_swing) ) 
         {
             // setMaestroMotorGainsWalk_1();
-            std::cout<<"act"<<std::endl;
+            // std::cout<<"act"<<std::endl;
             d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))),0.0,r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
             d_tip_vel << r1*(2*M_PI*freq_swing - 2*M_PI*freq_swing*cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 0.0, r2*2*M_PI*freq_swing*sin(2*M_PI*freq_swing*(t_phase-t0_swing));
         }
-        else 
-        {
-            // setMaestroMotorGainsWalk_2();
-            std::cout<<"end wait"<<std::endl;
-            d_tip_vel<< 0.0, 0.0, 0.0;
-        }  
-              
-
-        // Eigen::Matrix4f BO_T = Eigen::Matrix4f::Zero(); // let B be system B at tip, then BO_T is the transformation from B to world frmae {0}, with:
-        // BO_T(3,3) = 1;
-        // BO_T.block(0,0,3,3) = Eigen::Matrix3f::Identity(); // same orientation as the world frame {0}
-        // BO_T.block(0,3,3,1) = leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1);  // translation like tip from {0}
-        // // desired swinging-tip trajectory represented from {0} is:
-        // Eigen::Vector4f d_O_pos =  BO_T*d_tip_pos;
-        // d_traj_0frame = d_O_pos.block(0,0,3,1); // cut last 1
-        // // represent traj by 4x4 Matrix
-        // Eigen::Matrix4f g_O_d = Eigen::Matrix4f::Zero();
-        // g_O_d(3,3) = 1;
-        // g_O_d.block(0,0,3,3) = Eigen::Matrix3f::Identity();
-        // g_O_d.block(0,3,3,1) = d_traj_0frame;
-        // Eigen::Matrix4d g_d_com = robot_->g_com.transpose()*g_O_d.cast <double> ();
-
-        // leg_mng[(int)robot_->swingL_id].IKkdlSolver(g_d_com);
+        // else 
+        // {
+        //     // setMaestroMotorGainsWalk_2();
+        //     // std::cout<<"end wait"<<std::endl;
+        //     // d_tip_pos<< r1, 0.0, r2, 1.0; 
+        //     d_tip_vel<< 0.0, 0.0, 0.0;
+        // }  
+        
+        d_traj_tipframe(0) = d_tip_pos(0);
+        d_traj_tipframe(1) = d_tip_pos(1);
+        d_traj_tipframe(2) = d_tip_pos(2);
 
         Eigen::Matrix4f BC_T = Eigen::Matrix4f::Zero(); // let B be system B at tip, then BO_T is the transformation from B to world frmae {0}, with:
         BC_T(3,3) = 1.0;
         BC_T.block(0,0,3,3) = robot_->g_com.block(0,0,3,3).inverse().cast<float>(); // B from C is inv. the robot R_c orientation as the robot frame {0}
-        BC_T.block(0,3,3,1) = leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>();  // translation like tip from {0}
+        BC_T.block(0,3,3,1) = g_0bo_init.block(0,3,3,1).cast<float>();  // translation like tip from {0}
         
         // desired swinging-tip trajectory represented from {0} is:
         Eigen::Vector4f d_CoM_pos =  BC_T*d_tip_pos;
         d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
         d_vel_0frame = BC_T.block(0,0,3,3)*d_tip_vel;
 
+        // d_tip_pos_world = (robot_->g_com).cast<float>()*g_0bo_init*d_tip_pos;
+        // d_traj_0frame = d_tip_pos_world.block(0,0,3,1);
+        // std::cout<<"d_tip_pos_world"<<d_tip_pos_world<<std::endl;
+        // std::cout<<"d_traj_0frame"<<d_traj_0frame<<std::endl;
+
+        // d_vel_0frame = robot_->g_com.block(0,0,3,3).cast<float>()*g_0bo_init.block(0,0,3,3)*d_traj_0frame;
+
         CLIK(d_traj_0frame, d_vel_0frame);
         
-        // Instead of KDL use your Jac CLIK SOLVER
-        // leg_mng[(int)robot_->swingL_id].IkKDL(d_traj_0frame.cast<double>());
-    
     }
     void Controller::CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_)
     {
@@ -793,11 +793,30 @@ namespace RCD
         // std::cout<<"g_o"<< leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1)<<std::endl;
         // std::cout<<"error"<<(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_)<<std::endl;
         
-        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 8*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
+        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 4*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
         leg_mng[(int)robot_->swingL_id].q_out(0) = d_q_(0)*dt + leg_mng[(int)robot_->swingL_id].q_out(0);
         leg_mng[(int)robot_->swingL_id].q_out(1) = d_q_(1)*dt + leg_mng[(int)robot_->swingL_id].q_out(1);
         leg_mng[(int)robot_->swingL_id].q_out(2) = d_q_(2)*dt + leg_mng[(int)robot_->swingL_id].q_out(2);
+
+        std::cout<<(int)robot_->swingL_id<<"q_out"<< leg_mng[(int)robot_->swingL_id].q_out(0)<<std::endl;
+        std::cout<<(int)robot_->swingL_id<<"q_out"<< leg_mng[(int)robot_->swingL_id].q_out(1)<<std::endl;
+        std::cout<<(int)robot_->swingL_id<<"q_out"<< leg_mng[(int)robot_->swingL_id].q_out(2)<<std::endl;
     
+    }
+    void Controller::setNewCmdSwing_Kp()
+    {
+        for(int l = 0; l < this->n_leg ; l++)
+        {
+            next_LowCmd_.motorCmd[l*3+0].tau = (float) leg_mng[l].tau(0);
+            next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
+            next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
+        }
+        for(int j=0; j<3; j++)
+        {
+            next_LowCmd_.motorCmd[(int)robot_->swingL_id*3+j].q = (float) leg_mng[(int)(robot_->swingL_id)].q_out(j); 
+        }
+        
+        cmh_->sendLowCmd(this->next_LowCmd_);
     }
     void Controller::setNewCmdSwing()
     {
@@ -807,8 +826,6 @@ namespace RCD
             next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
             next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
         }
-        for(int j=0; j<3; j++)
-            next_LowCmd_.motorCmd[robot_->swingL_id*3+j].q = leg_mng[(int)(robot_->swingL_id)].q_out(j);//leg_mng[(int)(robot_->swingL_id)].q(j) + dq_tip(j)*dt ; 
         
         cmh_->sendLowCmd(this->next_LowCmd_);
     }
@@ -816,8 +833,7 @@ namespace RCD
     {
         this->t_phase = 0.0; //t_to_use - t0;
         this->t0_phase = t_to_use; // when that phase started
-
-        d_traj_0frame_old = Eigen::Vector3f::Zero();
+        
 
         std::vector<std::pair<double, double> > vp;
         for(int l=0; l<this->n_leg; l++)
@@ -840,6 +856,8 @@ namespace RCD
         e_o_int = Eigen::Vector3d::Zero();
         pid_out = Eigen::VectorXd::Zero(6);
 
+        g_0bo_init  = leg_mng[(int)robot_->swingL_id].g_o.cast <float> ();
+
     }
     void Controller::initLocomotion()
     {
@@ -855,11 +873,11 @@ namespace RCD
         this->A = 1.0;
         this->b = 10.0;
         this->freq_swing = 0.5; // 2 sec duration, starts at:  t0_swing(0.5s) up to 1/freq_swing+t0_swing(2.5s)
-        this->t0_swing = 0.25;
-        this->t_half_swing = (1/freq_swing)/2 + t0_swing ; 
+        this->t0_swing = 0.6;
+        this->t_half_swing = 1.6;//(1/freq_swing)/2 + t0_swing ; 
         // t0_swing + 1/freq_swing = 2*t_half_swing
         // update CoM state
-        this->swing_t_slot =  2*t_half_swing + 10 ; // 4 sec per leg for free gait locomotion
+        this->swing_t_slot =  2*t_half_swing + 0.6;// + 10 ; // 4 sec per leg for free gait locomotion
         this->updateCoM();
 
         // Desired position variables
@@ -950,7 +968,6 @@ namespace RCD
     {
 
         initLocomotion();
-        setMaestroMotorGainsWalk();
 
         int loc_i = -1 ;
         ros::Duration sleep_dt_ROS = ros::Duration(this->dt);
@@ -967,50 +984,94 @@ namespace RCD
             updateVelocityCoM(); // TODO change for real robot case
             updateCoMTipsWorld();
 
-            if( t_phase > swing_t_slot)
-            {
-                LOC_STATE = PH_TARGET;
-                std::cout<<"LOC_STATE = PH_TARGET"<<std::endl;
-                std::cout<<"t_to_use"<<t_to_use<<std::endl;
-                std::cout<<"t_phase"<<t_phase<<std::endl;
-            }
+            // if( t_phase >= swing_t_slot) // THIS
+            // {
+            //     LOC_STATE = PH_TARGET;
+            //     std::cout<<"LOC_STATE = PH_TARGET"<<std::endl;
+
+            // }
                 
             switch (LOC_STATE)
             {
             case PH_TARGET:
                 // change swing leg by free gat order, circle using mod and counter
+                // clearQout(); // befaore change id leg clear q from command
                 robot_->swingL_id = free_gait[(int)(++loc_i%n_leg)];
-                std::cout<<"from PH_Target"<<robot_->swingL_id<<std::endl;
-
+                initQout(); // set all q_out as the q now
                 setPhaseTarget();
-                LOC_STATE = PH_SWING;
+
+                // locomotion swing 0 TODO change id
+                this->data_handler_->log_data.swing_now_x = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(0))  ;       
+                this->data_handler_->log_data.swing_now_y = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(1))  ;       
+                this->data_handler_->log_data.swing_now_z = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(2))  ;  
+
+                // locomotion swing 0 TODO change id
+                this->data_handler_->log_data.q_out_0 = &(this->leg_mng[(int)robot_->swingL_id].q_out(0));              
+                this->data_handler_->log_data.q_out_1 = &(this->leg_mng[(int)robot_->swingL_id].q_out(1));              
+                this->data_handler_->log_data.q_out_2 = &(this->leg_mng[(int)robot_->swingL_id].q_out(2));  
+                
+                LOC_STATE = PH_SWING; // change state
+                std::cout<<"from PH_Target"<<robot_->swingL_id<<"AT: "<<t_phase<<std::endl;
 
             case PH_SWING:
-            // control twn swing ? LOC_STATE <- PH_TARGET
+
+                std::cout<<"PH_SWING"<<t_phase<<std::endl;
+
                 computeWeightsSwing(); 
-                break;
+                positionErrorTarget();        // error in position
+                velocityErrorTarget();        // error in velocity
+                computeSudoGq();        // sudo Gq
+                PIDwithSat();
+                fComputationsTarget();
+
+                // inverseTip();
+                
+                if( t_phase<(t0_swing + 1/freq_swing) )
+                {
+                    std::cout<<"into swing time"<<t_phase<<std::endl;
+                    inverseTip(); 
+                    setMaestroMotorGainsWalk_Kp();
+                    setNewCmdSwing_Kp();
+                }
+                else
+                {
+                    std::cout<<"in else"<<std::endl;
+                    // initQout();
+                    setMaestroMotorGainsWalk();
+                    setNewCmdSwing(); 
+                }
+
+
+
+                // setMaestroMotorGainsWalk_Kp();
+                // setNewCmdSwing_Kp();
+                // setMaestroMotorGainsWalk();
+                // setNewCmdSwing(); 
+            
             }
-            // std::cout<<robot_->swingL_id<<std::endl;
-            // std::cout<<"t_to_use"<<t_to_use<<std::endl;
-            // std::cout<<"t_phase"<<t_phase<<std::endl;
-
-            positionErrorTarget();        // error in position
-            velocityErrorTarget();        // error in velocity
-            computeSudoGq();        // sudo Gq
-            PIDwithSat();
-            fComputationsTarget();
-
-            inverseTip();
 
             // Log data - csv format 
             data_handler_->logDataWalk();
 
-            setMaestroMotorGainsWalk(); //set it in inverseTip()
-            setNewCmdSwing(); 
-
             sleep_dt_ROS.sleep();
         }
 
+    }
+    void Controller::clearQout()
+    {
+        int i = (int)robot_->swingL_id;
+        // Init motor Parameter for Gazebo
+        this->next_LowCmd_.motorCmd[i*3+0].q = 0.0;
+        this->next_LowCmd_.motorCmd[i*3+1].q = 0.0;
+        this->next_LowCmd_.motorCmd[i*3+2].q = 0.0;
+
+            
+    }
+    void Controller::initQout()
+    {
+        leg_mng[(int)robot_->swingL_id].q_out(0) = leg_mng[(int)robot_->swingL_id].q(0);
+        leg_mng[(int)robot_->swingL_id].q_out(1) = leg_mng[(int)robot_->swingL_id].q(1);
+        leg_mng[(int)robot_->swingL_id].q_out(2) = leg_mng[(int)robot_->swingL_id].q(2);
     }
     void Controller::setQTips()
     {
@@ -1041,7 +1102,6 @@ namespace RCD
             // std::cout<< "g_o_world"<< leg_mng[l].g_o_world<<std::endl;
         }
     }
-
     void Controller::setMaestroMotorGainsWalk()
     {
         if(!cmh_->real_experiment_)
@@ -1066,43 +1126,41 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
 
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 3.0;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 5.0;
-            this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 8.0;           
+        }
 
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 3;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 3;  
+    }
+    void Controller::setMaestroMotorGainsWalk_Kp()
+    {
+        if(!cmh_->real_experiment_)
+        {
+            for(int i=0; i<this->n_leg; i++)
+            {
+                // Init motor Parameter for Gazebo
+                this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
+                this->next_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
+                this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
+                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
+                this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
+                this->next_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
+                this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
+                this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
+                this->next_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
+                this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
+            }
+
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kp = 10.0;
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kp = 10.0;
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kp = 13.0;   
+            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3.0;
+            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 3.0;
+            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 3.0;     
 
         }
-        // else
-        // {
-        //     //SOSOSOSSOSO TODO TUNE
-        //     for(int i=0; i<this->n_leg; i++)
-        //     {
-        //         // Init motor Parameter for Real Robot
-        //         this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
-        //         this->next_LowCmd_.motorCmd[i*3+0].Kp = 0;
-        //         this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-        //         this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.0;
-        //         this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
-        //         this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
-        //         this->next_LowCmd_.motorCmd[i*3+1].Kp = 0;
-        //         this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-        //         this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.0;
-        //         this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
-        //         this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
-        //         this->next_LowCmd_.motorCmd[i*3+2].Kp = 0;
-        //         this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-        //         this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.0;
-        //         this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
-        //     }
-        
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kp = 10;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kp = 50;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kp = 70;
 
-        
-        // }
     }
 }

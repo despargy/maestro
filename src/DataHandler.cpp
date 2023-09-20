@@ -26,7 +26,7 @@ namespace RCD
             // (*log_data.leg_2_x)<<"," << (*log_data.leg_2_y)<<"," << (*log_data.leg_2_z)<<"," <<
             // (*log_data.leg_3_x)<<"," << (*log_data.leg_3_y)<<"," << (*log_data.leg_3_z)<<"," <<                 
             
-            (*log_data.swing_d_x)<<"," << (*log_data.swing_d_y)<<"," << (*log_data.swing_d_z)<<"," <<
+            (*log_data.d_traj_tip_x)<<"," << (*log_data.d_traj_tip_y)<<"," << (*log_data.d_traj_tip_z)<<"," <<
             (*log_data.swing_now_x)<<"," << (*log_data.swing_now_y)<<"," << (*log_data.swing_now_z)<<"," <<
 
             
@@ -35,7 +35,9 @@ namespace RCD
             (*log_data.vvvv)(6)<<"," << (*log_data.vvvv)(8)<<"," <<
             (*log_data.vvvv)(9)<<"," << (*log_data.vvvv)(11)<<","<<
             (*log_data.d_traj_Oframe_x)<<"," << (*log_data.d_traj_Oframe_y)<<"," << (*log_data.d_traj_Oframe_z)<<"," <<
-            (*log_data.q_out_0)<<"," << (*log_data.q_out_1)<<"," << (*log_data.q_out_2)<<"\n" ;
+            (*log_data.q_out_0)<<"," << (*log_data.q_out_1)<<"," << (*log_data.q_out_2)<<"," <<
+            
+            (*log_data.leg_0_x)<<"," << (*log_data.leg_0_y)<<"," << (*log_data.leg_0_z)<<"\n" ;
 
 
     }
@@ -90,14 +92,16 @@ namespace RCD
                 // "g_l2_x, g_l2_y, g_l2_z,"
                 // "g_l3_x, g_l3_y, g_l3_z, "
 
-                "swing0_d_x, swing0_d_y, swing0_d_z, "
+                "d_traj_tip_x, d_traj_tip_y, d_traj_tip_z, "
                 "swing0_now_x, swing0_now_y, swing0_now_z, "
 
                 "W_0x, W_0z,  "              
                 "W_1x, W_1z,  "              
                 "W_2x, W_2z,  "              
                 "W_3x, W_3z,  "
-                "d_traj_0frame_x, d_traj_0frame_y, d_traj_0frame_z, \n";
+                "d_traj_0frame_x, d_traj_0frame_y, d_traj_0frame_z,"
+                "q_out_0, q_out_1, q_out_2,"
+                "g_l0_x, g_l0_y, g_l0_z, \n";
     }
     void DataHandler::openOnce()
     {

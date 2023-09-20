@@ -26,6 +26,7 @@ namespace RCD
         jacobian_kdl.resize(n_superV_joints);
         q.resize(n_superV_joints);  
         q_out.resize(n_superV_joints);  
+        // q_out(0) = 0.0, q_out(1) = 0.0, q_out(2) = 0.0;
         //Eigen init
         J.resize(6, n_superV_joints);
         f.resize(3);

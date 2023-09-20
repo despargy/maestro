@@ -55,16 +55,15 @@ plt.legend()
 plt.title("e_o")
 
 
-swing0_d = data[:,15:18] #x,y,z
+d_traj_tip = data[:,15:18] #x,y,z
 swing0_now = data[:,18:21] #x,y,z
 
 plt.figure()
-plt.plot(t_real,swing0_d, label="desired")
-plt.plot(t_real,swing0_now, label="now")
+plt.plot(t_real,d_traj_tip, label="desired")
 plt.xlabel("t_real")
-plt.ylabel("Swing tip pos CoM")
+plt.ylabel("Desired tip pos")
 plt.legend()
-plt.title("Swing tip pos CoM")
+plt.title("Derised trajectory tip frame")
 
 
 w0 = data[:,21]
@@ -101,13 +100,58 @@ ax.set_ylabel('x')
 ax.set_zlabel('z')
 
 plt.figure()
-plt.plot(t_real,d_traj_0frame[:,2], label="z")
 plt.plot(t_real,d_traj_0frame[:,0], label="x")
+plt.plot(t_real,d_traj_0frame[:,1], label="y")
+plt.plot(t_real,d_traj_0frame[:,2], label="z")
 plt.xlabel("t_real")
-plt.ylabel("tip desired swing xz")
+plt.ylabel("Desired tip pos from CoM frame")
 plt.legend()
-plt.title("Weights")
+plt.title("Derised trajectory CoM frame")
 
+
+
+qout0_ = data[:,32:35] #0,1,2
+plt.figure()
+plt.plot(t_real,qout0_[:,0], label="q_out 0")
+plt.plot(t_real,qout0_[:,1], label="q_out 1") 
+plt.plot(t_real,qout0_[:,2], label="q_out 2")
+
+# plt.plot(t_real,swing0_now, label="now")
+plt.xlabel("t_real")
+plt.ylabel("Swing tip q_out ")
+plt.legend()
+plt.title("Swing tip q_out")
+
+
+tip0_ = data[:,35:38] #x,y,z
+
+plt.figure()
+plt.plot(t_real,tip0_[:,0], label="now x")
+plt.plot(t_real,tip0_[:,1], label="now y")
+plt.plot(t_real,tip0_[:,2], label="now z")
+
+# plt.plot(t_real,swing0_now, label="now")
+plt.xlabel("t_real")
+plt.ylabel("Swing tip pos World")
+plt.legend()
+plt.title("Swing tip pos World")
+
+
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.plot3D(t_real, tip0_[:,0], tip0_[:,2], 'gray')
+ax.set_xlabel('time')
+ax.set_ylabel('x')
+ax.set_zlabel('z')
+plt.title("Swing tip pos World")
+
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.plot3D(t_real, tip0_[:,0], tip0_[:,1], 'gray')
+ax.set_xlabel('time')
+ax.set_ylabel('x')
+ax.set_zlabel('y')
+plt.title("Swing tip pos World")
 
 # q_out = data[:,32:35]
 # plt.figure()

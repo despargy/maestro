@@ -23,18 +23,13 @@ int main() {
     // Plot the normal distribution function from t0 - 4*sigma to t0 + 4*sigma
     double t;
     double tip_x, tip_z;
-    double r1 = 0.008, r2=0.05;
-    double freq = 0.5;
-    // for (t = t0 - 4.0 * sigma; t <= t0 + 4.0 * sigma; t += 0.002) {
-    //     double y = normalDistribution(t, t0, sigma);
-    //     std::cout << t << "," << y << std::endl;
-    // }q
-    
+    double r1 = 0.005, r2=0.02;
+    double freq = 0.5;    
     double A=1,b=10;//A=1,b=10;
-    double t0_swing = 0.25, t0_super=0.25; // DO NOT CHANGE
-    double t_half_swing = (1/freq)/2+t0_swing ;
-    double t0_tip = 1;
-    for (t = 0; t < 2*2*t_half_swing; t += 0.002) {
+    double t0_swing = 0.6, t0_super=0.25; // DO NOT CHANGE
+    double t_half_swing = 1.6 ;//;(1/2)/2+t0_super ;
+    double swing_t_slot =  2*t_half_swing  ;
+    for (t = 0; t < swing_t_slot; t += 0.002) {
         double y = normalDistribution(t, t0, sigma);
 
         // tip_x = r1*(2*M_PI*freq*(t-t0_swing)-sin(2*M_PI*freq*(t-t0_swing)));
@@ -45,10 +40,11 @@ int main() {
             tip_x= 0.0;
             tip_z= 0.0;
         }
-        else if(t>=t0_swing & t<(t0_swing + 1/freq))
+        else if(t>=t0_swing & t<=(t0_swing + 1/freq))
         {
             tip_x= r1*(2*M_PI*freq*(t-t0_swing)-sin(2*M_PI*freq*(t-t0_swing)));
             tip_z= r2*(1-cos(2*M_PI*freq*(t-t0_swing)));
+
         } 
         // else
         // {

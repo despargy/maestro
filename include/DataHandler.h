@@ -31,7 +31,7 @@ namespace RCD
 
             // ------ Logging Leg class ------ //
             double *leg_prob_0, *leg_prob_1, *leg_prob_2, *leg_prob_3;
-            double *swing_d_x, *swing_d_y, *swing_d_z;
+            float *d_traj_tip_x, *d_traj_tip_y, *d_traj_tip_z;
             double *swing_now_x, *swing_now_y, *swing_now_z;
             float *d_traj_Oframe_x, *d_traj_Oframe_y, *d_traj_Oframe_z;
 
