@@ -163,4 +163,5 @@ namespace RCD
 
         return A*pow( b, -pow(pow(d,2)/pow(r,2),n*r) );
     }
+
 }

@@ -167,10 +167,10 @@ namespace RCD
         std::string l_name[this->n_leg] = {"FR_foot","FL_foot","RR_foot","RL_foot"};
         for(int i = 0; i < this->n_leg ; i++)
             leg_mng[i].initLegs(i, l_name[i], robot_kin);
-        leg_mng[0].y_tip = -0.08;
-        leg_mng[1].y_tip = +0.08;
-        leg_mng[2].y_tip = -0.08;
-        leg_mng[3].y_tip = +0.08;
+        leg_mng[0].y_tip = -0.02;
+        leg_mng[1].y_tip = +0.02;
+        leg_mng[2].y_tip = -0.02;
+        leg_mng[3].y_tip = +0.02;
 
         // if (this->n_leg*leg_mng[0].n_superV_joints != robot_->num_joints)  //eq. joint distribution, 3 per leg this cannot be used becasue we add extra foot link for fake imu data
         // ROS_ERROR("Robot Joints Number Not Matching");
@@ -322,6 +322,7 @@ namespace RCD
 
         setMaestroMotorGains();
         ros::Duration sleep_dt_ROS = ros::Duration(this->dt);
+
 
         while(this->robot_->KEEP_CONTROL & ros::ok()) 
         {
@@ -601,7 +602,6 @@ namespace RCD
         {
             lastPos[j] = robot_->low_state_.motorState[j].q;
         }   
-        // LALA
         for(int i=1; i<=duration; i++)
         {
             if(!ros::ok()) break;
@@ -702,14 +702,14 @@ namespace RCD
             
             /* Added to simuate swing leg weights t inf */
             if( l == robot_->swingL_id)
-                this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + 35000*math_lib.superGaussian(A,b,t_half_swing-t0_superG,t_phase - t_half_swing)*Eigen::Vector3d::Ones(); 
-                // this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + 35000*math_lib.normalDistribution(t_phase)*Eigen::Vector3d::Ones(); 
+                this->leg_mng[l].wv_leg = this->leg_mng[0].w0*Eigen::Vector3d::Ones() + 3500*math_lib.superGaussian(A,b,t_half_swing-t0_superG,t_phase - t_half_swing)*Eigen::Vector3d::Ones(); 
             
             // update vvvv vector of robot                          // z stays 1.0 do not change
             this->robot_->vvvv.block(l*3,0,3,1) = this->leg_mng[l].wv_leg;   
         }
         // save as matrix the inverse of diagonal vvvv vector
         this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
+
     }
     void Controller::initTarget()
     {
@@ -725,8 +725,7 @@ namespace RCD
             
 
         std::pair<double, double> C = math_lib.find_Centroid(vp);
-        Eigen::Vector3d target(C.first,C.second,robot_->p_c(2));
-        // std::cout<< "target "<<target<<std::endl;
+        Eigen::Vector3d target(C.first,C.second,0.4); //robot_->p_c(2)
 
         // set target goal position target, starting position, rotation target
         math_lib.updateTarget(target, robot_->p_c, robot_->R_c); 
@@ -739,69 +738,66 @@ namespace RCD
     void Controller::inverseTip()
     {
 
-        float r1 = 0.01, r2=0.02;     
+        float r1 = 0.008, r2=0.025;     
 
         if(t_phase<t0_swing)
         {
-            // setMaestroMotorGainsWalk_0();
-            // std::cout<<"zeros"<<std::endl;
             d_tip_pos<< 0.0, 0.0, 0.0, 1.0; 
             d_tip_vel<< 0.0, 0.0, 0.0;
+
         }
         else if( t_phase>=t0_swing & t_phase<=(t0_swing + 1/freq_swing) ) 
         {
-            // setMaestroMotorGainsWalk_1();
-            // std::cout<<"act"<<std::endl;
-            d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))),0.0,r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
-            d_tip_vel << r1*(2*M_PI*freq_swing - 2*M_PI*freq_swing*cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 0.0, r2*2*M_PI*freq_swing*sin(2*M_PI*freq_swing*(t_phase-t0_swing));
+            // std::cout<<"THIS--------------------------------------------"<< std::endl;
+
+            d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))) , 0.0,  r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
+            d_tip_vel << r1*(2*M_PI*freq_swing - 2*M_PI*freq_swing*cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 0.0,  r2*2*M_PI*freq_swing*sin(2*M_PI*freq_swing*(t_phase-t0_swing));
+
         }
-        // else 
-        // {
-        //     // setMaestroMotorGainsWalk_2();
-        //     // std::cout<<"end wait"<<std::endl;
-        //     // d_tip_pos<< r1, 0.0, r2, 1.0; 
-        //     d_tip_vel<< 0.0, 0.0, 0.0;
-        // }  
+        else 
+        {
+            d_tip_vel<< 0.0, 0.0, 0.0;
+
+        }  
         
         d_traj_tipframe(0) = d_tip_pos(0);
         d_traj_tipframe(1) = d_tip_pos(1);
         d_traj_tipframe(2) = d_tip_pos(2);
 
-        Eigen::Matrix4f BC_T = Eigen::Matrix4f::Zero(); // let B be system B at tip, then BO_T is the transformation from B to world frmae {0}, with:
+        Eigen::Matrix4f BC_T = Eigen::Matrix4f::Zero(); // let B be system B at tip, then BO_T is the transformation from B to world frame {0}, with:
         BC_T(3,3) = 1.0;
-        BC_T.block(0,0,3,3) = robot_->g_com.block(0,0,3,3).inverse().cast<float>(); // B from C is inv. the robot R_c orientation as the robot frame {0}
-        BC_T.block(0,3,3,1) = g_0bo_init.block(0,3,3,1).cast<float>();  // translation like tip from {0}
+        BC_T.block(0,0,3,3) = Eigen::Matrix3f::Identity() ;// robot_->g_com_init.block(0,0,3,3).cast<float>();// ->g_com_init.block(0,0,3,3).inverse().cast<float>(); // B from C is inv. the robot R_c orientation as the robot frame {0}
+        BC_T.block(0,3,3,1) = leg_mng[(int)robot_->swingL_id].g_0bo_init.block(0,3,3,1).cast<float>();  // translation as tip init pose, from {0}
         
         // desired swinging-tip trajectory represented from {0} is:
         Eigen::Vector4f d_CoM_pos =  BC_T*d_tip_pos;
         d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
         d_vel_0frame = BC_T.block(0,0,3,3)*d_tip_vel;
 
-        // d_tip_pos_world = (robot_->g_com).cast<float>()*g_0bo_init*d_tip_pos;
-        // d_traj_0frame = d_tip_pos_world.block(0,0,3,1);
-        // std::cout<<"d_tip_pos_world"<<d_tip_pos_world<<std::endl;
-        // std::cout<<"d_traj_0frame"<<d_traj_0frame<<std::endl;
-
-        // d_vel_0frame = robot_->g_com.block(0,0,3,3).cast<float>()*g_0bo_init.block(0,0,3,3)*d_traj_0frame;
-
         CLIK(d_traj_0frame, d_vel_0frame);
+
         
     }
     void Controller::CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_)
     {
-        // std::cout<<"pd_0frame_"<< pd_0frame_<<std::endl;
-        // std::cout<<"g_o"<< leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1)<<std::endl;
-        // std::cout<<"error"<<(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_)<<std::endl;
-        
-        Eigen::Vector3f d_q_ = leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0).inverse().cast<float>()*(dpd_0frame_ - 4*(leg_mng[(int)robot_->swingL_id].g_o.block(0,3,3,1).cast<float>() - pd_0frame_) );
+
+        Eigen::Vector3f d_q_ = (   robot_->R_c* leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0)).inverse().cast<float>()*(dpd_0frame_ - 8*(leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>() - pd_0frame_) );
+        // std::cout<<"leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>():"<< leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>().transpose()<<std::endl;
+        // std::cout<<"pd_0frame_:"<< pd_0frame_.transpose()<<std::endl;
+        // std::cout<<"p--------------------------------------------"<< std::endl;
+
+
         leg_mng[(int)robot_->swingL_id].q_out(0) = d_q_(0)*dt + leg_mng[(int)robot_->swingL_id].q_out(0);
         leg_mng[(int)robot_->swingL_id].q_out(1) = d_q_(1)*dt + leg_mng[(int)robot_->swingL_id].q_out(1);
         leg_mng[(int)robot_->swingL_id].q_out(2) = d_q_(2)*dt + leg_mng[(int)robot_->swingL_id].q_out(2);
 
-        std::cout<<(int)robot_->swingL_id<<"q_out"<< leg_mng[(int)robot_->swingL_id].q_out(0)<<std::endl;
-        std::cout<<(int)robot_->swingL_id<<"q_out"<< leg_mng[(int)robot_->swingL_id].q_out(1)<<std::endl;
-        std::cout<<(int)robot_->swingL_id<<"q_out"<< leg_mng[(int)robot_->swingL_id].q_out(2)<<std::endl;
-    
+
+        // leg_mng[(int)robot_->swingL_id].dq_out(0) = d_q_(0);
+        // leg_mng[(int)robot_->swingL_id].dq_out(1) = d_q_(1);
+        // leg_mng[(int)robot_->swingL_id].dq_out(2) = d_q_(2);
+
+
+
     }
     void Controller::setNewCmdSwing_Kp()
     {
@@ -825,6 +821,7 @@ namespace RCD
             next_LowCmd_.motorCmd[l*3+0].tau = (float) leg_mng[l].tau(0);
             next_LowCmd_.motorCmd[l*3+1].tau = (float) leg_mng[l].tau(1);
             next_LowCmd_.motorCmd[l*3+2].tau = (float) leg_mng[l].tau(2);
+
         }
         
         cmh_->sendLowCmd(this->next_LowCmd_);
@@ -847,7 +844,8 @@ namespace RCD
         }
             
         std::pair<double, double> C = math_lib.find_Centroid(vp);
-        Eigen::Vector3d target(C.first,C.second,robot_->p_c(2));
+        Eigen::Vector3d target(C.first,C.second,0.3);
+
 
         // set target goal position target, starting position, rotation target
         math_lib.updateTarget(target, robot_->p_c, robot_->R_c); 
@@ -856,7 +854,24 @@ namespace RCD
         e_o_int = Eigen::Vector3d::Zero();
         pid_out = Eigen::VectorXd::Zero(6);
 
-        g_0bo_init  = leg_mng[(int)robot_->swingL_id].g_o.cast <float> ();
+
+        leg_mng[(int)robot_->swingL_id].g_0bo_init  = leg_mng[(int)robot_->swingL_id].g_o_world.cast <float> ();
+        // g_0bo_init  = leg_mng[(int)robot_->swingL_id].g_o.cast <float> ();
+        // robot_->g_com_init = this->robot_->g_com;
+        // leg_mng[(int)robot_->swingL_id].wv_leg = leg_mng[(int)robot_->swingL_id].w0*Eigen::Vector3d::Ones();  
+
+        for(int l = 0; l < this->n_leg ; l++)
+        {
+            // update vvvv vector of robot                          // z stays 1.0 do not change
+            leg_mng[l].wv_leg = leg_mng[l].w0*Eigen::Vector3d::Ones();  
+
+            this->robot_->vvvv.block(l*3,0,3,1) = this->leg_mng[l].wv_leg;   
+        }
+        // save as matrix the inverse of diagonal vvvv vector
+        this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
+
+
+
 
     }
     void Controller::initLocomotion()
@@ -869,15 +884,16 @@ namespace RCD
         this->tv = 0.0;
         this->d_tv = 1.0;
         this->t_to_use = -dt;//0.0; // will take values from t_real or virtual time tv
-        this->t0_superG = 0.25;
+        
         this->A = 1.0;
         this->b = 10.0;
-        this->freq_swing = 0.5; // 2 sec duration, starts at:  t0_swing(0.5s) up to 1/freq_swing+t0_swing(2.5s)
-        this->t0_swing = 0.6;
-        this->t_half_swing = 1.6;//(1/freq_swing)/2 + t0_swing ; 
-        // t0_swing + 1/freq_swing = 2*t_half_swing
-        // update CoM state
-        this->swing_t_slot =  2*t_half_swing + 0.6;// + 10 ; // 4 sec per leg for free gait locomotion
+        this->t0_superG = 1.0;
+
+        this->freq_swing = 1.0;// 0.5 // 2 sec duration, starts at:  t0_swing(0.5s) up to 1/freq_swing+t0_swing(2.5s)
+        this->t0_swing = 1.2; //0.6
+        this->t_half_swing = 1.7;//(1/freq_swing)/2 + t0_swing ; 
+        this->swing_t_slot =  2*t_half_swing ; 
+        
         this->updateCoM();
 
         // Desired position variables
@@ -940,15 +956,20 @@ namespace RCD
         }
         pid_out.block(0,0,3,1) += -ki*e_p_int.block(0,0,3,1) ;
         pid_out.block(3,0,3,1) += -0.3*ki*e_o_int ;
-        if(pid_out.block(0,0,3,1).norm()>20.0){
-            pid_out.block(0,0,3,1) = pid_out.block(0,0,3,1) * 20.0 / pid_out.block(0,0,3,1).norm();
+
+
+        if(pid_out.block(0,0,3,1).norm()>80.0){
+            pid_out.block(0,0,3,1) = pid_out.block(0,0,3,1) * 80.0 / pid_out.block(0,0,3,1).norm();
         }
-        if(pid_out.block(3,0,3,1).norm()>20.0){
-            pid_out.block(3,0,3,1) = pid_out.block(3,0,3,1) * 20.0 / pid_out.block(3,0,3,1).norm();
+        if(pid_out.block(3,0,3,1).norm()>80.0){
+            pid_out.block(3,0,3,1) = pid_out.block(3,0,3,1) * 80.0 / pid_out.block(3,0,3,1).norm();
         }
+
+        
         // std::cout<< "e_p_int "<<e_p_int.transpose() << std::endl;
         // std::cout<< "e_o_int "<<e_o_int.transpose() << std::endl;
         // std::cout<< "pid_out "<<pid_out.transpose() << std::endl;
+
         Gbc.block(3,0,3,3) = math_lib.scewSymmetric(robot_->R_c*pbc);
         pid_out += Gbc*robot_->gc;
     }
@@ -961,17 +982,20 @@ namespace RCD
         for(int l = 0; l < n_leg ; l++)
         {
             leg_mng[l].f_cmd = -robot_->F_a.block(l*3,0,3,1); // slip Fa eq. 3
+            // saturation Fz
+            leg_mng[l].f_cmd(2) =  std::fmin(leg_mng[l].f_cmd(2), 0.0);
             leg_mng[l].tau =  (robot_->R_c*(leg_mng[l].J.block<3,3>(0,0))).transpose()*leg_mng[l].f_cmd; // compute eq. 4
+            // std::cout<<"J_"<<l<<":" << leg_mng[l].J.block<3,3>(0,0) << std::endl;
+
         }
+        // std::cout<<"--------------------------------------" << std::endl;
     }
     void Controller::locomotion_loop()
     {
 
         initLocomotion();
-
         int loc_i = -1 ;
-        ros::Duration sleep_dt_ROS = ros::Duration(this->dt);
-
+        double t_push = 0.2;
         while(this->robot_->KEEP_CONTROL & ros::ok())
         {
             t_real += dt;
@@ -984,38 +1008,44 @@ namespace RCD
             updateVelocityCoM(); // TODO change for real robot case
             updateCoMTipsWorld();
 
-            // if( t_phase >= swing_t_slot) // THIS
-            // {
-            //     LOC_STATE = PH_TARGET;
-            //     std::cout<<"LOC_STATE = PH_TARGET"<<std::endl;
-
-            // }
+            if( t_phase > swing_t_slot) // THIS
+            {
+                LOC_STATE = PH_TARGET;
+                std::cout<<"LOC_STATE = PH_TARGET"<<std::endl;
+            }
                 
             switch (LOC_STATE)
             {
             case PH_TARGET:
+
                 // change swing leg by free gat order, circle using mod and counter
-                // clearQout(); // befaore change id leg clear q from command
                 robot_->swingL_id = free_gait[(int)(++loc_i%n_leg)];
-                initQout(); // set all q_out as the q now
+                
+                if(loc_i%n_leg == 0) //single locomotion cycle is done
+                {
+                    for(int l=0; l<n_leg; l++)
+                    {
+                        initQout(l); // set all q_out as zeros 
+                        std::cout<<"changed qs"<<std::endl;
+                    }
+
+                }
+                std::cout<<robot_->swingL_id<<std::endl;
+                
                 setPhaseTarget();
+                // record data, change swing pointer of DataHandler
+                this->data_handler_->log_data.swing_now_x = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(0));       
+                this->data_handler_->log_data.swing_now_y = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(1));       
+                this->data_handler_->log_data.swing_now_z = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(2));  
 
-                // locomotion swing 0 TODO change id
-                this->data_handler_->log_data.swing_now_x = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(0))  ;       
-                this->data_handler_->log_data.swing_now_y = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(1))  ;       
-                this->data_handler_->log_data.swing_now_z = &(this->leg_mng[(int)robot_->swingL_id].p.translation()(2))  ;  
-
-                // locomotion swing 0 TODO change id
+                // record data, change swing pointer of DataHandler
                 this->data_handler_->log_data.q_out_0 = &(this->leg_mng[(int)robot_->swingL_id].q_out(0));              
                 this->data_handler_->log_data.q_out_1 = &(this->leg_mng[(int)robot_->swingL_id].q_out(1));              
                 this->data_handler_->log_data.q_out_2 = &(this->leg_mng[(int)robot_->swingL_id].q_out(2));  
                 
                 LOC_STATE = PH_SWING; // change state
-                std::cout<<"from PH_Target"<<robot_->swingL_id<<"AT: "<<t_phase<<std::endl;
 
             case PH_SWING:
-
-                std::cout<<"PH_SWING"<<t_phase<<std::endl;
 
                 computeWeightsSwing(); 
                 positionErrorTarget();        // error in position
@@ -1023,73 +1053,66 @@ namespace RCD
                 computeSudoGq();        // sudo Gq
                 PIDwithSat();
                 fComputationsTarget();
+                inverseTip(); 
 
-                // inverseTip();
-                
-                if( t_phase<(t0_swing + 1/freq_swing) )
+                if( t_phase<=( 2*t_half_swing - t0_superG ) ) //  t0_swing + 1/freq_swing
                 {
-                    std::cout<<"into swing time"<<t_phase<<std::endl;
-                    inverseTip(); 
-                    setMaestroMotorGainsWalk_Kp();
-                    setNewCmdSwing_Kp();
-                }
+                //     inverseTip(); 
+                    // setMaestroMotorGainsWalk_Kp();
+                    // setNewCmdSwing_Kp();
+
+                    setReNewCmd_Kp();
+                }                
                 else
                 {
-                    std::cout<<"in else"<<std::endl;
-                    // initQout();
-                    setMaestroMotorGainsWalk();
-                    setNewCmdSwing(); 
+                    // std::cout<<"in else"<<std::endl;
+                    // setMaestroMotorGainsWalk();
+                    // setNewCmdSwing(); 
+                    setReNewCmd();
                 }
 
-
-
-                // setMaestroMotorGainsWalk_Kp();
-                // setNewCmdSwing_Kp();
-                // setMaestroMotorGainsWalk();
-                // setNewCmdSwing(); 
-            
             }
 
             // Log data - csv format 
             data_handler_->logDataWalk();
 
-            sleep_dt_ROS.sleep();
+            // waitWithRosWallTime(dt);
+            waitWithRosGazeboTime(dt);
+            // setReNewCmd();
+
         }
+    }
 
-    }
-    void Controller::clearQout()
+    void Controller::waitWithRosWallTime(double dt) 
     {
-        int i = (int)robot_->swingL_id;
-        // Init motor Parameter for Gazebo
-        this->next_LowCmd_.motorCmd[i*3+0].q = 0.0;
-        this->next_LowCmd_.motorCmd[i*3+1].q = 0.0;
-        this->next_LowCmd_.motorCmd[i*3+2].q = 0.0;
-
-            
-    }
-    void Controller::initQout()
-    {
-        leg_mng[(int)robot_->swingL_id].q_out(0) = leg_mng[(int)robot_->swingL_id].q(0);
-        leg_mng[(int)robot_->swingL_id].q_out(1) = leg_mng[(int)robot_->swingL_id].q(1);
-        leg_mng[(int)robot_->swingL_id].q_out(2) = leg_mng[(int)robot_->swingL_id].q(2);
-    }
-    void Controller::setQTips()
-    {
-        double percent;
-        if (t_phase<=t0_swing)
-            percent = 0.0;
+        ros::WallTime start_time = ros::WallTime::now();
         
-        else if (t_phase>t0_swing & t_phase<=(t0_swing + 1/(2*freq_swing) ))
-            percent = (t_phase-t0_swing)/(1/(2*freq_swing));
+        while ((ros::WallTime::now() - start_time).toSec() < dt) {
+            // Wait until the specified time duration 'dt' has passed
+            ros::spinOnce(); // Process any pending ROS messages
+        }
+        ros::spinOnce(); // Process any pending ROS messages
+    }
 
-        else if (t_phase>(t0_swing + 1/(2*freq_swing)) & t_phase<=(t0_swing+1/freq_swing))
-            percent = (t0_swing + 1/(freq_swing) - t_phase)/(1/(2*freq_swing));
-        else
-            percent = 0.0;
 
-        std::cout<<percent<<std::endl;
-        for(int j=0; j<3; j++)
-            leg_mng[(int)robot_->swingL_id].q_out(j) = q_start_swing[j]*(1-percent) + q_target_swing[j]*percent; 
+    void Controller::waitWithRosGazeboTime(double dt) 
+    {
+        ros::Time start_time = ros::Time::now();
+        
+        while ((ros::Time::now() - start_time).toSec() < dt) {
+            // Wait until the specified time duration 'dt' has passed
+            ros::spinOnce(); // Process any pending ROS messages
+        }
+        ros::spinOnce(); // Process any pending ROS messages
+    }
+
+
+
+    void Controller::initQout(int l)
+    {
+        leg_mng[l].q_out(0) = leg_mng[l].q(0);
+        leg_mng[l].q_out(1) = leg_mng[l].q(1);
+        leg_mng[l].q_out(2) = leg_mng[l].q(2);
     }
     void Controller::updateCoMTipsWorld()
     {
@@ -1099,7 +1122,6 @@ namespace RCD
         for(int l = 0; l < n_leg ; l++)
         {
             leg_mng[l].g_o_world = (robot_->g_com*leg_mng[l].g_o).cast <float> ();
-            // std::cout<< "g_o_world"<< leg_mng[l].g_o_world<<std::endl;
         }
     }
     void Controller::setMaestroMotorGainsWalk()
@@ -1111,18 +1133,18 @@ namespace RCD
                 // Init motor Parameter for Gazebo
                 this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
-                this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+0].dq = 0; 
+                this->next_LowCmd_.motorCmd[i*3+0].Kd = 2.5; //2.5
                 this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 4.5; //4.5
                 this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 6.5; //6.5
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
 
@@ -1139,28 +1161,106 @@ namespace RCD
                 this->next_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+0].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+0].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+0].Kd = 2.5; //2.5
                 this->next_LowCmd_.motorCmd[i*3+0].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+1].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+1].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+1].Kd = 4.5; //4.5
                 this->next_LowCmd_.motorCmd[i*3+1].tau = 0.0f;
                 this->next_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
                 this->next_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
                 this->next_LowCmd_.motorCmd[i*3+2].dq = 0;
-                this->next_LowCmd_.motorCmd[i*3+2].Kd = 1.5;
+                this->next_LowCmd_.motorCmd[i*3+2].Kd = 6.5; //6.5
                 this->next_LowCmd_.motorCmd[i*3+2].tau = 0.0f;
             }
 
-            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kp = 10.0;
-            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kp = 10.0;
-            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kp = 13.0;   
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+0].Kd = 3.0;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+1].Kd = 3.0;
-            // this->next_LowCmd_.motorCmd[robot_->swingL_id*3+2].Kd = 3.0;     
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kp = 3.0; //3.0
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kp = 7.0; //5.0
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kp = 9.0; //8.0
+
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kd = 1.0;
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kd = 1.0;
+            this->next_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kd = 1.0;   //1.5
+        }
+
+    }
+
+    void Controller::setReNewCmd_Kp()
+    {
+        unitree_legged_msgs::LowCmd renew_LowCmd_; 
+
+        if(!cmh_->real_experiment_)
+        {
+            for(int i=0; i<this->n_leg; i++)
+            {
+                // Init motor Parameter for Gazebo
+                renew_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
+                renew_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
+                renew_LowCmd_.motorCmd[i*3+0].dq = 0;
+                renew_LowCmd_.motorCmd[i*3+0].Kd = 1.5; //2.5
+                renew_LowCmd_.motorCmd[i*3+0].tau = (float) leg_mng[i].tau(0);
+                renew_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
+                renew_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
+                renew_LowCmd_.motorCmd[i*3+1].dq = 0;
+                renew_LowCmd_.motorCmd[i*3+1].Kd = 3.5; //4.5
+                renew_LowCmd_.motorCmd[i*3+1].tau = (float) leg_mng[i].tau(1);
+                renew_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
+                renew_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
+                renew_LowCmd_.motorCmd[i*3+2].dq = 0;
+                renew_LowCmd_.motorCmd[i*3+2].Kd = 5.5; //6.5
+                renew_LowCmd_.motorCmd[i*3+2].tau =  (float) leg_mng[i].tau(2);
+            }
+
+            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kp = 6.0; //3.0
+            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kp = 10.0; //5.0
+            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kp = 16.0; //8.0
+
+            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kd = 1.0;
+            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kd = 1.5;
+            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kd = 2.0;   //1.5
+        }
+
+        for(int j=0; j<3; j++)
+        {
+            renew_LowCmd_.motorCmd[(int)robot_->swingL_id*3+j].q = (float) leg_mng[(int)(robot_->swingL_id)].q_out(j); 
+        }
+        
+        cmh_->sendLowCmd(renew_LowCmd_);
+
+    }
+
+    void Controller::setReNewCmd()
+    {
+        unitree_legged_msgs::LowCmd renew_LowCmd_; 
+
+        if(!cmh_->real_experiment_)
+        {
+            for(int i=0; i<this->n_leg; i++)
+            {
+                // Init motor Parameter for Gazebo
+                renew_LowCmd_.motorCmd[i*3+0].mode = 0x0A;
+                renew_LowCmd_.motorCmd[i*3+0].Kp = 0.0;
+                renew_LowCmd_.motorCmd[i*3+0].dq = 0; 
+                renew_LowCmd_.motorCmd[i*3+0].Kd = 1.5; //2.5
+                renew_LowCmd_.motorCmd[i*3+0].tau = (float) leg_mng[i].tau(0);
+                renew_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
+                renew_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
+                renew_LowCmd_.motorCmd[i*3+1].dq = 0;
+                renew_LowCmd_.motorCmd[i*3+1].Kd = 3.5; //4.5
+                renew_LowCmd_.motorCmd[i*3+1].tau =  (float) leg_mng[i].tau(1);
+                renew_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
+                renew_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
+                renew_LowCmd_.motorCmd[i*3+2].dq = 0;
+                renew_LowCmd_.motorCmd[i*3+2].Kd = 5.5; //6.5
+                renew_LowCmd_.motorCmd[i*3+2].tau = (float) leg_mng[i].tau(2);
+            }
+            
+            cmh_->sendLowCmd(renew_LowCmd_);
 
         }
 
     }
+
+
 }

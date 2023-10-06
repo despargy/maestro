@@ -54,16 +54,16 @@
         <param name="ko" value="15.0"/> -->
 
          <!-- SIMULATION Experiment Walk-->
-        <param name="kp" value="2400.0"/>
-        <param name="kv" value="200.0"/> 
-        <param name="ko" value="150.0"/>
-        <param name="ki" value="350.0"/>
+        <param name="kp" value="1300.0"/>   <!--value="2400.0"-->
+        <param name="kv" value="100.0"/>    <!-- value="200.0"--> 
+        <param name="ko" value="15.0"/>    <!-- value="150.0"-->
+        <param name="ki" value="50.0"/>    <!-- value="350.0"-->
 
         <param name="alpha" value="150.0"/>  <!-- 150-->
 
-        <param name="pbc_x" value="0.0025"/>
-        <param name="pbc_y" value="0.001"/>
-        <param name="pbc_z" value="0.0"/>
+        <param name="pbc_x" value="0.0025"/>  <!-- 0.0025-->
+        <param name="pbc_y" value="0.001"/> <!-- 0.001-->
+        <param name="pbc_z" value="0.0"/> <!-- 150-->
 
         <param name="modelstate_id" value="5"/>
         <param name="swingL_id" value="0"/>
@@ -78,7 +78,7 @@
         <param name="robot_name" value="go1"/>
         <param name="real_experiment" value="$(arg real_experiment)"/>
         <param name="has_simulation" value="$(arg has_simulation)"/>
-        <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1_slip_stack.urdf"/>
+        <param name="urdf_file_path" value="$(find maestro)/go1_description/urdf/go1_slip_stack.urdf"/> <!--go1_slip_stack -->
         <param name="main_path" value="$(find maestro)/CSV/"/>
 
         <!-- ==================== ROBOT XACRO ==================== -->

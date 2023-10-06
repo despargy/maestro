@@ -24,6 +24,8 @@
 
 const int PH_TARGET = 0;
 const int PH_SWING = 1;
+const int PH_INIT = 2;
+
 
 namespace RCD
 {
@@ -55,7 +57,6 @@ namespace RCD
         Eigen::AngleAxisd ang;
         // vector to help with eq. 11
         Eigen::VectorXd fcontrol1,fcontrol2,fcontrol3; 
-        Eigen::Matrix4f g_0bo_init;
         int LOC_STATE;
     public:
 
@@ -123,7 +124,11 @@ namespace RCD
         void inverseTip();
         void setQTips();
         void CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_);
-        void initQout(), clearQout();
+        void initQout(int l);
+        void waitWithRosWallTime(double dt);
+        void waitWithRosGazeboTime(double dt) ;
+
+        void setReNewCmd(), setReNewCmd_Kp();
 
   };
 

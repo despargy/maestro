@@ -8,10 +8,10 @@ import numpy as np
 
 # Read data from the CSV file
 data = pd.read_csv('../data.csv', header=None, names=['t', 'y', 'tip_x', 'tip_z','s','d'])
-t0_swing = 0.6
-t0_super=0.25
-freq = 0.5
-t_half_swing = 1.6 #(1/freq)/2+t0_swing 
+t0_swing = 1.2
+t0_super= 1.0
+freq = 1.0
+t_half_swing = 1.7 #(1/freq)/2+t0_swing 
 
 # Plot the normal distribution function
 # plt.figure()
@@ -22,19 +22,19 @@ t_half_swing = 1.6 #(1/freq)/2+t0_swing
 # plt.legend()
 # plt.grid()
 
-# plt.figure()
-# plt.plot(data['tip_x'], data['tip_z'], label='X-Z POS')
-# plt.xlabel('X')
-# plt.ylabel('Z')
-# plt.title('X-Z 2D plot of tip')
-# plt.legend()
+plt.figure()
+plt.plot(data['t'], data['tip_z'], label='time-Z')
+plt.xlabel('Time')
+plt.ylabel('Z')
+plt.title('Time, t-Z of tip')
+plt.legend()
 
-# plt.figure()
-# plt.plot(data['t'], data['tip_x'], label='time-X')
-# # plt.plot(data['t'], data['tip_z'], label='time-Z')
-# plt.xlabel('Time')
-# plt.title('Time, X-Z of tip')
-# plt.legend()
+plt.figure()
+plt.plot(data['t'], data['tip_x'], label='time-X')
+# plt.plot(data['t'], data['tip_z'], label='time-Z')
+plt.xlabel('Time')
+plt.title('Time, X-Z of tip')
+plt.legend()
 
 ### from here
 plt.figure()
@@ -53,28 +53,37 @@ plt.ylabel('X')
 plt.title('Super Gaus')
 plt.legend()
 
-plt.figure()
-plt.plot(data['t'], data['tip_x'], label='t-x')
-plt.axvline(0.6, color='b',label='t0_swing')
-# plt.axvline(4, color='b',label='1/freq')
-plt.axvline(1+0.6, color='b',label='1/freq+t0_swing')
-plt.xlabel('Time')
-plt.ylabel('X')
-plt.title('Super Gaus')
-plt.legend()
+# plt.figure()
+# plt.plot(data['t'], data['tip_x'], label='t-x')
+# plt.axvline(0.6, color='b',label='t0_swing')
+# # plt.axvline(4, color='b',label='1/freq')
+# plt.axvline(1+0.6, color='b',label='1/freq+t0_swing')
+# plt.xlabel('Time')
+# plt.ylabel('X')
+# plt.title('Super Gaus')
+# plt.legend()
 
-plt.figure()
-plt.plot(data['t'], data['tip_z'], label='t-z')
-plt.axvline(0.6, color='b',label='t0_swing')
-plt.axvline(1+0.6, color='b',label='1/freq+t0_swing')
-plt.xlabel('Time')
-plt.ylabel('X')
-plt.title('Super Gaus')
-plt.legend()
+# plt.figure()
+# plt.plot(data['t'], data['tip_z'], label='t-z')
+# plt.axvline(0.6, color='b',label='t0_swing')
+# plt.axvline(1+0.6, color='b',label='1/freq+t0_swing')
+# plt.xlabel('Time')
+# plt.ylabel('X')
+# plt.title('Super Gaus')
+# plt.legend()
 
-# fig = plt.figure()
-# ax = plt.axes(projection='3d')
-# ax.plot3D(data['t'], data['tip_x'], data['tip_z'], 'gray')
+
+# plt.figure()
+# plt.plot(data['t'], data['y'], label='t-y')
+# # plt.axvline(0.6, color='b',label='t0_swing')
+# # plt.axvline(1+0.6, color='b',label='1/freq+t0_swing')
+# plt.xlabel('Time')
+# plt.ylabel('X')
+# plt.title('Super Gaus')
+# plt.legend()
+# # fig = plt.figure()
+# # ax = plt.axes(projection='3d')
+# # ax.plot3D(data['t'], data['tip_x'], data['tip_z'], 'gray')
 
 
 ### to here

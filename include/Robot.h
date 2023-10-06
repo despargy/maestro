@@ -44,7 +44,7 @@ namespace RCD
         Eigen::DiagonalMatrix<double,12> W_inv;
         Eigen::Matrix3d LegR_frame[4];
 
-        Eigen::Matrix4d g_com;
+        Eigen::Matrix4d g_com, g_com_init;
         
         Robot(/* args */);
         ~Robot();

@@ -33,7 +33,8 @@ namespace RCD
             (*log_data.vvvv)(0)<<"," << (*log_data.vvvv)(2)<<"," <<
             (*log_data.vvvv)(3)<<"," << (*log_data.vvvv)(5)<<"," <<
             (*log_data.vvvv)(6)<<"," << (*log_data.vvvv)(8)<<"," <<
-            (*log_data.vvvv)(9)<<"," << (*log_data.vvvv)(11)<<","<<
+            (*log_data.vvvv)(9)<<"," << (*log_data.vvvv)(11)<<"," <<
+
             (*log_data.d_traj_Oframe_x)<<"," << (*log_data.d_traj_Oframe_y)<<"," << (*log_data.d_traj_Oframe_z)<<"," <<
             (*log_data.q_out_0)<<"," << (*log_data.q_out_1)<<"," << (*log_data.q_out_2)<<"," <<
             
@@ -95,10 +96,10 @@ namespace RCD
                 "d_traj_tip_x, d_traj_tip_y, d_traj_tip_z, "
                 "swing0_now_x, swing0_now_y, swing0_now_z, "
 
-                "W_0x, W_0z,  "              
-                "W_1x, W_1z,  "              
-                "W_2x, W_2z,  "              
-                "W_3x, W_3z,  "
+                "W_0x,  W_0z,  "              
+                "W_1x,  W_1z,  "              
+                "W_2x,  W_2z,  "              
+                "W_3x,  W_3z,  "
                 "d_traj_0frame_x, d_traj_0frame_y, d_traj_0frame_z,"
                 "q_out_0, q_out_1, q_out_2,"
                 "g_l0_x, g_l0_y, g_l0_z, \n";

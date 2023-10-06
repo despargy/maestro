@@ -32,7 +32,6 @@ generate_messages(
   sensor_msgs
   unitree_legged_msgs
 )
-
 catkin_package(
  INCLUDE_DIRS include 
  LIBRARIES maestro
@@ -48,7 +47,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include   ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR}
-  ${unitree_legged_msgs_INCLUDE_DIRS}
+  ${unitree_legged_msgs_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS}
   )
 link_directories($(catkin_LIB_DIRS) lib)
 
