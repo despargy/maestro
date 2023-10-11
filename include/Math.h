@@ -10,7 +10,10 @@
 #include <iostream>
 #include <cmath>
 #include <bits/stdc++.h>
-
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <math.h>
 
 #ifndef _MATH_H_
 #define _MATH_H_
@@ -20,12 +23,16 @@ namespace RCD
     class Math
     {
     public:
-            // vector for target position, inside locomotion mode
+        // vector for target position, inside locomotion mode
         Eigen::Vector3d p_T, p0_ofphase; 
         Eigen::Matrix3d R_T; Eigen::Quaterniond Q0_ofphase; 
         double standardDeviation, t_shift;
         double A,b,d,r, n;
- 
+
+        // Bezier Curve swinging tip
+        std::vector<double> bCurveX, dot_bCurveX;
+        std::vector<double> bCurveZ, dot_bCurveZ;
+
         Math();
         ~Math();
         Eigen::Matrix3d scewSymmetric(Eigen::Vector3d t);
@@ -43,7 +50,7 @@ namespace RCD
         std::pair<double, double> find_Centroid(std::vector<std::pair<double, double> >& v);
         double normalDistribution(double t);
         double superGaussian(double A,double b,double r,double d);
-
+        void computeBesierCurve2D(std::vector<double> xX, std::vector<double> yY, double step);
     };
 }
 #endif

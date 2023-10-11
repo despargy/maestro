@@ -26,7 +26,4 @@ plt.ylabel('G')
 plt.title('Super Gaussian')
 plt.legend()
 
-
-
-
 plt.show()

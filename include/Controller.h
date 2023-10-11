@@ -44,7 +44,7 @@ namespace RCD
         double q_start_swing[3] = {0.0, 0.67, -1.5};
         double q_target_swing[3] = {0.0,  0.67 + 0.80 , -M_PI + 0.4};
         Eigen::Vector3f d_traj_0frame, d_vel_0frame, d_traj_tipframe;
-
+        int ii;
         Eigen::Vector4f d_tip_pos, d_tip_pos_world;
         Eigen::Vector3f d_tip_vel;
         

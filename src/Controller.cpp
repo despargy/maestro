@@ -734,7 +734,29 @@ namespace RCD
     void Controller::inverseTip()
     {
 
-        float r1 = 0.008, r2=0.025;     
+        /**************** Cycloid trajectory ***************/ 
+        // float r1 = 0.008, r2=0.025;     
+        // if(t_phase<t0_swing)
+        // {
+        //     d_tip_pos<< 0.0, 0.0, 0.0, 1.0; 
+        //     d_tip_vel<< 0.0, 0.0, 0.0;
+
+        // }
+        // else if( t_phase>=t0_swing & t_phase<=(t0_swing + 1/freq_swing) ) 
+        // {
+
+        //     d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))) , leg_mng[(int)robot_->swingL_id].y_tip,  r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
+        //     d_tip_vel << r1*(2*M_PI*freq_swing - 2*M_PI*freq_swing*cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 0.0,  r2*2*M_PI*freq_swing*sin(2*M_PI*freq_swing*(t_phase-t0_swing));
+
+        // }
+        // else 
+        // {
+        //     d_tip_vel<< 0.0, 0.0, 0.0;
+
+        // }  
+        /**************** Cycloid trajectory ***************/ 
+
+        /**************** Bezier curve ***************/ 
 
         if(t_phase<t0_swing)
         {
@@ -744,10 +766,9 @@ namespace RCD
         }
         else if( t_phase>=t0_swing & t_phase<=(t0_swing + 1/freq_swing) ) 
         {
-            // std::cout<<"THIS--------------------------------------------"<< std::endl;
-
-            d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))) , leg_mng[(int)robot_->swingL_id].y_tip,  r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
-            d_tip_vel << r1*(2*M_PI*freq_swing - 2*M_PI*freq_swing*cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 0.0,  r2*2*M_PI*freq_swing*sin(2*M_PI*freq_swing*(t_phase-t0_swing));
+            ++ii;
+            d_tip_pos << math_lib.bCurveX[ii] , leg_mng[(int)robot_->swingL_id].y_tip,  math_lib.bCurveZ[ii] , 1.0;
+            d_tip_vel << math_lib.dot_bCurveX[ii], 0.0,  math_lib.dot_bCurveZ[ii];
 
         }
         else 
@@ -755,7 +776,10 @@ namespace RCD
             d_tip_vel<< 0.0, 0.0, 0.0;
 
         }  
-        
+        /**************** Bezier curve ***************/ 
+
+
+
         d_traj_tipframe(0) = d_tip_pos(0);
         d_traj_tipframe(1) = d_tip_pos(1);
         d_traj_tipframe(2) = d_tip_pos(2);
@@ -768,7 +792,6 @@ namespace RCD
         // desired swinging-tip trajectory represented from {0} is:
         Eigen::Vector4f d_CoM_pos =  BC_T*d_tip_pos;
         d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
-        // d_vel_0frame = BC_T.block(0,0,3,3)*d_tip_vel;
 
         CLIK(d_traj_0frame, d_tip_vel);
 
@@ -777,7 +800,7 @@ namespace RCD
     void Controller::CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_)
     {
 
-        Eigen::Vector3f d_q_ = (   robot_->R_c* leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0)).inverse().cast<float>()*(dpd_0frame_ - 8*(leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>() - pd_0frame_) );
+        Eigen::Vector3f d_q_ = (   robot_->R_c* leg_mng[(int)robot_->swingL_id].J.block<3,3>(0,0)).inverse().cast<float>()*(dpd_0frame_ - 16*(leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>() - pd_0frame_) );
         // std::cout<<"leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>():"<< leg_mng[(int)robot_->swingL_id].g_o_world.block(0,3,3,1).cast<float>().transpose()<<std::endl;
         // std::cout<<"pd_0frame_:"<< pd_0frame_.transpose()<<std::endl;
         // std::cout<<"p--------------------------------------------"<< std::endl;
@@ -791,8 +814,6 @@ namespace RCD
         leg_mng[(int)robot_->swingL_id].dq_out(0) = d_q_(0);
         leg_mng[(int)robot_->swingL_id].dq_out(1) = d_q_(1);
         leg_mng[(int)robot_->swingL_id].dq_out(2) = d_q_(2);
-
-
 
     }
     void Controller::setNewCmdSwing_Kp()
@@ -866,7 +887,7 @@ namespace RCD
         // save as matrix the inverse of diagonal vvvv vector
         this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
 
-
+        ii = -1;
 
 
     }
@@ -907,7 +928,7 @@ namespace RCD
         pid_out.resize(6);
 
         pbc << this->robot_->pbc_x ,this->robot_->pbc_y , this->robot_->pbc_z ; // center of mass offset 
-        robot_->z = 0.35;
+        robot_->z = 0.3;
 
         LOC_STATE = PH_TARGET;
         
@@ -919,6 +940,13 @@ namespace RCD
         leg_mng[1].y_tip = leg_mng[1].g_o_world(1,3) + 0.01;
         leg_mng[2].y_tip = leg_mng[2].g_o_world(1,3) - 0.01;
         leg_mng[3].y_tip = leg_mng[3].g_o_world(1,3) + 0.01;
+
+        // generate Bezier traj for tips as reference
+        std::vector<double> xX{0.0, 0.08, 0.09, 0.07};
+        std::vector<double> zZ{0.0, 0.1, 0.05, 0.0};
+        double step = (freq_swing*dt/(1+dt*freq_swing)); // need to be the same size as the duration of swinging (1/freq_swing)/dt = 1/(freq_swing*dt)
+        std::cout<< step<< std::endl;
+        math_lib.computeBesierCurve2D(xX, zZ, step);
 
     }
     void Controller::positionErrorTarget()
@@ -1006,7 +1034,6 @@ namespace RCD
 
             t_real += dt;
             t_to_use = t_real;
-            // TODO, here add ADAPT_B if so {}
             t_phase = t_to_use - t0_phase;
 
             updateLegs();
@@ -1030,11 +1057,7 @@ namespace RCD
                 if(loc_i%n_leg == 0) //single locomotion cycle is done
                 {
                     for(int l=0; l<n_leg; l++)
-                    {
                         initQout(l); // set all q_out as zeros 
-                        std::cout<<"changed qs"<<std::endl;
-                    }
-
                 }
                 std::cout<<robot_->swingL_id<<std::endl;
                 

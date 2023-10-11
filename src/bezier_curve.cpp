@@ -19,7 +19,7 @@ std::tuple<std::vector<double>, std::vector<double>> computeBesierCurve2D(std::v
     double bCurveXt;
     double bCurveYt;
 
-    for (double t = 0.01; t <= 1; t += 0.01)
+    for (double t = 0.0; t <= 1; t += (0.002))
     {
 
         bCurveXt = std::pow((1 - t), 3) * xX[0] + 3 * std::pow((1 - t), 2) * t * xX[1] + 3 * std::pow((1 - t), 1) * std::pow(t, 2) * xX[2] + std::pow(t, 3) * xX[3];
@@ -27,6 +27,7 @@ std::tuple<std::vector<double>, std::vector<double>> computeBesierCurve2D(std::v
 
         bCurveX.push_back(bCurveXt);
         bCurveY.push_back(bCurveYt);
+
     }
 
     return std::make_tuple(bCurveX, bCurveY);
@@ -206,8 +207,8 @@ std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> comput
 int main()
 {
 
-    std::vector<double> xX{0.0, 11, 13, 10};
-    std::vector<double> zZ{0.0, 1.5, 1, 0.0};
+    std::vector<double> xX{0.0, 0.08, 0.09, 0.07};
+    std::vector<double> zZ{0.0, 0.1, 0.05, 0.0};
 
     std::tuple<std::vector<double>, std::vector<double>> bCurve2D = computeBesierCurve2D(xX, zZ);
     plot2D(bCurve2D);

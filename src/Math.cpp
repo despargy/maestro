@@ -164,4 +164,32 @@ namespace RCD
         return A*pow( b, -pow(pow(d,2)/pow(r,2),n*r) );
     }
 
+
+
+    void Math::computeBesierCurve2D(std::vector<double> xX, std::vector<double> zZ, double step)
+    {
+
+
+        double bCurveXt, dot_bCurveXt;
+        double bCurveZt, dot_bCurveZt;
+
+        for (double t = 0.0; t <= 1; t += step)
+        {
+
+            bCurveXt = std::pow((1 - t), 3) * xX[0] + 3 * std::pow((1 - t), 2) * t * xX[1] + 3 * std::pow((1 - t), 1) * std::pow(t, 2) * xX[2] + std::pow(t, 3) * xX[3];
+            bCurveZt = std::pow((1 - t), 3) * zZ[0] + 3 * std::pow((1 - t), 2) * t * zZ[1] + 3 * std::pow((1 - t), 1) * std::pow(t, 2) * zZ[2] + std::pow(t, 3) * zZ[3];
+
+            bCurveX.push_back(bCurveXt);
+            bCurveZ.push_back(bCurveZt);
+
+            dot_bCurveXt = 3 * std::pow((1 - t), 2) *(xX[1] - xX[0])  + 6 * (1 - t) * t * (xX[2] - xX[1]) + 3 * std::pow(t, 2) * ( xX[3] - xX[2] );
+            dot_bCurveZt = 3 * std::pow((1 - t), 2) *(zZ[1] - zZ[0])  + 6 * (1 - t) * t * (zZ[2] - zZ[1]) + 3 * std::pow(t, 2) * ( zZ[3] - zZ[2] );
+
+            dot_bCurveX.push_back(dot_bCurveXt);
+            dot_bCurveZ.push_back(dot_bCurveZt);
+
+        }
+
+    }
+
 }
