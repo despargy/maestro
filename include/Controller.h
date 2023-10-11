@@ -125,8 +125,8 @@ namespace RCD
         void setQTips();
         void CLIK(Eigen::Vector3f pd_0frame_, Eigen::Vector3f dpd_0frame_);
         void initQout(int l);
-        void waitWithRosWallTime(double dt);
-        void waitWithRosGazeboTime(double dt) ;
+        void waitWithRosWallTime(double dt,  ros::WallTime start_time);
+        void waitWithRosGazeboTime(double dt, ros::Time start_time)  ;
 
         void setReNewCmd(), setReNewCmd_Kp();
 

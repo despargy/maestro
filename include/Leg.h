@@ -43,7 +43,7 @@ namespace RCD
         //KDL
         KDL::Chain kdl_chain;
         KDL::Jacobian jacobian_kdl;
-        KDL::JntArray q, q_out, dq_out;    // Joint pos qs
+        KDL::JntArray q, q_out;    // Joint pos qs
         KDL::Frame p_frame;          // Tip pose with respect to CoM 
         boost::scoped_ptr<KDL::ChainFkSolverPos> kdl_solver_pos;
         boost::scoped_ptr<KDL::ChainJntToJacSolver> kdl_solver;
@@ -52,6 +52,7 @@ namespace RCD
         Eigen::Affine3d p, p_out;
         Eigen::Vector3d f, f_cmd, tau; //applyied force to the tip
         Eigen::Vector3d f_tf_toBase;
+        Eigen::Vector3d dq_out;
 
         Eigen::Matrix4d g_o;
         Eigen::Matrix4f g_o_world;

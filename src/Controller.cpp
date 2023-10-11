@@ -167,10 +167,6 @@ namespace RCD
         std::string l_name[this->n_leg] = {"FR_foot","FL_foot","RR_foot","RL_foot"};
         for(int i = 0; i < this->n_leg ; i++)
             leg_mng[i].initLegs(i, l_name[i], robot_kin);
-        leg_mng[0].y_tip = -0.02;
-        leg_mng[1].y_tip = +0.02;
-        leg_mng[2].y_tip = -0.02;
-        leg_mng[3].y_tip = +0.02;
 
         // if (this->n_leg*leg_mng[0].n_superV_joints != robot_->num_joints)  //eq. joint distribution, 3 per leg this cannot be used becasue we add extra foot link for fake imu data
         // ROS_ERROR("Robot Joints Number Not Matching");
@@ -709,7 +705,7 @@ namespace RCD
         }
         // save as matrix the inverse of diagonal vvvv vector
         this->robot_->W_inv = (this->robot_->vvvv.asDiagonal()).inverse();
-
+        // std::cout<<"this"<< this->robot_->W_inv<<std::endl;
     }
     void Controller::initTarget()
     {
@@ -750,7 +746,7 @@ namespace RCD
         {
             // std::cout<<"THIS--------------------------------------------"<< std::endl;
 
-            d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))) , 0.0,  r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
+            d_tip_pos << r1*(2*M_PI*freq_swing*(t_phase-t0_swing)-sin(2*M_PI*freq_swing*(t_phase-t0_swing))) , leg_mng[(int)robot_->swingL_id].y_tip,  r2*(1-cos(2*M_PI*freq_swing*(t_phase-t0_swing))) , 1.0;
             d_tip_vel << r1*(2*M_PI*freq_swing - 2*M_PI*freq_swing*cos(2*M_PI*freq_swing*(t_phase-t0_swing))), 0.0,  r2*2*M_PI*freq_swing*sin(2*M_PI*freq_swing*(t_phase-t0_swing));
 
         }
@@ -772,9 +768,9 @@ namespace RCD
         // desired swinging-tip trajectory represented from {0} is:
         Eigen::Vector4f d_CoM_pos =  BC_T*d_tip_pos;
         d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
-        d_vel_0frame = BC_T.block(0,0,3,3)*d_tip_vel;
+        // d_vel_0frame = BC_T.block(0,0,3,3)*d_tip_vel;
 
-        CLIK(d_traj_0frame, d_vel_0frame);
+        CLIK(d_traj_0frame, d_tip_vel);
 
         
     }
@@ -792,9 +788,9 @@ namespace RCD
         leg_mng[(int)robot_->swingL_id].q_out(2) = d_q_(2)*dt + leg_mng[(int)robot_->swingL_id].q_out(2);
 
 
-        // leg_mng[(int)robot_->swingL_id].dq_out(0) = d_q_(0);
-        // leg_mng[(int)robot_->swingL_id].dq_out(1) = d_q_(1);
-        // leg_mng[(int)robot_->swingL_id].dq_out(2) = d_q_(2);
+        leg_mng[(int)robot_->swingL_id].dq_out(0) = d_q_(0);
+        leg_mng[(int)robot_->swingL_id].dq_out(1) = d_q_(1);
+        leg_mng[(int)robot_->swingL_id].dq_out(2) = d_q_(2);
 
 
 
@@ -844,7 +840,7 @@ namespace RCD
         }
             
         std::pair<double, double> C = math_lib.find_Centroid(vp);
-        Eigen::Vector3d target(C.first,C.second,0.3);
+        Eigen::Vector3d target(C.first,C.second,robot_->z);
 
 
         // set target goal position target, starting position, rotation target
@@ -892,7 +888,7 @@ namespace RCD
         this->freq_swing = 1.0;// 0.5 // 2 sec duration, starts at:  t0_swing(0.5s) up to 1/freq_swing+t0_swing(2.5s)
         this->t0_swing = 1.2; //0.6
         this->t_half_swing = 1.7;//(1/freq_swing)/2 + t0_swing ; 
-        this->swing_t_slot =  2*t_half_swing ; 
+        this->swing_t_slot =  2.5; 
         
         this->updateCoM();
 
@@ -911,11 +907,19 @@ namespace RCD
         pid_out.resize(6);
 
         pbc << this->robot_->pbc_x ,this->robot_->pbc_y , this->robot_->pbc_z ; // center of mass offset 
+        robot_->z = 0.35;
 
         LOC_STATE = PH_TARGET;
         
         g_d = Eigen::Matrix4d::Zero();
         g_d(3,3) = 1;
+
+
+        leg_mng[0].y_tip = leg_mng[0].g_o_world(1,3) - 0.01;
+        leg_mng[1].y_tip = leg_mng[1].g_o_world(1,3) + 0.01;
+        leg_mng[2].y_tip = leg_mng[2].g_o_world(1,3) - 0.01;
+        leg_mng[3].y_tip = leg_mng[3].g_o_world(1,3) + 0.01;
+
     }
     void Controller::positionErrorTarget()
     {
@@ -995,9 +999,11 @@ namespace RCD
 
         initLocomotion();
         int loc_i = -1 ;
-        double t_push = 0.2;
         while(this->robot_->KEEP_CONTROL & ros::ok())
         {
+            ros::Time start_time = ros::Time::now();
+            // ros::WallTime start_time = ros::WallTime::now();
+
             t_real += dt;
             t_to_use = t_real;
             // TODO, here add ADAPT_B if so {}
@@ -1077,16 +1083,14 @@ namespace RCD
             data_handler_->logDataWalk();
 
             // waitWithRosWallTime(dt);
-            waitWithRosGazeboTime(dt);
+            waitWithRosGazeboTime(dt, start_time);
             // setReNewCmd();
 
         }
     }
 
-    void Controller::waitWithRosWallTime(double dt) 
-    {
-        ros::WallTime start_time = ros::WallTime::now();
-        
+    void Controller::waitWithRosWallTime(double dt,  ros::WallTime start_time) 
+    {        
         while ((ros::WallTime::now() - start_time).toSec() < dt) {
             // Wait until the specified time duration 'dt' has passed
             ros::spinOnce(); // Process any pending ROS messages
@@ -1095,9 +1099,8 @@ namespace RCD
     }
 
 
-    void Controller::waitWithRosGazeboTime(double dt) 
+    void Controller::waitWithRosGazeboTime(double dt, ros::Time start_time) 
     {
-        ros::Time start_time = ros::Time::now();
         
         while ((ros::Time::now() - start_time).toSec() < dt) {
             // Wait until the specified time duration 'dt' has passed
@@ -1203,7 +1206,7 @@ namespace RCD
                 renew_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
                 renew_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
                 renew_LowCmd_.motorCmd[i*3+1].dq = 0;
-                renew_LowCmd_.motorCmd[i*3+1].Kd = 3.5; //4.5
+                renew_LowCmd_.motorCmd[i*3+1].Kd = 2.5; //4.5
                 renew_LowCmd_.motorCmd[i*3+1].tau = (float) leg_mng[i].tau(1);
                 renew_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
                 renew_LowCmd_.motorCmd[i*3+2].Kp = 0.0;
@@ -1212,20 +1215,24 @@ namespace RCD
                 renew_LowCmd_.motorCmd[i*3+2].tau =  (float) leg_mng[i].tau(2);
             }
 
-            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kp = 6.0; //3.0
-            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kp = 10.0; //5.0
-            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kp = 16.0; //8.0
-
-            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kd = 1.0;
-            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kd = 1.5;
-            renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kd = 2.0;   //1.5
         }
 
         for(int j=0; j<3; j++)
         {
             renew_LowCmd_.motorCmd[(int)robot_->swingL_id*3+j].q = (float) leg_mng[(int)(robot_->swingL_id)].q_out(j); 
+            renew_LowCmd_.motorCmd[(int)robot_->swingL_id*3+j].dq = (float) leg_mng[(int)(robot_->swingL_id)].dq_out(j); 
+
         }
         
+        renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kp = 7.0; //3.0
+        renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kp = 12.0; //5.0
+        renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kp = 16.0; //8.0
+
+        renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+0].Kd = 1.5;
+        renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+1].Kd = 2.0;
+        renew_LowCmd_.motorCmd[(int)(robot_->swingL_id)*3+2].Kd = 3.5;   //1.5
+
+
         cmh_->sendLowCmd(renew_LowCmd_);
 
     }
@@ -1247,7 +1254,7 @@ namespace RCD
                 renew_LowCmd_.motorCmd[i*3+1].mode = 0x0A;
                 renew_LowCmd_.motorCmd[i*3+1].Kp = 0.0;
                 renew_LowCmd_.motorCmd[i*3+1].dq = 0;
-                renew_LowCmd_.motorCmd[i*3+1].Kd = 3.5; //4.5
+                renew_LowCmd_.motorCmd[i*3+1].Kd = 2.5; //4.5
                 renew_LowCmd_.motorCmd[i*3+1].tau =  (float) leg_mng[i].tau(1);
                 renew_LowCmd_.motorCmd[i*3+2].mode = 0x0A;
                 renew_LowCmd_.motorCmd[i*3+2].Kp = 0.0;

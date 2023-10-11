@@ -72,14 +72,14 @@ w2 = data[:,25]
 w3 = data[:,27]
 
 plt.figure()
-plt.plot(t_real,w0, label="FR")
-plt.plot(t_real,w1, label="FL")
-plt.plot(t_real,w2, label="RR")
-plt.plot(t_real,w3, label="RL")
-plt.xlabel("t_real")
-plt.ylabel("Weights x")
+plt.plot(t_real,w0, label="FR",linewidth=2)
+plt.plot(t_real,w1, label="FL",linewidth=2)
+plt.plot(t_real,w2, label="RR",linewidth=2)
+plt.plot(t_real,w3, label="RL",linewidth=2)
+plt.xlabel("t_phase")
+plt.ylabel("Weights")
 plt.legend()
-plt.title("Weights x")
+plt.title("Weights of x-axis")
 
 d_traj_0frame = data[:,29:32] #x,y,z
 # plt.figure()
