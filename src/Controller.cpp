@@ -791,9 +791,10 @@ namespace RCD
         
         // desired swinging-tip trajectory represented from {0} is:
         Eigen::Vector4f d_CoM_pos =  BC_T*d_tip_pos;
-        d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
+        if(robot_->swingL_id == 0)
+            d_traj_0frame = d_CoM_pos.block(0,0,3,1); // cut last 1
 
-        CLIK(d_traj_0frame, d_tip_vel);
+        CLIK(d_CoM_pos.block(0,0,3,1), d_tip_vel);
 
         
     }

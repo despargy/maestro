@@ -59,7 +59,7 @@
         <param name="ko" value="15.0"/>    <!-- value="150.0"-->
         <param name="ki" value="50.0"/>    <!-- value="350.0"-->
 
-        <param name="alpha" value="150.0"/>  <!-- 150-->
+        <param name="alpha" value="1000.0"/>  <!-- 150-->
 
         <param name="pbc_x" value="0.0025"/>  <!-- 0.0025-->
         <param name="pbc_y" value="0.001"/> <!-- 0.001-->
